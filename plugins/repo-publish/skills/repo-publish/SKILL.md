@@ -113,6 +113,9 @@ GitHub release only, and say so in the README.
    (a real run, real numbers) rather than invented claims. It asks README-mode vs asset-only and pure SVG vs
    hybrid; pass the answers you already have (whole README, pure SVG unless the user wants otherwise) so it
    doesn't stall.
+   Its last step offers an attribution line and a showcase PR to its author's repo: both are optional and
+   outward-facing, so they wait for the user's yes like any other post. Not installed:
+   `npx skills add oil-oil/beautify-github-readme -g` (MIT; kept as a separate skill so it stays current).
    Sub-skill not in the skill list? It may be installed per project (`<repo>/.agents/skills/<name>`); read its
    SKILL.md from there, or apply the reference files here, and say which you did.
 3. **Plain language**: `humanizer` skill on README and other prose. Prose should read like the author wrote it.
