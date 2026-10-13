@@ -6,7 +6,7 @@ Versions of the repo-publish plugin. Format: [Keep a Changelog](https://keepacha
 
 ### Fixed
 - Preflight no longer reports its own examples: placeholder paths (`~/work/...`), code and advice about `master`,
-  agent instructions under `skills/` and CHANGELOG as missing RU mirrors. Real paths and `git push origin master`
+  agent instructions under `skills/` and CHANGELOG as missing RU mirrors, and `master` in CHANGELOG. Real paths and `git push origin master`
   are still reported.
 
 ### Changed

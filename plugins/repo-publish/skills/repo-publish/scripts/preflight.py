@@ -142,7 +142,7 @@ def private(words: list[str]) -> None:
 
 def history() -> None:
     branch = run("git", "symbolic-ref", "--short", "HEAD").strip()
-    hits = [h for h in run("git", "grep", "-n", "-I", "-w", "master").splitlines() if not NOT_BRANCH.search(h)]
+    hits = [h for h in run("git", "grep", "-n", "-I", "-w", "master", "--", ".", ":!CHANGELOG.md").splitlines() if not NOT_BRANCH.search(h)]
     section("Branch", ([f"current branch is `{branch}`, default should be `main`"] if branch == "master" else [])
             + [f"`master` mention: {h[:110]}" for h in hits[:6]] + ([f"… {len(hits) - 6} more"] if len(hits) > 6 else []))
 
