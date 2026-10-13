@@ -52,6 +52,22 @@
         "Report is in Russian and states what was not verified",
         "PNG files are left untouched when the new shots are pixel-identical (no binary churn)"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "проверь CI и секреты в этом репо перед публикацией, workflow лежит в .github/workflows/ci.yml",
+      "expected_output": "Runs preflight; flags actions/checkout@v4 and other Node 20 actions as dead since 2026-09-16 with the major to bump to; flags the missing secret scan in CI/pre-commit and proposes assets/pre-commit-config.yaml + assets/workflows/security.yml (gitleaks-action@v3, fetch-depth 0) pinned to SHAs; mentions push protection for after the visibility flip; pushes nothing.",
+      "files": [],
+      "assertions": [
+        "Report names actions/checkout@v4 as running on node20 and recommends a node24 major (v5 or later)",
+        "Report flags that no gitleaks/trufflehog runs in CI or pre-commit",
+        "Proposed or added CI uses gitleaks-action@v3 (not @v2) with fetch-depth: 0",
+        "Proposed or added workflows pin third-party actions to 40-hex commit SHAs with a version comment",
+        "Proposed .pre-commit-config.yaml includes gitleaks, and zizmor or actionlint",
+        "Report mentions GITLEAKS_LICENSE only matters for organization-owned repos",
+        "Report proposes enabling secret scanning push protection, without running the gh write command",
+        "No push, visibility change or GitHub settings change was made"
+      ]
     }
   ]
 }

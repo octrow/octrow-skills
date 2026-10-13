@@ -1,0 +1,14 @@
+# Copy to <repo>/.github/dependabot.yml. Keep the github-actions entry: it bumps the SHA pins
+# in workflows (and their `# vX.Y.Z` comments). Swap `pip` for npm/cargo/gomod/uv as the repo needs.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+    groups:
+      actions: { patterns: ["*"] }
+  - package-ecosystem: pip
+    directory: /
+    schedule: { interval: weekly }
+    groups:
+      minor-and-patch: { update-types: [minor, patch] }

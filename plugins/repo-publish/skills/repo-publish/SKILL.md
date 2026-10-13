@@ -53,8 +53,11 @@ It prints a read-only report: missing community files and language mirrors, secr
 internal-looking tracked files (prompts, plans, agent folders), a gitleaks scan of history (when installed),
 private paths and names in files and history, author emails, monorepo subfolder status, broken or
 project-escaping README links, SKILL.md frontmatter that agents can't load, workflows without `permissions:`,
+actions still on Node 20 (dead on GitHub runners since 2026-09-16), tag-pinned third-party actions, no secret scan
+in CI or pre-commit, no Scorecard,
 whether the package name is free on PyPI/npm, and GitHub metadata (description vs package description, topics,
-social preview, empty release notes, branch protection, private vulnerability reporting).
+social preview, empty release notes, branch protection, private vulnerability reporting, secret scanning and push
+protection).
 If the user mentioned an employer or client, pass its names with `--private`.
 
 Then ask only what the repo can't tell you, in the user's language, with a recommendation for each:
@@ -76,6 +79,10 @@ Read `references/security.md`. Short version: scan the whole history for secrets
 keep heavy data out of the package. Renaming the default branch to `main` changes the remote and breaks
 existing clones' tracking, so propose it and do it after a yes. Delegate a code-level review to
 `security-review` (or the `code-reviewer` agent) when the project handles keys, user input, subprocesses or files.
+
+Then keep it clean: `assets/pre-commit-config.yaml` (gitleaks, zizmor, actionlint) and
+`assets/workflows/security.yml` (gitleaks over the whole history in CI), push protection after the visibility flip
+(`references/security.md`, "Keep scanning after launch").
 
 A secret found in history means rotate first, then rewrite history; rotation is the part that actually helps.
 Tell the user; don't rewrite history without asking.
@@ -124,8 +131,15 @@ names, sizes and device scale, so the README needs no edits.
 
 `github-repo` skill covers the files: LICENSE, CONTRIBUTING, SECURITY (private advisory link), CODE_OF_CONDUCT
 (Contributor Covenant 2.1), YAML issue forms with `config.yml`, PR template, Dependabot, CI with tests and lint.
-Each prose file gets its mirror (`references/bilingual.md`). Settings that live on GitHub, not in files:
-private vulnerability reporting, branch protection or a ruleset on `main`, unused Wiki/Projects off.
+Each prose file gets its mirror (`references/bilingual.md`).
+
+CI files come from `assets/` rather than being written from scratch: `dependabot.yml`, `workflows/security.yml`,
+`workflows/scorecard.yml` (public repos) and `pre-commit-config.yaml`. Actions in them are pinned to commit SHAs
+with the version in a comment; adapt the details (package ecosystem, branch), keep the hardening
+(`references/security.md`, §8–9). Lint the result before committing:
+`uvx zizmor .github/workflows && uvx --from actionlint-py actionlint`. Settings that live on GitHub, not in files:
+private vulnerability reporting, secret scanning and push protection, branch protection or a ruleset on `main`,
+unused Wiki/Projects off.
 These are account settings changes; list the exact `gh` commands and run them only after a yes.
 
 ## Phase 6: discoverability (SEO)
@@ -137,7 +151,8 @@ detectors flag the pattern.
 
 ## Phase 7: release
 
-Bump the version, update CHANGELOG/release notes from `git log <last-tag>..HEAD`, tag, push the tag, and wait
+Python package going to PyPI: set up trusted publishing with `assets/workflows/release-pypi.yml` first, so no
+API token is ever stored (`references/release.md`, "Publishing without tokens"). Then bump the version, update CHANGELOG/release notes from `git log <last-tag>..HEAD`, tag, push the tag, and wait
 for the release workflow to go green before announcing. Check the built artifacts' size (sdist excludes) and that the
 README's install commands point at the new release.
 

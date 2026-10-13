@@ -33,3 +33,24 @@
    the release page lists them and the sizes are sane.
 5. README install commands and badges point at `releases/latest`, so they don't need edits per release.
 6. Default branch `main`; replace `master` everywhere (docs, prompts, workflows, badges) when renaming.
+
+## Publishing without tokens, with provenance
+
+`assets/workflows/release-pypi.yml` is the Python shape: tag `vX.Y.Z` → build once → attest → PyPI + GitHub release.
+
+- **Trusted publishing (OIDC)**: PyPI trusts this repo's workflow directly, so there's no `PYPI_API_TOKEN` to leak
+  or rotate. One-time setup on PyPI → project → Publishing (a "pending publisher" for a name not yet on PyPI):
+  owner, repo, workflow file name, environment `pypi`. npm has the same (`npm publish --provenance` with
+  `id-token: write`, plus a trusted publisher on npmjs.com).
+- **Build provenance**: `actions/attest-build-provenance` signs which commit and workflow built each file;
+  users check with `gh attestation verify dist/<file> -R OWNER/REPO`. PyPI also gets PEP 740 attestations from
+  the publish action. Say so in SECURITY.md, it's what a careful installer looks for.
+- Build in one job, publish in others that only download the artifact; the publish job gets `id-token: write`
+  and nothing else, behind the `pypi` environment (add required reviewers there for a manual gate).
+
+## Automated changelog (optional)
+
+For a project with regular releases, `googleapis/release-please-action` (v5) replaces steps 1–3: it reads
+conventional commits on `main`, keeps a "release PR" with the version bump and CHANGELOG, and tags on merge.
+Worth it from the third or fourth release; before that the manual steps above are less to set up and explain.
+
