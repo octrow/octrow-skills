@@ -1,0 +1,17 @@
+name: Bug or wrong advice
+description: A check that misfires, a step that fails, or advice that is wrong or out of date
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version
+      description: "`claude plugin list` shows it"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened and what you expected
+      description: For a preflight finding, paste its lines; for wrong advice, a source that says otherwise.
+    validations:
+      required: true
