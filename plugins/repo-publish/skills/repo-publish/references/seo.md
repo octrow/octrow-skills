@@ -61,4 +61,5 @@ indexed and shows up in "Releases" on the repo's front page.
 ## Off limits
 
 Bought stars, star exchanges, fake accounts, keyword stuffing, mass-tagging unrelated topics. They break GitHub's
-terms and fake-star detectors flag them. Repos that sell "GitHub ranking" are adverts, not sources.
+terms; a burst of hundreds of stars in an hour shows on any star chart, and when GitHub removes the accounts their
+stars go with them. Repos that sell "GitHub ranking" are adverts, not sources.

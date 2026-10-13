@@ -1,7 +1,7 @@
 {
   "name": "repo-publish",
   "description": "Get a repo ready for strangers to find, trust and install: preflight audit, README and EN/RU docs, GitHub SEO, screenshots, community files, CI, release and launch plan.",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "author": { "name": "Daniil Petrov" },
   "license": "MIT",
   "keywords": ["github", "readme", "open-source", "seo", "release", "skills"]

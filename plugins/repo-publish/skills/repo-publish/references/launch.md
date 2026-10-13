@@ -48,5 +48,12 @@ Run `humanizer` on the drafts.
   and say so in the thread.
 - Turn repeated questions into README FAQ entries.
 - Measure (needs push access): `gh api repos/OWNER/REPO/traffic/views`, `.../traffic/popular/referrers`,
-  `.../traffic/clones`; star history at star-history.com. GitHub keeps traffic for 14 days only; save a snapshot.
+  `.../traffic/clones`, and the star count from `gh api repos/OWNER/REPO --jq .stargazers_count`. GitHub keeps
+  traffic for 14 days only: save a snapshot after each launch, or schedule it.
+- Since 2026-06-30 the stargazer list (`/stargazers`, API and page) is visible only to the repo's admins and
+  collaborators, so third-party star-history charts can't rebuild a repo's history from it any more; for your own
+  repo the data still comes with your token. Want a chart in the README or traffic kept past 14 days? A daily
+  workflow can record it, e.g. MacRimi/repo-growth (young project: pin it to a SHA; it needs `contents: write` and
+  commits every day, and clone traffic needs a token with Administration: read). For a one-off post-launch
+  look, the snapshots above are enough.
 - A second wave works when there's news: a big release, a write-up of a real result, a talk.

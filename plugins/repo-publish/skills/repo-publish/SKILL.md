@@ -153,8 +153,8 @@ project: a stale bot (it closes valid reports and reads as an unmaintained repo)
 
 Read `references/seo.md`. Description, topics, homepage, social preview image, README opening, release cadence.
 The social preview can't be set via API; generate the 1280×640 PNG and tell the user where to upload it.
-No buying stars, no star-for-star rings, no fake accounts: that breaks GitHub's terms, and public fake-star
-detectors flag the pattern.
+No buying stars, no star-for-star rings, no fake accounts: that breaks GitHub's terms, the burst shows on any
+star chart, and stars vanish when GitHub removes the accounts.
 
 ## Phase 7: release
 
