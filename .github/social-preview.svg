@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="t d">
+  <title id="t">repo-publish</title>
+  <desc id="d">repo-publish, a Claude Code skill: make a repo public, check its history first. Beside the title, real lines from its preflight report.</desc>
+  <style>
+    .sans { font-family: "Ubuntu Sans", Ubuntu, "Segoe UI", -apple-system, "Noto Sans", sans-serif; }
+    .mono { font-family: "Ubuntu Sans Mono", "Ubuntu Mono", "SF Mono", Consolas, "DejaVu Sans Mono", monospace; }
+  </style>
+  <rect width="1280" height="640" fill="#f3f0e8"/>
+
+  <!-- left: context, name, promise -->
+  <text x="72" y="118" class="mono" font-size="24" fill="#6b6a64">Claude Code skill · octrow-skills</text>
+  <text x="68" y="222" class="sans" font-size="96" font-weight="700" fill="#15171b" letter-spacing="-2">repo-publish</text>
+  <text x="72" y="300" class="sans" font-size="40" fill="#15171b">Make a repo public.</text>
+  <text x="72" y="352" class="sans" font-size="40" fill="#15171b">Check its history first.</text>
+
+  <!-- phase track: the order the skill works in -->
+  <g class="mono" font-size="19" fill="#15171b">
+    <line x1="110" y1="470" x2="610" y2="470" stroke="#15171b" stroke-width="2"/>
+    <circle cx="110" cy="470" r="7" fill="#c2410c"/>
+    <circle cx="210" cy="470" r="5" fill="#15171b"/>
+    <circle cx="310" cy="470" r="5" fill="#15171b"/>
+    <circle cx="410" cy="470" r="5" fill="#15171b"/>
+    <circle cx="510" cy="470" r="5" fill="#15171b"/>
+    <circle cx="610" cy="470" r="5" fill="#15171b"/>
+    <text x="110" y="508" text-anchor="middle" fill="#c2410c">secrets</text>
+    <text x="210" y="508" text-anchor="middle">install</text>
+    <text x="310" y="508" text-anchor="middle">README</text>
+    <text x="410" y="508" text-anchor="middle">CI</text>
+    <text x="510" y="508" text-anchor="middle">SEO</text>
+    <text x="610" y="508" text-anchor="middle">release</text>
+  </g>
+
+  <!-- right: preflight report card with real output lines -->
+  <rect x="680" y="72" width="528" height="496" rx="14" fill="#15171b"/>
+  <g class="mono" font-size="21">
+    <text x="712" y="122" fill="#8f8d86">$ preflight.py .</text>
+
+    <text x="712" y="178" fill="#f3f0e8">## Secrets in history</text>
+    <text x="712" y="212" fill="#9fb59a">✓ gitleaks: no leaks in history</text>
+
+    <text x="712" y="268" fill="#f3f0e8">## .gitignore</text>
+    <text x="712" y="302" fill="#f0a27a">✗ not ignored: .env, .venv/</text>
+
+    <text x="712" y="358" fill="#f3f0e8">## CI workflows</text>
+    <text x="712" y="392" fill="#f0a27a">✗ checkout@v4 targets node20</text>
+    <text x="712" y="426" fill="#f0a27a">✗ no secret scan in CI</text>
+    <text x="712" y="460" fill="#f0a27a">✗ dependabot: no cooldown</text>
+
+    <text x="712" y="516" fill="#8f8d86">fixes → assets/: pre-commit,</text>
+    <text x="712" y="546" fill="#8f8d86">security.yml, scorecard.yml</text>
+  </g>
+</svg>
