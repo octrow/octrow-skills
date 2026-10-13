@@ -56,7 +56,7 @@
     {
       "id": 4,
       "prompt": "проверь CI и секреты в этом репо перед публикацией, workflow лежит в .github/workflows/ci.yml",
-      "expected_output": "Runs preflight; flags actions/checkout@v4 and other Node 20 actions as dead since 2026-09-16 with the major to bump to; flags the missing secret scan in CI/pre-commit and proposes assets/pre-commit-config.yaml + assets/workflows/security.yml (gitleaks-action@v3, fetch-depth 0) pinned to SHAs; mentions push protection for after the visibility flip; pushes nothing.",
+      "expected_output": "Runs preflight; flags actions/checkout@v4 and other Node 20 actions as deprecated (GitHub forces them onto Node 24 with a warning) with the major to bump to; flags the missing secret scan in CI/pre-commit and proposes assets/pre-commit-config.yaml + assets/workflows/security.yml (gitleaks-action@v3, fetch-depth 0) pinned to SHAs; mentions push protection for after the visibility flip; pushes nothing.",
       "files": [],
       "assertions": [
         "Report names actions/checkout@v4 as running on node20 and recommends a node24 major (v5 or later)",

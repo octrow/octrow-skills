@@ -39,7 +39,7 @@ PROBES_PY = [".venv/x", "__pycache__/x.pyc", "dist/x.whl", "x.egg-info/PKG-INFO"
 PROBES_NODE = ["node_modules/x", ".next/x"]
 USES = re.compile(r"^\s*-?\s*uses:\s*['\"]?([\w.-]+/[\w./-]+@[\w./-]+)", re.M)  # remote actions; skips ./local, docker://
 SHA = re.compile(r"@[0-9a-f]{40}$")
-NODE_MIN = 24  # Node 20 actions stopped running on GitHub-hosted runners on 2026-09-16
+NODE_MIN = 24  # older runtimes are deprecated; runners force them onto Node 24 with a warning
 BIG_FILE = 1_000_000
 TOPICS_MIN = 5
 DESC_MAX = 120
@@ -226,7 +226,7 @@ def runtimes(refs: set[str]) -> list[str]:
     for uses in sorted(refs):
         node = re.fullmatch(r"node(\d+)", action_runtime(uses))
         if node and int(node.group(1)) < NODE_MIN:
-            out.append(f"{uses}: runs on {node.group(0)}, removed from GitHub runners on 2026-09-16; bump the major")
+            out.append(f"{uses}: targets {node.group(0)}, deprecated (forced onto Node 24 with a warning); bump the major")
     return out
 
 

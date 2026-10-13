@@ -29,8 +29,8 @@ A one-off scan protects today's history; the next commit can leak again. Install
   `.pre-commit-config.yaml`, then `pre-commit install`. It runs gitleaks on staged changes plus zizmor and
   actionlint on workflows. Revs go stale; `pre-commit autoupdate` refreshes them.
 - **CI** (catches what skipped the hook, `--no-verify` or a web edit): `assets/workflows/security.yml` runs
-  `gitleaks-action@v3` over the whole history (`fetch-depth: 0`) on push, PR and weekly. `@v2` ran on Node 20 and
-  stopped working on 2026-09-16. Personal repos need no license; an organization repo needs the free
+  `gitleaks-action@v3` over the whole history (`fetch-depth: 0`) on push, PR and weekly. `@v2` targets Node 20, which
+  runners now force onto Node 24 with a warning. Personal repos need no license; an organization repo needs the free
   `GITLEAKS_LICENSE` secret from gitleaks.io (ask the user to request it), or swap the job for
   `trufflehog git file://. --only-verified`.
 - **GitHub push protection** (server-side; free on public repos): rejects a push that contains a known token.
@@ -127,7 +127,8 @@ Workflows run with a token and often with secrets; a bad one is a supply-chain h
 - `actions/checkout` with `persist-credentials: false` unless a later step pushes.
 - No `${{ github.event.* }}` inside `run:`: pass it through `env:` (template injection). No `pull_request_target`
   that checks out PR code.
-- Node runtime: Node 20 actions stopped running on 2026-09-16; bump to the major that runs on node24
+- Node runtime: Node 20 is gone from the runners; Node 20 actions are forced onto Node 24 with a warning in
+  every run. Most keep working, but bump to the major that declares node24
   (e.g. checkout v5+, setup-python v6+, upload-artifact v6+, download-artifact v7+, cache v5+, codeql-action v4,
   setup-uv v7+). Preflight checks each `uses:` against its `action.yml`.
 - `timeout-minutes` on every job (a hung job otherwise burns up to 6 h of minutes) and a `concurrency` group with

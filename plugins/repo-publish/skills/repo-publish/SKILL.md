@@ -53,7 +53,7 @@ It prints a read-only report: missing community files and language mirrors, secr
 internal-looking tracked files (prompts, plans, agent folders), a gitleaks scan of history (when installed),
 private paths and names in files and history, author emails, monorepo subfolder status, broken or
 project-escaping README links, SKILL.md frontmatter that agents can't load, workflows without `permissions:`,
-actions still on Node 20 (dead on GitHub runners since 2026-09-16), tag-pinned third-party actions, no secret scan
+actions still on Node 20 (deprecated; runners force them onto Node 24 with a warning), tag-pinned third-party actions, no secret scan
 in CI or pre-commit, no Scorecard,
 whether the package name is free on PyPI/npm, and GitHub metadata (description vs package description, topics,
 social preview, empty release notes, branch protection, private vulnerability reporting, secret scanning and push
