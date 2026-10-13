@@ -181,6 +181,8 @@ Drafting posts is fine; posting anything, opening PRs to awesome lists or messag
   after a push, check that CI went green.
 - **Preserve unrelated changes.** Stage only the files of the current part; the working tree often holds the
   user's own work in progress.
+- **Check before you repeat.** A claim from another README, changelog or blog post ("X stopped working",
+  "Y is free") gets checked on a real run or API call before it lands in a report or a doc; vendors overstate.
 - **Don't invent.** No made-up adoption numbers, benchmarks, testimonials or compatibility claims. Every number
   in the README should come from a real run, test or release.
 - **Visual changes need a before/after.** Show screenshots side by side and let the user choose; save the

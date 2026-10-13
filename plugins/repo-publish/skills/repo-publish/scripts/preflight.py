@@ -214,6 +214,9 @@ def missing_guards(ci_text: str, has_actions: bool) -> list[str]:
                    "add assets/workflows/security.yml + assets/pre-commit-config.yaml")
     if has_actions and not re.search(r"zizmor|actionlint", ci_text):
         out.append("workflows aren't linted: zizmor + actionlint (assets/pre-commit-config.yaml)")
+    bot = ROOT / ".github/dependabot.yml"
+    if bot.exists() and "cooldown" not in bot.read_text(encoding="utf-8"):
+        out.append("dependabot.yml: no `cooldown` (wait ~7 days before proposing a release; assets/dependabot.yml)")
     if "ossf/scorecard-action" not in ci_text:
         out.append("no OpenSSF Scorecard (assets/workflows/scorecard.yml; public repos)")
     return out
@@ -291,6 +294,16 @@ def releases(name: str) -> list[str]:
     return [f"releases with empty notes (only 'Full Changelog'): {', '.join(empty)}"] if empty else []
 
 
+def red_bot_prs(name: str) -> list[str]:
+    """Open Dependabot PRs with a failing check: they pile up unnoticed and hide real breakage."""
+    raw = run("gh", "pr", "list", "-R", name, "--author", "app/dependabot", "--state", "open",
+              "--json", "number,statusCheckRollup")
+    red = [f"#{p['number']}" for p in json.loads(raw or "[]")
+           if any(c.get("conclusion") == "FAILURE" or c.get("state") in ("FAILURE", "ERROR")
+                  for c in p.get("statusCheckRollup") or [])]
+    return [f"Dependabot PRs with failing checks: {', '.join(red)} (fix, close, or `ignore` the majors)"] if red else []
+
+
 def github(pkg_desc: str) -> None:
     raw = run("gh", "repo", "view", "--json",
               "nameWithOwner,description,repositoryTopics,homepageUrl,visibility,usesCustomOpenGraphImage,"
@@ -316,6 +329,7 @@ def github(pkg_desc: str) -> None:
     out.append(f"license: {(r.get('licenseInfo') or {}).get('name', 'NONE')}")
     out.append(f"latest release: {(r.get('latestRelease') or {}).get('tagName', 'none')}")
     out += releases(name)
+    out += red_bot_prs(name)
     out += [f"{k} enabled (turn off if unused)" for k in ("hasWikiEnabled", "hasProjectsEnabled") if r.get(k)]
     out.append(f"discussions: {'on' if r.get('hasDiscussionsEnabled') else 'off'}")
     pvr = run("gh", "api", f"repos/{name}/private-vulnerability-reporting")

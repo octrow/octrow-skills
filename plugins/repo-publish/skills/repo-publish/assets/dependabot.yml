@@ -14,3 +14,8 @@ updates:
     cooldown: { default-days: 7 }   # skip releases younger than a week (hijacked-release window)
     groups:
       minor-and-patch: { update-types: [minor, patch] }
+    # App pinned to a framework's peer ranges (Payload, Next, Angular...)? Majors there break the
+    # install and are upgraded by hand with the framework; uncomment to stop those PRs.
+    # ignore:
+    #   - dependency-name: "*"
+    #     update-types: ["version-update:semver-major"]
