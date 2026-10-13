@@ -130,6 +130,16 @@ Workflows run with a token and often with secrets; a bad one is a supply-chain h
 - Node runtime: Node 20 actions stopped running on 2026-09-16; bump to the major that runs on node24
   (e.g. checkout v5+, setup-python v6+, upload-artifact v6+, download-artifact v7+, cache v5+, codeql-action v4,
   setup-uv v7+). Preflight checks each `uses:` against its `action.yml`.
+- `timeout-minutes` on every job (a hung job otherwise burns up to 6 h of minutes) and a `concurrency` group with
+  `cancel-in-progress` on push/PR workflows, so a new push cancels the stale run. Not on release workflows.
+- Dependabot `cooldown: { default-days: 7 }`: hijacked releases are usually caught within days; zizmor flags its
+  absence. Security updates ignore the cooldown, so fixes still land at once.
+- Public repos, two extras that cost one command or one job: CodeQL default setup (no workflow file;
+  `gh api -X PATCH repos/OWNER/REPO/code-scanning/default-setup -f state=configured`, after a yes) and
+  `actions/dependency-review-action` on `pull_request`, which fails a PR that adds a dependency with a known CVE.
+  Both need the repo public or GitHub Advanced Security.
+- Checklists found online (e.g. github/awesome-copilot's CI/CD instructions) agree on SHA pins, least privilege,
+  OIDC and secret scanning, but their example pins can be Node 20 versions; check them like any other `uses:`.
 - `zizmor` and `actionlint` catch the rest; both are in `assets/pre-commit-config.yaml`
   (or one-off: `uvx zizmor .github/workflows`, `uvx --from actionlint-py actionlint`).
 

@@ -11,6 +11,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       id-token: write      # build provenance
@@ -30,6 +31,7 @@ jobs:
   pypi:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment: pypi
     permissions:
       id-token: write      # trusted publishing (OIDC) and PEP 740 attestations
@@ -42,6 +44,7 @@ jobs:
   github-release:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write      # create the release
     steps:
