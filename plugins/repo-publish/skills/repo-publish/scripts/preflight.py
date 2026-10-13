@@ -23,14 +23,17 @@ COMMUNITY = ["README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CODE_OF_
              ".github/ISSUE_TEMPLATE", ".github/pull_request_template.md", ".github/dependabot.yml",
              ".github/workflows"]
 SECRET_FILES = re.compile(r"(^|/)(\.env(\.[^/]*)?|id_rsa[^/]*|[^/]*\.pem|[^/]*\.key|credentials[^/]*\.json)$")
+MONO_LANG = re.compile(r"(^|/)skills/|(^|/)CHANGELOG\.md$")  # agent instructions, release notes: EN only
 SAFE_ENV = re.compile(r"\.env\.(example|sample|template)$")
 # ponytail: a few well-known token shapes, used only when gitleaks isn't installed
 TOKENS = r"(ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{40,}|sk-[A-Za-z0-9_-]{32,}|AKIA[0-9A-Z]{16}|xox[bp]-[A-Za-z0-9-]{20,})"
-PRIVATE_PATHS = r"(/home/[a-z][a-z0-9_-]+/|/Users/[A-Za-z][^/ ]+/|C:\\\\Users\\\\|~/(dev|work|src|projects)/)"
+# `~/work/...` and `/home/<user>/` placeholders in docs don't match
+PRIVATE_PATHS = r"(/home/[a-z][a-z0-9_-]+/|/Users/[A-Za-z][^/ ]+/|C:\\\\Users\\\\|~/(dev|work|src|projects)/[A-Za-z0-9_.-]*[A-Za-z0-9])"
 INTERNAL = re.compile(r"(^|/)(prompts?/|\.claude/|\.agents/|\.cursor/|scratch[^/]*|HANDOFF[^/]*|continue-[^/]*\.md|"
                       r"PLAN(\.[a-z]{2})?\.md|TODO[^/]*\.md|notes?/)", re.I)
 EMPTY_NOTES = re.compile(r"^\s*(\*\*Full Changelog\*\*:?\s*\S+)?\s*$")
-NOT_BRANCH = re.compile(r"golden[- ]master|master[- ](key|password|copy|data|list|class|plan)|mastermind|webmaster", re.I)
+NOT_BRANCH = re.compile(r"golden[- ]master|master[- ](key|password|copy|data|list|class|plan)|mastermind|webmaster|"
+                        r"\"master\"|`master` mention|replace `master`", re.I)  # last three: code and advice about it
 PREVIEW = re.compile(r"(social[-_]?preview|og[-_]?image|opengraph)[^/]*\.(png|jpe?g)$", re.I)
 DEMO = re.compile(r"\.(gif|webp|mp4|webm)\b|asciinema\.org", re.I)
 VERSUS = re.compile(r"^#+ .*(alternativ|compar|\bvs\.?\b|differ|аналог|отлич|сравн)", re.I | re.M)
@@ -75,7 +78,7 @@ def files() -> None:
         if stem.endswith(".ru"):
             if stem[:-3] not in stems:
                 lone.append(f"{f}: no primary-language original")
-        elif f"{stem}.ru" not in stems and not f.startswith((".github/", "tests/")):
+        elif f"{stem}.ru" not in stems and not f.startswith((".github/", "tests/")) and not MONO_LANG.search(f):
             lone.append(f"{f}: no .ru.md mirror")
     section("Language mirrors (only if the repo is bilingual)", lone if any(s.endswith(".ru") for s in stems) else [])
     section("Tracked files that look secret", [f for f in names if SECRET_FILES.search(f) and not SAFE_ENV.search(f)])
