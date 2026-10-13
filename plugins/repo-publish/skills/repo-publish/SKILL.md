@@ -142,6 +142,13 @@ private vulnerability reporting, secret scanning and push protection, branch pro
 unused Wiki/Projects off.
 These are account settings changes; list the exact `gh` commands and run them only after a yes.
 
+Contributor on-ramp, after launch rather than on day one: open 2–3 real, small issues labelled `good first issue`
+(GitHub creates the label; such issues show up on `github.com/OWNER/REPO/contribute` and in GitHub's
+newcomer search). Turn on Discussions (`gh repo edit --enable-discussions`) once people ask questions, and point
+`ISSUE_TEMPLATE/config.yml` `contact_links` at its Q&A category so questions stop arriving as bugs. Skip for a solo
+project: a stale bot (it closes valid reports and reads as an unmaintained repo), milestones, and a docs site
+(MkDocs, Docusaurus) until the README no longer fits on a few screens.
+
 ## Phase 6: discoverability (SEO)
 
 Read `references/seo.md`. Description, topics, homepage, social preview image, README opening, release cadence.
