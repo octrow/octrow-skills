@@ -3,8 +3,10 @@
 ## Docs layout
 
 - Primary language in the plain file (`README.md`), mirror next to it with a suffix (`README.ru.md`).
-  Same for every prose file people read: CONTRIBUTING, SECURITY, CONTEXT, PLAN, docs/*.md, skill files
-  (`SKILL.md` / `SKILL.ru.md`). Code, templates and workflow YAML stay single-language (English).
+  Same for every prose file people read: CONTRIBUTING, SECURITY, CONTEXT, PLAN, docs/*.md.
+  Single-language (English): code, templates, workflow YAML, CHANGELOG, and agent instructions (`SKILL.md`,
+  its references): agents read either language, and a mirror doubles every edit for no reader. Preflight
+  skips files under `skills/` and CHANGELOG when it looks for missing mirrors.
 - The first line under the badges switches languages, current one bold:
   ```html
   <p align="center"><b>English</b> | <a href="README.ru.md">Русский</a></p>
