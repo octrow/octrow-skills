@@ -1,8 +1,17 @@
 {
   "name": "repo-publish",
-  "description": "Get a repo ready for strangers to find, trust and install: preflight audit, README and EN/RU docs, GitHub SEO, screenshots, community files, CI, release and launch plan.",
-  "version": "0.2.6",
-  "author": { "name": "Daniil Petrov" },
+  "description": "Claude Code skill to publish a repo safely: history and secret checks, CI hardening, README, SEO and release.",
+  "version": "0.2.7",
+  "author": {
+    "name": "Daniil Petrov"
+  },
   "license": "MIT",
-  "keywords": ["github", "readme", "open-source", "seo", "release", "skills"]
+  "keywords": [
+    "github",
+    "readme",
+    "open-source",
+    "seo",
+    "release",
+    "skills"
+  ]
 }
