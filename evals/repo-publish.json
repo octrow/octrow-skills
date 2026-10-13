@@ -1,0 +1,57 @@
+{
+  "skill_name": "repo-publish",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "подготовь ~/dev/pylibs/nicegui-kit к публикации на GitHub: README, лицензия, EN/RU, SEO. пока ничего не коммить",
+      "expected_output": "Runs preflight, gives a phase scorecard, asks scope/audience/visibility in Russian with recommendations, proposes README + LICENSE + RU mirror + description/topics; edits nothing before scope is chosen; no commits.",
+      "files": [],
+      "assertions": [
+        "No commits were made in the clone (git log unchanged)",
+        "Report asks scope questions in Russian with a recommendation for each (audience/visibility/languages)",
+        "LICENSE file was added or its absence flagged with a concrete license proposal",
+        "README for nicegui-kit was created/improved with what it is, install, quick start",
+        "A Russian mirror (README.ru.md) exists with a language switch line in both files",
+        "Report proposes a GitHub description and topics (SEO) without running gh write commands",
+        "Report includes security/history check results (secrets scan or tracked-secret check) before publication",
+        "No invented adoption numbers, benchmarks or testimonials in the README",
+        "Report raises code provenance (right to publish code that came from a work project) as a blocker",
+        "Report recommends publishing as its own repo with fresh history (or explains why old history is clean)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "make repo-scout look more professional and get it more organic stars, what's missing?",
+      "expected_output": "Read-only audit of the already-public repo: flags missing CHANGELOG, no homepage, default social preview (with 1280x640 upload instruction), CODE_OF_CONDUCT RU mirror; no star-buying advice; launch plan as advice only.",
+      "files": [],
+      "assertions": [
+        "Report flags the missing CHANGELOG",
+        "Report flags the default social preview and says it must be uploaded manually (1280x640)",
+        "Report flags the missing homepage URL",
+        "Report gives concrete description/topics suggestions",
+        "Report does not recommend buying stars, star exchanges or fake accounts",
+        "Launch channels (HN/Reddit/awesome lists) are advice only, nothing posted",
+        "No gh write commands were run (repo metadata unchanged)",
+        "Report is in Russian with a prioritized list and a recommendation",
+        "Report flags that the PyPI name repo-scout is taken by another project",
+        "Report flags the broken skill/SKILL.md frontmatter"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "обнови скриншоты GUI в README, я поменял таблицы",
+      "expected_output": "Compares with existing assets/readme/gui screenshots first, keeps file names and pixel sizes, uses shots.py with a spec, shows before/after, does not edit README text.",
+      "files": [],
+      "assertions": [
+        "Screenshots keep the same file names as in assets/readme/gui/",
+        "Every new screenshot has the same pixel size as the old one (sizes.txt)",
+        "README.md text is unchanged (only image files differ)",
+        "Report shows a before/after comparison, or proves with a pixel diff that nothing changed",
+        "Light theme used, no hover tint or open menus left in table views",
+        "GUI server was stopped at the end",
+        "Report is in Russian and states what was not verified",
+        "PNG files are left untouched when the new shots are pixel-identical (no binary churn)"
+      ]
+    }
+  ]
+}
