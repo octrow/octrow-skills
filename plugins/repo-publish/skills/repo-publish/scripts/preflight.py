@@ -189,31 +189,6 @@ def skills() -> None:
     section("Agent skills (SKILL.md frontmatter)", out)
 
 
-def action_runtime(uses: str) -> str:
-    """`using:` of a remote action (node20, node24, docker, composite), "" if unknown. Needs `gh`."""
-    repo_path, _, ref = uses.partition("@")
-    owner, repo, *sub = repo_path.split("/")
-    for name in ("action.yml", "action.yaml"):
-        path = "/".join([*sub, name])
-        raw = run("gh", "api", f"repos/{owner}/{repo}/contents/{path}?ref={ref}", "--jq", ".content")
-        if raw:
-            text = base64.b64decode(raw).decode("utf-8", "replace")
-            m = re.search(r"^\s+using:\s*['\"]?([\w-]+)", text, re.M)
-            return m.group(1) if m else ""
-    return ""
-
-
-def runtimes(refs: set[str]) -> list[str]:
-    if not shutil.which("gh"):
-        return ["`gh` not installed: Node runtime of actions not checked"]
-    out = []
-    for uses in sorted(refs):
-        node = re.fullmatch(r"node(\d+)", action_runtime(uses))
-        if node and int(node.group(1)) < NODE_MIN:
-            out.append(f"{uses}: runs on {node.group(0)}, removed from GitHub runners on 2026-09-16; bump the major")
-    return out
-
-
 def workflows() -> None:
     out, refs, text_all = [], set(), ""
     for wf in sorted((ROOT / ".github/workflows").glob("*.y*ml")):
@@ -227,15 +202,46 @@ def workflows() -> None:
         out.append(f"third-party actions pinned by tag, not SHA: {', '.join(unpinned)} (zizmor flags these)")
     out += runtimes(refs)
     hooks = ROOT / ".pre-commit-config.yaml"
-    text_all += hooks.read_text(encoding="utf-8") if hooks.exists() else ""
-    if not re.search(r"gitleaks|trufflehog", text_all):
+    out += missing_guards(text_all + (hooks.read_text(encoding="utf-8") if hooks.exists() else ""), bool(refs))
+    section("CI workflows", out)
+
+
+def missing_guards(ci_text: str, has_actions: bool) -> list[str]:
+    """Secret scan, workflow lint and Scorecard absent from workflows + pre-commit config."""
+    out = []
+    if not re.search(r"gitleaks|trufflehog", ci_text):
         out.append("no secret scan in CI or pre-commit: "
                    "add assets/workflows/security.yml + assets/pre-commit-config.yaml")
-    if not re.search(r"zizmor|actionlint", text_all) and refs:
+    if has_actions and not re.search(r"zizmor|actionlint", ci_text):
         out.append("workflows aren't linted: zizmor + actionlint (assets/pre-commit-config.yaml)")
-    if "ossf/scorecard-action" not in text_all:
+    if "ossf/scorecard-action" not in ci_text:
         out.append("no OpenSSF Scorecard (assets/workflows/scorecard.yml; public repos)")
-    section("CI workflows", out)
+    return out
+
+
+def runtimes(refs: set[str]) -> list[str]:
+    if not shutil.which("gh"):
+        return ["`gh` not installed: Node runtime of actions not checked"]
+    out = []
+    for uses in sorted(refs):
+        node = re.fullmatch(r"node(\d+)", action_runtime(uses))
+        if node and int(node.group(1)) < NODE_MIN:
+            out.append(f"{uses}: runs on {node.group(0)}, removed from GitHub runners on 2026-09-16; bump the major")
+    return out
+
+
+def action_runtime(uses: str) -> str:
+    """`using:` of a remote action (node20, node24, docker, composite), "" if unknown. Needs `gh`."""
+    repo_path, _, ref = uses.partition("@")
+    owner, repo, *sub = repo_path.split("/")
+    for name in ("action.yml", "action.yaml"):
+        path = "/".join([*sub, name])
+        raw = run("gh", "api", f"repos/{owner}/{repo}/contents/{path}?ref={ref}", "--jq", ".content")
+        if raw:
+            text = base64.b64decode(raw).decode("utf-8", "replace")
+            m = re.search(r"^\s+using:\s*['\"]?([\w-]+)", text, re.M)
+            return m.group(1) if m else ""
+    return ""
 
 
 def http_json(url: str) -> dict | None:
@@ -314,17 +320,21 @@ def github(pkg_desc: str) -> None:
     out.append(f"discussions: {'on' if r.get('hasDiscussionsEnabled') else 'off'}")
     pvr = run("gh", "api", f"repos/{name}/private-vulnerability-reporting")
     out.append("private vulnerability reporting: " + ("on" if '"enabled":true' in pvr.replace(" ", "") else "off/unknown"))
-    sa = json.loads(run("gh", "api", f"repos/{name}", "--jq", ".security_and_analysis // {}") or "{}")
-    if sa:
-        out += [f"{key}: {(sa.get(key) or {}).get('status', 'unknown')}"
-                for key in ("secret_scanning", "secret_scanning_push_protection", "dependabot_security_updates")]
-    else:
-        out.append("secret scanning / push protection: not reported (private repo without Advanced Security); "
-                   "free once public, turn on right after the visibility flip (security.md §7)")
+    out += security_settings(name)
     protected = run("gh", "api", f"repos/{name}/branches/{branch}", "--jq", ".protected").strip()
     rules = run("gh", "api", f"repos/{name}/rules/branches/{branch}", "--jq", "length").strip()
     out.append(f"`{branch}` protected: {protected or 'unknown'}, branch rules: {rules or '0'}")
     section("GitHub", out)
+
+
+def security_settings(name: str) -> list[str]:
+    """Secret scanning, push protection, Dependabot updates; GitHub omits them for private repos without GHAS."""
+    sa = json.loads(run("gh", "api", f"repos/{name}", "--jq", ".security_and_analysis // {}") or "{}")
+    if not sa:
+        return ["secret scanning / push protection: not reported (private repo without Advanced Security); "
+                "free once public, turn on right after the visibility flip (security.md §7)"]
+    return [f"{key}: {(sa.get(key) or {}).get('status', 'unknown')}"
+            for key in ("secret_scanning", "secret_scanning_push_protection", "dependabot_security_updates")]
 
 
 def main(argv: list[str]) -> None:
