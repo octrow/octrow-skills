@@ -40,6 +40,10 @@ A one-off scan protects today's history; the next commit can leak again. Install
 
 - `.env`, `*.pem`, `*.key`, `id_rsa*`, `credentials*.json`, local DBs, logs, caches, personal run data.
 - `.gitignore` covers them; `git ls-files` confirms none is tracked already (ignoring doesn't untrack).
+- Start from the github/gitignore template for the stack instead of a hand-written list; the API serves it:
+  `gh api gitignore/templates/Python --jq .source >> .gitignore` (`gh api gitignore/templates` lists all 160+;
+  combine several for a mixed repo, then drop duplicates and keep the project's own lines on top). Preflight
+  probes `.env`, venvs, build output and `node_modules` with `git check-ignore` and prints the command.
 - Keys live outside the repo (e.g. `~/.config/<app>/.env` with mode 600), and the docs say so.
 - Agent folders (`.claude/`, `.agents/`, `skills-lock.json`) belong to the user's setup; ask before committing them.
 

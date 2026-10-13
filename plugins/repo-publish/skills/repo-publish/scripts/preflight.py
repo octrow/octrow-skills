@@ -34,6 +34,9 @@ NOT_BRANCH = re.compile(r"golden[- ]master|master[- ](key|password|copy|data|lis
 PREVIEW = re.compile(r"(social[-_]?preview|og[-_]?image|opengraph)[^/]*\.(png|jpe?g)$", re.I)
 DEMO = re.compile(r"\.(gif|webp|mp4|webm)\b|asciinema\.org", re.I)
 VERSUS = re.compile(r"^#+ .*(alternativ|compar|\bvs\.?\b|differ|аналог|отлич|сравн)", re.I | re.M)
+PROBES_ANY = [".env", ".env.local"]
+PROBES_PY = [".venv/x", "__pycache__/x.pyc", "dist/x.whl", "x.egg-info/PKG-INFO"]
+PROBES_NODE = ["node_modules/x", ".next/x"]
 USES = re.compile(r"^\s*-?\s*uses:\s*['\"]?([\w.-]+/[\w./-]+@[\w./-]+)", re.M)  # remote actions; skips ./local, docker://
 SHA = re.compile(r"@[0-9a-f]{40}$")
 NODE_MIN = 24  # Node 20 actions stopped running on GitHub-hosted runners on 2026-09-16
@@ -80,6 +83,20 @@ def files() -> None:
     big = [f"{f} ({(ROOT / f).stat().st_size // 1024} KB)" for f in names
            if (ROOT / f).is_file() and (ROOT / f).stat().st_size > BIG_FILE]
     section(f"Tracked files over {BIG_FILE // 1_000_000} MB", big)
+
+
+def gitignore() -> None:
+    """Paths that should be ignored but aren't; the fix is a github/gitignore template for the stack."""
+    stacks = [("Python", "pyproject.toml", PROBES_PY), ("Node", "package.json", PROBES_NODE)]
+    found = [(name, probes) for name, marker, probes in stacks if (ROOT / marker).exists()]
+    probes = PROBES_ANY + [p for _, ps in found for p in ps]
+    loose = [p for p in probes
+             if subprocess.run(["git", "check-ignore", "-q", "--no-index", p], cwd=ROOT).returncode == 1]
+    out = [f"not ignored: {', '.join(loose)}"] if loose else []
+    if loose:
+        out += [f"append the template: gh api gitignore/templates/{name} --jq .source >> .gitignore"
+                for name, _ in found] or ["templates: gh api gitignore/templates (github/gitignore)"]
+    section(".gitignore", out)
 
 
 def secrets() -> None:
@@ -325,6 +342,7 @@ def main(argv: list[str]) -> None:
     REL = "" if TOP == ROOT else str(ROOT.relative_to(TOP))
     print(f"# Preflight: {ROOT}" + (f" (subfolder of {TOP})" if REL else ""))
     files()
+    gitignore()
     secrets()
     private(words)
     history()
