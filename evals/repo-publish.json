@@ -67,7 +67,8 @@
         "Report mentions GITLEAKS_LICENSE only matters for organization-owned repos",
         "Report proposes enabling secret scanning push protection, without running the gh write command",
         "No push, visibility change or GitHub settings change was made",
-        "If .github/dependabot.yml exists without `cooldown`, the report flags it and points to assets/dependabot.yml"
+        "If .github/dependabot.yml exists without `cooldown`, the report flags it and points to assets/dependabot.yml",
+        "Placeholder paths in docs (`~/work/...`, `/home/<user>/`) and files under skills/ are not reported as private paths or missing RU mirrors"
       ]
     }
   ]
