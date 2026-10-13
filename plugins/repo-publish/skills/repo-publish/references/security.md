@@ -92,6 +92,14 @@ When the project reads keys, runs subprocesses, writes files, serves HTTP or ren
 - a local web UI bound to `0.0.0.0` instead of `127.0.0.1`;
 - unescaped HTML from READMEs or API data;
 - cleanup code that deletes files still in use (e.g. log prune removing a running process's log).
+- LLM output or text from a fetched page passed to a shell, SQL or file path (treat it as user input), and prompts
+  built from untrusted content without a boundary (prompt injection);
+- server secrets in the client bundle (`NEXT_PUBLIC_*`, `VITE_*` holding a key) and secrets echoed in CI logs;
+- SSRF: a user- or LLM-supplied URL fetched from the server without an allowlist; webhooks without signature checks;
+- a new dependency with a `postinstall` script, or a name one letter off a popular package (typosquatting).
+
+The full web checklist (OWASP Top 10 2025, headers, auth, framework pitfalls) is
+github/awesome-copilot `instructions/security-and-owasp.instructions.md`; hand it to `security-review` for web apps.
 
 ## 7. GitHub settings (outward-facing: list the commands, run after a yes)
 
@@ -131,6 +139,9 @@ Workflows run with a token and often with secrets; a bad one is a supply-chain h
   every run. Most keep working, but bump to the major that declares node24
   (e.g. checkout v5+, setup-python v6+, upload-artifact v6+, download-artifact v7+, cache v5+, codeql-action v4,
   setup-uv v7+). Preflight checks each `uses:` against its `action.yml`.
+- One workflow per purpose (`ci.yml`, `security.yml`, `release.yml`, scheduled jobs), each with its own
+  permissions. A reusable workflow (`workflow_call`) or a composite action pays off once the same steps are
+  copied a second time, not before; long inline bash goes to `scripts/`.
 - `timeout-minutes` on every job (a hung job otherwise burns up to 6 h of minutes) and a `concurrency` group with
   `cancel-in-progress` on push/PR workflows, so a new push cancels the stale run. Not on release workflows.
 - Dependabot `cooldown: { default-days: 7 }`: hijacked releases are usually caught within days; zizmor flags its

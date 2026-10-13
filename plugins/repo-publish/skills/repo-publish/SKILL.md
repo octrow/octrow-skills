@@ -175,6 +175,8 @@ Drafting posts is fine; posting anything, opening PRs to awesome lists or messag
   in the README should come from a real run, test or release.
 - **Visual changes need a before/after.** Show screenshots side by side and let the user choose; save the
   user's stated taste as memory (e.g. dense tables, one value per column) so later passes respect it.
+- **Length follows the reader.** README, docs and reports cover what a stranger needs to install, trust and use
+  the project; no filler sections, repeated summaries or boilerplate a small project doesn't have.
 - **Mirrors stay in sync.** Any change to an EN prose file lands in its RU mirror in the same commit, and the
   other way round.
 - **Missing sub-skill?** Do the part inline using the reference file, and say which skill would have helped
