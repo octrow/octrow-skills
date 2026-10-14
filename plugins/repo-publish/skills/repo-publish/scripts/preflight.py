@@ -209,6 +209,21 @@ def workflows() -> None:
     section("CI workflows", out)
 
 
+def install() -> None:
+    """A Python app with a command but no one-command installer or release workflow (Phase 2)."""
+    py = ROOT / "pyproject.toml"
+    if not py.exists() or not tomllib.loads(py.read_text(encoding="utf-8")).get("project", {}).get("scripts"):
+        return  # a library or not Python: `pip install` is the install path
+    out = [f"no {f}: copy assets/{f}" for f in ("install.sh", "install.ps1") if not (ROOT / f).exists()]
+    wf = ROOT / ".github/workflows"
+    texts = {f.name: f.read_text(encoding="utf-8") for f in wf.glob("*.y*ml")} if wf.is_dir() else {}
+    if (ROOT / "install.sh").exists() and not any("install.sh" in t for t in texts.values()):
+        out.append("installers aren't run in CI on Linux/macOS/Windows: copy assets/workflows/install.yml")
+    if not any(re.search(r"gh release create|action-gh-release|gh-action-pypi-publish", t) for t in texts.values()):
+        out.append("no release workflow (wheel, binaries, GitHub release): copy assets/workflows/release.yml")
+    section("Install and release (Phase 2)", out)
+
+
 def missing_guards(ci_text: str, has_actions: bool) -> list[str]:
     """Secret scan, workflow lint and Scorecard absent from workflows + pre-commit config."""
     out = []
@@ -376,6 +391,7 @@ def main(argv: list[str]) -> None:
     readme()
     skills()
     workflows()
+    install()
     github(package())
 
 
