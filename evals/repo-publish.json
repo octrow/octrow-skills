@@ -70,6 +70,22 @@
         "If .github/dependabot.yml exists without `cooldown`, the report flags it and points to assets/dependabot.yml",
         "Placeholder paths in docs (`~/work/...`, `/home/<user>/`) and files under skills/ are not reported as private paths or missing RU mirrors"
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "сделай установку одной командой и автосборку релизов под linux/mac/windows для ~/dev/buy-smarter, ничего не пушь",
+      "expected_output": "Preflight lists the missing installers and release workflow; copies assets/install.sh, install.ps1, workflows/install.yml and workflows/release.yml with the placeholders filled from pyproject.toml, asks whether standalone binaries are needed (no by default for a plain CLI), lints the workflows, pushes and tags nothing.",
+      "files": [],
+      "assertions": [
+        "Preflight section 'Install and release (Phase 2)' lists the missing install.sh, install.ps1 and release workflow",
+        "install.sh and install.ps1 come from assets/ with OWNER/REPO, PKG and CMD replaced by the real repo, distribution name and command; no placeholder is left",
+        "The installers install the wheel from the GitHub release via `uv tool install`, not from PyPI",
+        ".github/workflows/install.yml runs both installers on ubuntu, macos and windows against the checked-out commit (INSTALL_SOURCE)",
+        ".github/workflows/release.yml checks that the tag matches the pyproject version and creates exactly one GitHub release",
+        "Report asks whether standalone binaries are needed, with a recommendation; if they're dropped, `binaries` is removed from every needs: list",
+        "Workflows pin actions to 40-hex SHAs and pass zizmor and actionlint",
+        "No push, tag or release was made"
+      ]
     }
   ]
 }
