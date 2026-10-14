@@ -8,6 +8,9 @@ Report it privately through [GitHub security advisories](https://github.com/octr
 not in a public issue. This is a one-person project: expect a reply within a few days. Fixes go into the latest
 version only.
 
+A confirmed vulnerability gets a fix within 30 days. The fix ships in a release, and a GitHub security advisory
+then discloses the issue and credits the reporter, unless they ask not to be named.
+
 ## What the skills run on your machine
 
 repo-publish is instructions for an agent plus two scripts. The agent runs commands with your permissions, so
