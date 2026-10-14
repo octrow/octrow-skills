@@ -2,7 +2,7 @@
 
 Versions of the repo-publish plugin. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.3.3] - 2026-10-15
 
 ### Fixed
 - GitHub settings commands (`references/security.md` §7) turn on Dependabot alerts before security updates;
