@@ -10,6 +10,8 @@ repo-publish is a skill for Claude Code and Claude Tag that takes a working proj
 stranger can find, trust and install. It reads the repo and its history before anything goes public, then does the
 publishing work in a safe order and hands parts to other skills when they're installed.
 
+<img src=".github/demo.gif" width="100%" alt="The preflight run on a test repo: a GitHub token in history, a tracked .env, a home path and an employer name in the code, a work email in commits, unpinned actions on Node 20, no installers.">
+
 ## Install
 
 Claude Code:
