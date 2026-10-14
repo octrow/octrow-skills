@@ -109,6 +109,9 @@ attested GitHub release). Fill the placeholders (`OWNER/REPO`, `PKG`, `CMD`, `PK
 `# PROJECT:` block; https://github.com/octrow/repo-scout has every block filled in. Ask whether the project needs
 standalone binaries: yes by default for GUI and heavy apps, no for a plain CLI (the wheel already installs in one
 command on every OS). Other stacks: no template; follow the same shape.
+Installers or a release workflow already there? Don't overwrite them: diff each against its template and list only
+what's missing (options like `--uninstall`, the CI run on three OSes, the tag-matches-version check, attestation),
+then add those pieces after a yes.
 
 Before the README tells anyone to `pipx install`, `uvx` or `npx` the package, the name has to be ours on the
 registry (preflight checks it). A name taken by someone else means those commands install their code: a confusing
