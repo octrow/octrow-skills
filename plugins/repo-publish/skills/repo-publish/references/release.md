@@ -18,6 +18,11 @@
 - A `doctor`/`config` command checks the environment and fills the config interactively, in plain words, with
   where to get each key and what it's for.
 - Error messages say what to do next, not a traceback.
+- Everything the app writes for the user (reports, logs, caches, keys, saved sessions) goes to per-user dirs
+  (`~/.config/<app>`, `~/.cache/<app>`, `~/.local/share/<app>`), never the folder it runs from: after a
+  `uv tool install` that folder is the user's home or a project of theirs. Settings read the user config `.env`
+  too, so an installed app has a place for keys. Check by running the installed command in an empty folder and
+  listing it afterwards. Tests that write files point these dirs at a tmp path.
 
 ## CI for the install path
 
