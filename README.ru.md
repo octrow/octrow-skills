@@ -38,8 +38,8 @@ preview, защиту ветки, secret scanning и приватные сооб
 
 1. Безопасность и история: секреты из истории сначала ротируются, приватные материалы уходят через экспорт со
    свежей историей, а репо получает проверки в pre-commit и CI, чтобы оставаться чистым.
-2. Установка: одна команда на установку и одна на запуск, установщики проверяются в CI на Linux, macOS и Windows.
-   Имя пакета проверяется до того, как README предложит кому-то `pipx install`.
+2. Установка: одна команда на установку и одна на запуск, установщики проверяются в CI на Linux, macOS и Windows,
+   а релизы собираются под все три (wheel и, по желанию, standalone-бинарники). Имя пакета проверяется до того, как README предложит кому-то `pipx install`.
 3. README и документация: структура через `github-repo`, визуал через `beautify-github-readme`, простой язык через
    `humanizer`, зеркала EN/RU синхронизированы.
 4. GUI, если он есть: скриншоты до и после, затем обновлённые скриншоты в README.
@@ -52,7 +52,8 @@ preview, защиту ветки, secret scanning и приватные сооб
 
 Исправления лежат готовыми файлами в [`assets/`](plugins/repo-publish/skills/repo-publish/assets): конфиг
 pre-commit (gitleaks, zizmor, actionlint), workflow безопасности (gitleaks по всей истории), OpenSSF Scorecard,
-релиз в PyPI через trusted publishing с подписью сборок и Dependabot с cooldown. Экшены закреплены по SHA коммитов,
+установщики `install.sh`/`install.ps1` с проверкой в CI на трёх ОС, workflow релиза (wheel, бинарники под
+Linux/macOS/Windows, PyPI через trusted publishing, подпись сборок) и Dependabot с cooldown. Экшены закреплены по SHA коммитов,
 каждый файл проходит zizmor и actionlint.
 
 ## Установка

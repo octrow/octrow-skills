@@ -37,8 +37,8 @@ through the phases you pick, in this order:
 
 1. Security and history: secrets in history get rotated first, private material gets a fresh-history export,
    and the repo gets pre-commit and CI scanning so it stays clean.
-2. Install: one command to install and one to run, with the installers tested in CI on Linux, macOS and Windows.
-   The package name is checked before the README tells anyone to `pipx install` it.
+2. Install: one command to install and one to run, with the installers tested in CI on Linux, macOS and Windows,
+   and releases built for all three (wheel, optional standalone binaries). The package name is checked before the README tells anyone to `pipx install` it.
 3. README and docs: structure via `github-repo`, visuals via `beautify-github-readme`, plain language via
    `humanizer`, EN/RU mirrors kept in sync.
 4. GUI, if there is one: before/after screenshots, then refreshed README shots.
@@ -50,8 +50,9 @@ through the phases you pick, in this order:
 Anything other people can see (push, tag, release, visibility, GitHub settings, posts) waits for your yes.
 
 The fixes come as ready files in [`assets/`](plugins/repo-publish/skills/repo-publish/assets): a pre-commit config
-(gitleaks, zizmor, actionlint), a security workflow (gitleaks over the whole history), OpenSSF Scorecard, a PyPI
-release with trusted publishing and build provenance, and Dependabot with a cooldown. Actions are pinned to commit
+(gitleaks, zizmor, actionlint), a security workflow (gitleaks over the whole history), OpenSSF Scorecard,
+`install.sh`/`install.ps1` installers with a CI check on three OSes, a release workflow (wheel, binaries for
+Linux/macOS/Windows, PyPI via trusted publishing, build provenance), and Dependabot with a cooldown. Actions are pinned to commit
 SHAs, and every file passes zizmor and actionlint.
 
 ## Install
