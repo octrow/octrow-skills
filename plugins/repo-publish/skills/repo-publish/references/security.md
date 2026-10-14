@@ -110,6 +110,7 @@ gh repo edit OWNER/REPO --enable-wiki=false --enable-projects=false
 gh api -X PATCH repos/OWNER/REPO \
   -f 'security_and_analysis[secret_scanning][status]=enabled' \
   -f 'security_and_analysis[secret_scanning_push_protection][status]=enabled'
+gh api -X PUT repos/OWNER/REPO/vulnerability-alerts                # Dependabot alerts; the next call 422s without them
 gh api -X PUT repos/OWNER/REPO/automated-security-fixes            # Dependabot security updates
 ```
 
