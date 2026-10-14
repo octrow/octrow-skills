@@ -71,7 +71,7 @@ Then ask only what the repo can't tell you, in the user's language, with a recom
   never flip it without an explicit yes.
 - **Languages**: which is primary on GitHub (usually EN for reach) and which mirrors exist (e.g. RU).
 - **Parts**: show the phase list below with what the preflight found and let the user pick. Default: all
-  phases that have findings.
+  phases that have findings, except Phase 8 (launch posts and articles), which runs only when the user asks for it.
 
 ## Phase 1: security and history hygiene
 
@@ -180,7 +180,10 @@ release). Going to PyPI: set up trusted publishing first, so no API token is eve
 for the release workflow to go green before announcing. Check the built artifacts' size (sdist excludes) and that the
 README's install commands point at the new release.
 
-## Phase 8: launch (advice and drafts; the user posts)
+## Phase 8: launch (opt-in; advice and drafts, the user posts)
+
+Off by default: no channel plan, post or article drafts (Reddit, Habr, Product Hunt, Medium, dev.to, HN, etc.)
+unless the user asks for a launch or for posts. Otherwise end with one line offering it.
 
 Stars come from people seeing the project, not from files: a day-old repo with a perfect README still has zero.
 Read `references/launch.md`: a readiness gate (install works on a clean machine, a 10–20 s demo GIF, README answers

@@ -45,7 +45,7 @@ through the phases you pick, in this order:
 5. Community files and CI: SECURITY, CONTRIBUTING, issue forms and the workflow templates below.
 6. Discoverability: description, topics, social preview, the README's first 200 words.
 7. Release: version, changelog, tag, and trusted publishing to PyPI.
-8. Launch: a readiness check and drafts per channel; you post them.
+8. Launch, only on request: a readiness check and drafts per channel; you post them.
 
 Anything other people can see (push, tag, release, visibility, GitHub settings, posts) waits for your yes.
 

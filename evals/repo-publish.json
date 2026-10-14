@@ -22,7 +22,7 @@
     {
       "id": 2,
       "prompt": "make repo-scout look more professional and get it more organic stars, what's missing?",
-      "expected_output": "Read-only audit of the already-public repo: flags missing CHANGELOG, no homepage, default social preview (with 1280x640 upload instruction), CODE_OF_CONDUCT RU mirror; no star-buying advice; launch plan as advice only.",
+      "expected_output": "Read-only audit of the already-public repo: flags missing CHANGELOG, no homepage, default social preview (with 1280x640 upload instruction), CODE_OF_CONDUCT RU mirror; no star-buying advice; no launch post drafts (launch is opt-in), at most a one-line offer.",
       "files": [],
       "assertions": [
         "Report flags the missing CHANGELOG",
@@ -30,7 +30,7 @@
         "Report flags the missing homepage URL",
         "Report gives concrete description/topics suggestions",
         "Report does not recommend buying stars, star exchanges or fake accounts",
-        "Launch channels (HN/Reddit/awesome lists) are advice only, nothing posted",
+        "No launch post or article drafts (HN/Reddit/Habr/etc.) since the user did not ask for a launch; nothing posted",
         "No gh write commands were run (repo metadata unchanged)",
         "Report is in Russian with a prioritized list and a recommendation",
         "Report flags that the PyPI name repo-scout is taken by another project",

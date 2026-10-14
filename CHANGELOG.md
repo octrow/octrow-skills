@@ -2,6 +2,12 @@
 
 Versions of the repo-publish plugin. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+- Launch (Phase 8) is opt-in: no channel plan or post/article drafts (Reddit, Habr, Product Hunt, Medium, dev.to)
+  unless the user asks for them.
+
 ## [0.3.1] - 2026-10-14
 
 ### Added
