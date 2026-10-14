@@ -70,7 +70,7 @@ $Bin = Join-Path (uv tool dir --bin) "$Cmd.exe"
 
 # PROJECT: first run. Logins, model downloads, a `doctor` that says what is missing in plain words, an optional
 # `config` for API keys (ask once with Read-Host when $Interactive, skip when a key is already saved).
-# & $Bin doctor; if ($LASTEXITCODE -ne 0) { Write-Host "!! Fix the items marked above, then run: $Cmd doctor" -ForegroundColor Yellow }
+# Don't fail the install on them: check $LASTEXITCODE after `& $Bin doctor` and print what to fix.
 
 Say "$Cmd is installed. To start it, run: $Cmd"
 Note "Command not found? Open a new terminal or run: $Bin"

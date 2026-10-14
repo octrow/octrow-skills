@@ -81,7 +81,7 @@ BIN="$(uv tool dir --bin)/$CMD"
 
 # PROJECT: first run. Logins, model downloads, a `doctor` that says what is missing in plain words, an optional
 # `config` for API keys (ask once, skip when a key is already saved). Read answers with `</dev/tty`.
-# "$BIN" doctor || warn "Fix the items marked above, then check again: $CMD doctor"
+# Don't fail the install on them: `"$BIN" doctor || warn "..."` keeps the app installed and says what to fix.
 
 say "$CMD is installed. To start it, run: $CMD"
 note "Command not found? Open a new terminal or run: $BIN"
