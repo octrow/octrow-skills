@@ -2,6 +2,20 @@
 
 Versions of the repo-publish plugin. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.0] - 2026-10-14
+
+### Added
+- `assets/install.sh` and `assets/install.ps1`: one-command installers for Python + uv apps (wheel from the latest
+  GitHub release; `--version`, `--main`, `--uninstall`), with marked spots for project-specific first-run steps.
+- `assets/workflows/install.yml`: runs both installers on Linux, macOS and Windows against the current commit.
+- Preflight reports a Python app with a command but no installer or release workflow.
+- Phase 3 asks before running `beautify-github-readme` on `README.md` and `README.ru.md`.
+
+### Changed
+- `assets/workflows/release-pypi.yml` is now `assets/workflows/release.yml`: tests and a tag-matches-version check,
+  then wheel, sdist and optional PyInstaller binaries (Linux x86_64/arm64, macOS arm64, Windows), optional PyPI and
+  one GitHub release with every file attested.
+
 ## [0.2.7] - 2026-10-14
 
 ### Fixed
