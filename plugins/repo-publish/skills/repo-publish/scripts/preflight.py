@@ -36,7 +36,7 @@ NOT_BRANCH = re.compile(r"golden[- ]master|master[- ](key|password|copy|data|lis
                         r"\"master\"|`master` mention|replace `master`", re.I)  # last three: code and advice about it
 PREVIEW = re.compile(r"(social[-_]?preview|og[-_]?image|opengraph)[^/]*\.(png|jpe?g)$", re.I)
 DEMO = re.compile(r"\.(gif|webp|mp4|webm)\b|asciinema\.org", re.I)
-VERSUS = re.compile(r"^#+ .*(alternativ|compar|\bvs\.?\b|differ|аналог|отлич|сравн)", re.I | re.M)
+VERSUS = re.compile(r"^#+ .*(alternativ|compar|\bvs\.?\b|differ|why not|аналог|отлич|сравн|почему не)", re.I | re.M)
 PROBES_ANY = [".env", ".env.local"]
 PROBES_PY = [".venv/x", "__pycache__/x.pyc", "dist/x.whl", "x.egg-info/PKG-INFO"]
 PROBES_NODE = ["node_modules/x", ".next/x"]
@@ -209,12 +209,38 @@ def workflows() -> None:
     section("CI workflows", out)
 
 
+def unpublished_deps(meta: dict) -> list[str]:
+    """Dependencies taken from git/path/url via [tool.uv.sources]; a built wheel resolves them from PyPI by name."""
+    sources = meta.get("tool", {}).get("uv", {}).get("sources", {})
+    deps = {re.split(r"[\[<>=!~ ;]", d, maxsplit=1)[0].lower().replace("_", "-"): d
+            for d in meta.get("project", {}).get("dependencies", [])}
+    out = []
+    for name, src in sources.items():
+        kind = next((k for k in ("git", "path", "url", "workspace") if isinstance(src, dict) and k in src), None)
+        spec = deps.get(name.lower().replace("_", "-"))
+        if not kind or not spec:
+            continue
+        info = http_json(f"https://pypi.org/pypi/{name}/json")
+        if info is None:
+            out.append(f"`{name}` comes from {kind}; couldn't check PyPI (offline?)")
+        elif not info:
+            out.append(f"`{name}` comes from {kind} and isn't on PyPI: a wheel of this project won't install. "
+                       "Publish it first")
+        else:
+            latest = info["info"]["version"]
+            floor = "" if re.search(r">=|==|~=", spec) else f"; require it: `{name}>={latest}`"
+            out.append(f"`{name}` comes from {kind} here, but a wheel installs PyPI's {latest}: check that release "
+                       f"has everything this code uses (install the built wheel with `uv tool install`){floor}")
+    return out
+
+
 def install() -> None:
     """A Python app with a command but no one-command installer or release workflow (Phase 2)."""
     py = ROOT / "pyproject.toml"
-    if not py.exists() or not tomllib.loads(py.read_text(encoding="utf-8")).get("project", {}).get("scripts"):
+    meta = tomllib.loads(py.read_text(encoding="utf-8")) if py.exists() else {}
+    if not meta.get("project", {}).get("scripts"):
         return  # a library or not Python: `pip install` is the install path
-    out = [f"no {f}: copy assets/{f}" for f in ("install.sh", "install.ps1") if not (ROOT / f).exists()]
+    out = unpublished_deps(meta) + [f"no {f}: copy assets/{f}" for f in ("install.sh", "install.ps1") if not (ROOT / f).exists()]
     wf = ROOT / ".github/workflows"
     texts = {f.name: f.read_text(encoding="utf-8") for f in wf.glob("*.y*ml")} if wf.is_dir() else {}
     if (ROOT / "install.sh").exists() and not any("install.sh" in t for t in texts.values()):

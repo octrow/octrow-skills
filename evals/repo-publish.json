@@ -78,6 +78,7 @@
       "files": [],
       "assertions": [
         "Preflight section 'Install and release (Phase 2)' lists the missing install.sh, install.ps1 and release workflow",
+        "Preflight lists market-sources and claude-subprocess as git-sourced dependencies that a wheel installs from PyPI instead, and the built wheel is installed with `uv tool install` to check it runs",
         "install.sh and install.ps1 come from assets/ with OWNER/REPO, PKG and CMD replaced by the real repo, distribution name and command; no placeholder is left",
         "The installers install the wheel from the GitHub release via `uv tool install`, not from PyPI",
         ".github/workflows/install.yml runs both installers on ubuntu, macos and windows against the checked-out commit (INSTALL_SOURCE)",

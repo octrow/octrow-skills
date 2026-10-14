@@ -2,6 +2,16 @@
 
 Versions of the repo-publish plugin. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+- Preflight lists dependencies taken from git, path or url in `[tool.uv.sources]`: a built wheel installs them from
+  PyPI by name, so it reports a name missing from PyPI and the PyPI version the wheel would get, and suggests a
+  minimum version when the dependency has none.
+
+### Fixed
+- A README heading "Why not …" / "Почему не …" counts as the alternatives section.
+
 ## [0.3.0] - 2026-10-14
 
 ### Added
