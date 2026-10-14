@@ -2,12 +2,15 @@
 
 Versions of the repo-publish plugin. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.3.1] - 2026-10-14
 
 ### Added
 - Preflight lists dependencies taken from git, path or url in `[tool.uv.sources]`: a built wheel installs them from
   PyPI by name, so it reports a name missing from PyPI and the PyPI version the wheel would get, and suggests a
   minimum version when the dependency has none.
+
+### Changed
+- First run: files the app writes for the user go to per-user dirs, never the folder it runs from.
 
 ### Fixed
 - `release.yml` no longer fails in a private personal repo: build provenance is skipped until the repo is public
