@@ -7,8 +7,10 @@
 - Also show the "review first" variant (download, read, run) for people who don't pipe to a shell.
 - The installer: checks prerequisites and says how to get each one, installs into the user's space (no sudo),
   prints the exact command to start and the full path if PATH isn't updated yet.
-- Python tools: `uv tool install` or `pipx install` from the release; a standalone binary per OS for people
-  without Python.
+- Python tools: `uv tool install` of the wheel attached to the GitHub release (works with or without PyPI, and
+  with a package name someone else holds there); a standalone binary per OS for GUI and heavy apps.
+- Templates: `assets/install.sh`, `assets/install.ps1` (Python + uv; filled-in example: octrow/repo-scout).
+  Options go in as flags for `sh -s --` and as environment variables for `irm | iex`, which can't pass arguments.
 
 ## First run
 
@@ -19,8 +21,9 @@
 
 ## CI for the install path
 
-- Run the installers on `ubuntu-latest`, `macos-latest`, `windows-latest` (install workflow), then run the
-  installed command once (`--version` or `doctor`).
+- Run the installers on `ubuntu-latest`, `macos-latest`, `windows-latest` (`assets/workflows/install.yml`), then run
+  the installed command once (`--help` or `doctor`). `INSTALL_SOURCE` points the installer at the checked-out commit,
+  so CI tests the change instead of the last release.
 - Windows pitfalls seen in practice: legacy console code pages crash on non-ASCII output (reconfigure stdout to
   UTF-8 with `errors="replace"`), PATH not refreshed in the same session.
 
@@ -36,7 +39,12 @@
 
 ## Publishing without tokens, with provenance
 
-`assets/workflows/release-pypi.yml` is the Python shape: tag `vX.Y.Z` → build once → attest → PyPI + GitHub release.
+`assets/workflows/release.yml` is the Python shape: tag `vX.Y.Z` → tests and a tag-matches-version check → wheel,
+sdist and optional binaries → PyPI (optional) + GitHub release with every file attested. A push to `main` that
+changes the workflow runs it as a build-only dry run. Binaries: PyInstaller on `ubuntu-22.04` (old glibc, wide reach),
+`ubuntu-22.04-arm`, `macos-latest` (arm64) and `windows-latest`, each smoke-tested with `--help`; Intel Macs use the
+wheel. Dependencies with data files or native libraries need `--collect-all <pkg>`. Other stacks have no template:
+keep the same shape (build once, attest, one release).
 
 - **Trusted publishing (OIDC)**: PyPI trusts this repo's workflow directly, so there's no `PYPI_API_TOKEN` to leak
   or rotate. One-time setup on PyPI → project → Publishing (a "pending publisher" for a name not yet on PyPI):

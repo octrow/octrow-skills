@@ -1,0 +1,94 @@
+#!/bin/sh
+# Copy to <repo>/install.sh, fill the four values below, then adapt or delete the `# PROJECT:` blocks.
+# Worked example with every PROJECT block filled: https://github.com/octrow/repo-scout/blob/main/install.sh
+#
+# CMD installer for macOS / Linux.
+#   curl -LsSf https://raw.githubusercontent.com/OWNER/REPO/main/install.sh | sh
+#   ... | sh -s -- --version 0.1.0   # a specific release instead of the latest one
+#   ... | sh -s -- --main            # current main branch instead of a release
+#   ... | sh -s -- --no-launch       # install only, do not offer to start it
+#   ... | sh -s -- --uninstall       # remove the app, keep its data
+# Re-running it updates. INSTALL_SOURCE=<path or uv spec> installs from there instead (CI, local testing).
+set -eu
+
+REPO="OWNER/REPO"
+NAME="PKG"      # distribution name from pyproject.toml [project] name
+CMD="CMD"       # the command from [project.scripts]
+PYTHON="3.12"   # pinned so binary wheels of the dependencies exist; bump when they ship for newer Pythons
+VERSION=""
+MAIN=0
+LAUNCH=1
+UNINSTALL=0
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --version) [ $# -ge 2 ] || { echo "Add a version number: --version 0.1.0" >&2; exit 2; }
+               VERSION="${2#v}"; shift ;;
+    --main) MAIN=1 ;;
+    --no-launch) LAUNCH=0 ;;
+    --uninstall) UNINSTALL=1 ;;
+    -h|--help) echo "options: --version X.Y.Z | --main | --no-launch | --uninstall"; exit 0 ;;
+    *) echo "Unknown option: $1. See: --help" >&2; exit 2 ;;
+  esac
+  shift
+done
+
+say() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
+note() { printf '    %s\n' "$*"; }
+warn() { printf '\033[1;33m!!\033[0m %s\n' "$*" >&2; }
+die() { printf '\033[1;31mxx\033[0m %s\n' "$*" >&2; exit 1; }
+have() { command -v "$1" >/dev/null 2>&1; }
+# curl | sh takes stdin from the pipe, so interactive steps read the terminal directly
+has_tty() { (: </dev/tty) 2>/dev/null; }
+
+export PATH="$HOME/.local/bin:$PATH"
+
+if [ "$UNINSTALL" = 1 ]; then
+  if have uv; then uv tool uninstall "$NAME" || true; fi
+  say "$CMD is removed."
+  exit 0
+fi
+
+# 1. uv: installs Python and the app into an isolated environment, no system Python or sudo needed
+if ! have uv; then
+  say "Installing uv (it installs Python and $CMD)"
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  have uv || die "uv is installed, but this terminal does not see it. Open a new terminal and run this command again."
+fi
+
+# PROJECT: other tools the app calls (repo-scout installs `gh` here through brew/apt/dnf/pacman/zypper).
+# Install what you can, otherwise say where to get it and carry on; don't stop the whole install for it.
+
+# 2. the app: the release wheel built and tested by CI, or the main branch
+if [ -n "${INSTALL_SOURCE:-}" ]; then
+  SPEC="$INSTALL_SOURCE"
+elif [ "$MAIN" = 1 ]; then
+  SPEC="$NAME @ https://github.com/$REPO/archive/refs/heads/main.tar.gz"
+else
+  if [ -z "$VERSION" ]; then
+    # /releases/latest redirects to /releases/tag/vX.Y.Z; with no release yet it lands on /releases
+    URL="$(curl -fsSLo /dev/null -w '%{url_effective}' "https://github.com/$REPO/releases/latest")" \
+      || die "GitHub is not reachable. Check your internet connection and run this command again."
+    case "$URL" in */tag/v*) VERSION="${URL##*/tag/v}" ;; *) die "No release yet. Run this command again with --main." ;; esac
+  fi
+  WHEEL="$(printf %s "$NAME" | tr '-' '_')-$VERSION-py3-none-any.whl"
+  SPEC="$NAME @ https://github.com/$REPO/releases/download/v$VERSION/$WHEEL"
+fi
+say "Installing $CMD${VERSION:+ $VERSION}"
+uv tool install --reinstall --python "$PYTHON" "$SPEC"
+uv tool update-shell >/dev/null 2>&1 || true
+BIN="$(uv tool dir --bin)/$CMD"
+
+# PROJECT: first run. Logins, model downloads, a `doctor` that says what is missing in plain words, an optional
+# `config` for API keys (ask once, skip when a key is already saved). Read answers with `</dev/tty`.
+# "$BIN" doctor || warn "Fix the items marked above, then check again: $CMD doctor"
+
+say "$CMD is installed. To start it, run: $CMD"
+note "Command not found? Open a new terminal or run: $BIN"
+
+# PROJECT: offer to start it (GUI apps); delete for a plain CLI.
+if [ "$LAUNCH" = 1 ] && has_tty; then
+  printf 'Start %s now? [Y/n] ' "$CMD"
+  read -r answer </dev/tty || answer=n
+  case "$answer" in [nN]*) ;; *) exec "$BIN" ;; esac
+fi

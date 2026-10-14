@@ -55,6 +55,7 @@ private paths and names in files and history, author emails, monorepo subfolder 
 project-escaping README links, SKILL.md frontmatter that agents can't load, workflows without `permissions:`,
 actions still on Node 20 (deprecated; runners force them onto Node 24 with a warning), tag-pinned third-party actions, no secret scan
 in CI or pre-commit, no Scorecard,
+a Python app with a command but no installer or release workflow,
 whether the package name is free on PyPI/npm, and GitHub metadata (description vs package description, topics,
 social preview, empty release notes, branch protection, private vulnerability reporting, secret scanning and push
 protection).
@@ -100,6 +101,15 @@ possible, and a `doctor`/`config` step that tells the user what is missing in pl
 on Linux, macOS and Windows; installers break on the platform nobody ran locally (legacy code pages on Windows,
 missing PATH entries).
 
+Python + uv apps start from the templates rather than from scratch: `assets/install.sh` and `assets/install.ps1`
+(uv, then the wheel from the latest GitHub release; `--version`, `--main`, `--uninstall`), `assets/workflows/install.yml`
+(runs both installers on three OSes against the current commit) and `assets/workflows/release.yml` (tag → tests →
+wheel, sdist, optional PyInstaller binaries for Linux x86_64/arm64, macOS arm64 and Windows → optional PyPI → one
+attested GitHub release). Fill the placeholders (`OWNER/REPO`, `PKG`, `CMD`, `PKG_DIR`), then adapt or delete each
+`# PROJECT:` block; https://github.com/octrow/repo-scout has every block filled in. Ask whether the project needs
+standalone binaries: yes by default for GUI and heavy apps, no for a plain CLI (the wheel already installs in one
+command on every OS). Other stacks: no template; follow the same shape.
+
 Before the README tells anyone to `pipx install`, `uvx` or `npx` the package, the name has to be ours on the
 registry (preflight checks it). A name taken by someone else means those commands install their code: a confusing
 first run and a supply-chain risk. Rename the distribution (the command can keep its name) or install from the
@@ -110,9 +120,10 @@ GitHub release only, and say so in the README.
 1. **Structure and facts**: `github-repo` skill (audit + README recipe). Keep every fact from the old README;
    check every relative link.
 2. **Visual story**: `beautify-github-readme` skill (hero, proof image, badges). Use real output from the project
-   (a real run, real numbers) rather than invented claims. It asks README-mode vs asset-only and pure SVG vs
-   hybrid; pass the answers you already have (whole README, pure SVG unless the user wants otherwise) so it
-   doesn't stall.
+   (a real run, real numbers) rather than invented claims. Ask the user first whether to run it on `README.md` and
+   its mirror `README.ru.md` (recommend yes for a repo going public); on a yes, run it on both so the mirror gets the
+   same hero and assets. It asks README-mode vs asset-only and pure SVG vs hybrid; pass the answers you already
+   have (whole README, pure SVG unless the user wants otherwise) so it doesn't stall.
    Its last step offers an attribution line and a showcase PR to its author's repo: both are optional and
    outward-facing, so they wait for the user's yes like any other post. Not installed:
    `npx skills add oil-oil/beautify-github-readme -g` (MIT; kept as a separate skill so it stays current).
@@ -161,8 +172,8 @@ star chart, and stars vanish when GitHub removes the accounts.
 
 ## Phase 7: release
 
-Python package going to PyPI: set up trusted publishing with `assets/workflows/release-pypi.yml` first, so no
-API token is ever stored (`references/release.md`, "Publishing without tokens"). Then bump the version, update CHANGELOG/release notes from `git log <last-tag>..HEAD`, tag, push the tag, and wait
+Python package: start from `assets/workflows/release.yml` (one workflow for wheel, binaries, PyPI and the GitHub
+release). Going to PyPI: set up trusted publishing first, so no API token is ever stored (`references/release.md`, "Publishing without tokens"). Then bump the version, update CHANGELOG/release notes from `git log <last-tag>..HEAD`, tag, push the tag, and wait
 for the release workflow to go green before announcing. Check the built artifacts' size (sdist excludes) and that the
 README's install commands point at the new release.
 
