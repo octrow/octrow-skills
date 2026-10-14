@@ -4,6 +4,8 @@
 
 <p align="center"><b>English</b> | <a href="README.ru.md">Русский</a></p>
 
+<p align="center"><a href="https://scorecard.dev/viewer/?uri=github.com/octrow/octrow-skills"><img src="https://api.scorecard.dev/projects/github.com/octrow/octrow-skills/badge" alt="OpenSSF Scorecard"></a></p>
+
 repo-publish is a skill for Claude Code and Claude Tag that takes a working project to a public GitHub repo a
 stranger can find, trust and install. It reads the repo and its history before anything goes public, then does the
 publishing work in a safe order and hands parts to other skills when they're installed.

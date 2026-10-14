@@ -4,6 +4,8 @@
 
 <p align="center"><a href="README.md">English</a> | <b>Русский</b></p>
 
+<p align="center"><a href="https://scorecard.dev/viewer/?uri=github.com/octrow/octrow-skills"><img src="https://api.scorecard.dev/projects/github.com/octrow/octrow-skills/badge" alt="OpenSSF Scorecard"></a></p>
+
 repo-publish — скилл для Claude Code и Claude Tag. Он доводит рабочий проект до публичного репозитория на GitHub,
 который незнакомый человек найдёт, которому поверит и который сможет установить. Прежде чем что-то станет
 публичным, скилл читает репозиторий и его историю, потом выполняет работу по публикации в безопасном порядке и
