@@ -10,6 +10,8 @@ Versions of the repo-publish plugin. Format: [Keep a Changelog](https://keepacha
   minimum version when the dependency has none.
 
 ### Fixed
+- `release.yml` no longer fails in a private personal repo: build provenance is skipped until the repo is public
+  (GitHub stores attestations only for public repos there).
 - A README heading "Why not …" / "Почему не …" counts as the alternatives section.
 
 ## [0.3.0] - 2026-10-14

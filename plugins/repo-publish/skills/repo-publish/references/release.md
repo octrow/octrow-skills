@@ -51,7 +51,8 @@ keep the same shape (build once, attest, one release).
   owner, repo, workflow file name, environment `pypi`. npm has the same (`npm publish --provenance` with
   `id-token: write`, plus a trusted publisher on npmjs.com).
 - **Build provenance**: `actions/attest-build-provenance` signs which commit and workflow built each file;
-  users check with `gh attestation verify dist/<file> -R OWNER/REPO`. PyPI also gets PEP 740 attestations from
+  users check with `gh attestation verify dist/<file> -R OWNER/REPO`. Attestations need a public repo (a private personal repo
+  gets "Feature not available"); the template skips the step while the repo is private. PyPI also gets PEP 740 attestations from
   the publish action. Say so in SECURITY.md, it's what a careful installer looks for.
 - Build in one job, publish in others that only download the artifact; the publish job gets `id-token: write`
   and nothing else, behind the `pypi` environment (add required reviewers there for a manual gate).
