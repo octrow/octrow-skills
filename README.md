@@ -25,6 +25,10 @@ npx skills add octrow/octrow-skills --skill repo-publish -g
 
 From a local clone: `claude plugin marketplace add ./octrow-skills`.
 
+The same marketplace has [repo-scout](https://github.com/octrow/repo-scout), a skill that finds GitHub repos to
+build on before you write your own: `claude plugin install repo-scout@octrow-skills`. It drives the repo-scout CLI,
+so install that first (one command, see its README).
+
 Claude Tag: an admin registers this repository under Organization settings → Plugins & skills → Sync from GitHub,
 then adds the plugin to a bundle.
 
@@ -92,7 +96,8 @@ them, filled in for a real Python app.
 
 ## Repository layout
 
-This repo is a plugin marketplace; repo-publish is its first plugin.
+This repo is a plugin marketplace. repo-publish lives here; repo-scout lives in its own repo, and the marketplace
+entry points there.
 
 ```
 .claude-plugin/marketplace.json     list of plugins

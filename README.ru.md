@@ -26,6 +26,10 @@ npx skills add octrow/octrow-skills --skill repo-publish -g
 
 Из локального клона: `claude plugin marketplace add ./octrow-skills`.
 
+В том же маркетплейсе есть [repo-scout](https://github.com/octrow/repo-scout), скилл, который ищет на GitHub
+готовые репозитории, прежде чем писать своё: `claude plugin install repo-scout@octrow-skills`. Он работает через
+CLI repo-scout, поэтому сначала поставьте его (одна команда, см. его README).
+
 Claude Tag: администратор подключает этот репозиторий в Organization settings → Plugins & skills → Sync from GitHub
 и добавляет плагин в bundle.
 
@@ -93,7 +97,8 @@ Linux/macOS/Windows, PyPI через trusted publishing, подпись сбор
 
 ## Структура репозитория
 
-Этот репозиторий — маркетплейс плагинов, repo-publish в нём первый.
+Этот репозиторий — маркетплейс плагинов. repo-publish лежит здесь, repo-scout — в своём репозитории, на него
+ссылается запись маркетплейса.
 
 ```
 .claude-plugin/marketplace.json     список плагинов

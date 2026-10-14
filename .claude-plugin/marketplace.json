@@ -1,12 +1,25 @@
 {
   "name": "octrow-skills",
   "description": "Agent skills by octrow for Claude Code and Claude Tag",
-  "owner": { "name": "Daniil Petrov" },
+  "owner": {
+    "name": "Daniil Petrov"
+  },
   "plugins": [
     {
       "name": "repo-publish",
       "source": "./plugins/repo-publish",
       "description": "Prepare a repository for publication: security, README, EN/RU, SEO, screenshots, CI, release, launch."
+    },
+    {
+      "name": "repo-scout",
+      "source": {
+        "source": "github",
+        "repo": "octrow/repo-scout"
+      },
+      "skills": [
+        "./skill"
+      ],
+      "description": "Find GitHub repos to build on before writing your own: search, triage, verdicts. Needs the repo-scout CLI."
     }
   ]
 }
