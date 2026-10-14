@@ -10,6 +10,7 @@ Versions of the repo-publish plugin. Format: [Keep a Changelog](https://keepacha
 - `assets/workflows/install.yml`: runs both installers on Linux, macOS and Windows against the current commit.
 - Preflight reports a Python app with a command but no installer or release workflow.
 - Phase 3 asks before running `beautify-github-readme` on `README.md` and `README.ru.md`.
+- Existing installers and release workflows are diffed against the templates; only the missing pieces are proposed.
 
 ### Changed
 - `assets/workflows/release-pypi.yml` is now `assets/workflows/release.yml`: tests and a tag-matches-version check,
