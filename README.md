@@ -8,6 +8,29 @@ repo-publish is a skill for Claude Code and Claude Tag that takes a working proj
 stranger can find, trust and install. It reads the repo and its history before anything goes public, then does the
 publishing work in a safe order and hands parts to other skills when they're installed.
 
+## Install
+
+Claude Code:
+
+```bash
+claude plugin marketplace add octrow/octrow-skills
+claude plugin install repo-publish@octrow-skills
+```
+
+Other agents (Codex, Cursor, Gemini CLI and more) via [skills](https://github.com/vercel-labs/skills):
+
+```bash
+npx skills add octrow/octrow-skills --skill repo-publish -g
+```
+
+From a local clone: `claude plugin marketplace add ./octrow-skills`.
+
+Claude Tag: an admin registers this repository under Organization settings → Plugins & skills → Sync from GitHub,
+then adds the plugin to a bundle.
+
+Then ask in a project: "prepare this repo for publishing", "what's missing before I open-source this?", or just one
+part: "add a Russian README", "refresh the screenshots".
+
 ## What the preflight finds
 
 The first step changes nothing: it reads the repo, its history and its GitHub settings. An excerpt from a run on a
@@ -53,24 +76,8 @@ The fixes come as ready files in [`assets/`](plugins/repo-publish/skills/repo-pu
 (gitleaks, zizmor, actionlint), a security workflow (gitleaks over the whole history), OpenSSF Scorecard,
 `install.sh`/`install.ps1` installers with a CI check on three OSes, a release workflow (wheel, binaries for
 Linux/macOS/Windows, PyPI via trusted publishing, build provenance), and Dependabot with a cooldown. Actions are pinned to commit
-SHAs, and every file passes zizmor and actionlint.
-
-## Install
-
-Claude Code:
-
-```bash
-claude plugin marketplace add octrow/octrow-skills
-claude plugin install repo-publish@octrow-skills
-```
-
-From a local clone: `claude plugin marketplace add ./octrow-skills`.
-
-Claude Tag: an admin registers this repository under Organization settings → Plugins & skills → Sync from GitHub,
-then adds the plugin to a bundle.
-
-Then ask in a project: "prepare this repo for publishing", "what's missing before I open-source this?", or just one
-part: "add a Russian README", "refresh the screenshots".
+SHAs, and every file passes zizmor and actionlint. [repo-scout](https://github.com/octrow/repo-scout) uses all of
+them, filled in for a real Python app.
 
 ## How it differs from similar skills
 

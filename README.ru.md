@@ -9,6 +9,29 @@ repo-publish — скилл для Claude Code и Claude Tag. Он доводи�
 публичным, скилл читает репозиторий и его историю, потом выполняет работу по публикации в безопасном порядке и
 передаёт части другим скиллам, если они установлены.
 
+## Установка
+
+Claude Code:
+
+```bash
+claude plugin marketplace add octrow/octrow-skills
+claude plugin install repo-publish@octrow-skills
+```
+
+Другие агенты (Codex, Cursor, Gemini CLI и другие) через [skills](https://github.com/vercel-labs/skills):
+
+```bash
+npx skills add octrow/octrow-skills --skill repo-publish -g
+```
+
+Из локального клона: `claude plugin marketplace add ./octrow-skills`.
+
+Claude Tag: администратор подключает этот репозиторий в Organization settings → Plugins & skills → Sync from GitHub
+и добавляет плагин в bundle.
+
+Потом в проекте можно попросить: «подготовь репо к публикации», «чего не хватает, чтобы открыть исходники?» или
+только одну часть: «добавь README на русском», «обнови скриншоты».
+
 ## Что находит preflight
 
 Первый шаг ничего не меняет: он читает репозиторий, его историю и настройки на GitHub. Фрагмент запуска на
@@ -54,24 +77,8 @@ preview, защиту ветки, secret scanning и приватные сооб
 pre-commit (gitleaks, zizmor, actionlint), workflow безопасности (gitleaks по всей истории), OpenSSF Scorecard,
 установщики `install.sh`/`install.ps1` с проверкой в CI на трёх ОС, workflow релиза (wheel, бинарники под
 Linux/macOS/Windows, PyPI через trusted publishing, подпись сборок) и Dependabot с cooldown. Экшены закреплены по SHA коммитов,
-каждый файл проходит zizmor и actionlint.
-
-## Установка
-
-Claude Code:
-
-```bash
-claude plugin marketplace add octrow/octrow-skills
-claude plugin install repo-publish@octrow-skills
-```
-
-Из локального клона: `claude plugin marketplace add ./octrow-skills`.
-
-Claude Tag: администратор подключает этот репозиторий в Organization settings → Plugins & skills → Sync from GitHub
-и добавляет плагин в bundle.
-
-Потом в проекте можно попросить: «подготовь репо к публикации», «чего не хватает, чтобы открыть исходники?» или
-только одну часть: «добавь README на русском», «обнови скриншоты».
+каждый файл проходит zizmor и actionlint. [repo-scout](https://github.com/octrow/repo-scout) использует их все,
+заполненными под настоящее Python-приложение.
 
 ## Чем отличается от похожих скиллов
 
