@@ -26,8 +26,8 @@ Found one:
 A one-off scan protects today's history; the next commit can leak again. Install both layers from `assets/`:
 
 - **Pre-commit** (stops a leak before it's a commit): copy `assets/pre-commit-config.yaml` to
-  `.pre-commit-config.yaml`, then `pre-commit install`. It runs gitleaks on staged changes plus zizmor and
-  actionlint on workflows. Revs go stale; `pre-commit autoupdate` refreshes them.
+  `.pre-commit-config.yaml`, then `pre-commit install`. It runs gitleaks on staged changes, zizmor and
+  actionlint on workflows, and refuses files over 1 MB, merge markers and case-clashing names. Revs go stale; `pre-commit autoupdate` refreshes them.
 - **CI** (catches what skipped the hook, `--no-verify` or a web edit): `assets/workflows/security.yml` runs
   `gitleaks-action@v3` over the whole history (`fetch-depth: 0`) on push, PR and weekly. `@v2` targets Node 20, which
   runners now force onto Node 24 with a warning. Personal repos need no license; an organization repo needs the free

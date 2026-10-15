@@ -51,6 +51,7 @@ HTTP_TIMEOUT = 8
 ROOT = Path(".")
 TOP = Path(".")
 REL = ""  # project path inside the repo; "" at the root
+VIS = ""  # public / private / internal; "local" without `origin`, "unknown" without `gh`
 
 
 def run(*cmd: str, cwd: Path | None = None) -> str:
@@ -204,6 +205,9 @@ def workflows() -> None:
     if unpinned:
         out.append(f"third-party actions pinned by tag, not SHA: {', '.join(unpinned)} (zizmor flags these)")
     out += runtimes(refs)
+    if VIS in ("private", "internal", "local") and re.search(r"macos|windows", text_all):
+        out.append("macOS/Windows runners burn a private repo's free Actions minutes several times faster than "
+                   "Linux; until public, run the 3-OS jobs on tags or `workflow_dispatch`, not every push")
     hooks = ROOT / ".pre-commit-config.yaml"
     out += missing_guards(text_all + (hooks.read_text(encoding="utf-8") if hooks.exists() else ""), bool(refs))
     section("CI workflows", out)
@@ -262,7 +266,8 @@ def missing_guards(ci_text: str, has_actions: bool) -> list[str]:
     if bot.exists() and "cooldown" not in bot.read_text(encoding="utf-8"):
         out.append("dependabot.yml: no `cooldown` (wait ~7 days before proposing a release; assets/dependabot.yml)")
     if "ossf/scorecard-action" not in ci_text:
-        out.append("no OpenSSF Scorecard (assets/workflows/scorecard.yml; public repos)")
+        out.append("no OpenSSF Scorecard (assets/workflows/scorecard.yml)" if VIS == "public" else
+                   "OpenSSF Scorecard: add assets/workflows/scorecard.yml with the visibility flip (public repos only)")
     return out
 
 
@@ -348,7 +353,17 @@ def red_bot_prs(name: str) -> list[str]:
     return [f"Dependabot PRs with failing checks: {', '.join(red)} (fix, close, or `ignore` the majors)"] if red else []
 
 
+def visibility() -> str:
+    if not run("git", "remote", "get-url", "origin").strip():
+        return "local"
+    return run("gh", "repo", "view", "--json", "visibility", "--jq", ".visibility").strip().lower() or "unknown"
+
+
 def github(pkg_desc: str) -> None:
+    if VIS == "local":
+        section("GitHub", ["local repo, no `origin`: GitHub checks run once it exists "
+                           "(`gh repo create NAME --private --source .` creates and links it; ask first)"])
+        return
     raw = run("gh", "repo", "view", "--json",
               "nameWithOwner,description,repositoryTopics,homepageUrl,visibility,usesCustomOpenGraphImage,"
               "defaultBranchRef,hasWikiEnabled,hasProjectsEnabled,hasDiscussionsEnabled,latestRelease,licenseInfo")
@@ -367,17 +382,22 @@ def github(pkg_desc: str) -> None:
     out.append(f"topics ({len(topics)}): {', '.join(topics) or 'NONE'}" + (" — add more" if len(topics) < TOPICS_MIN else ""))
     out.append(f"homepage: {r.get('homepageUrl') or 'not set'}")
     ready = [f for f in tracked() if PREVIEW.search(f)]
-    out.append("social preview: custom" if r["usesCustomOpenGraphImage"] else
-               "social preview: GitHub default; " + (f"upload {ready[0]} (Settings → General)" if ready
-                                                    else "make a 1280×640 PNG and upload it"))
+    if r["visibility"] == "PUBLIC":
+        out.append("social preview: custom" if r["usesCustomOpenGraphImage"] else
+                   "social preview: GitHub default; " + (f"upload {ready[0]} (Settings → General)" if ready
+                                                        else "make a 1280×640 PNG and upload it"))
+    else:
+        out.append("not public: social preview, discussions and private vulnerability reporting are checked "
+                   "after the visibility flip")
     out.append(f"license: {(r.get('licenseInfo') or {}).get('name', 'NONE')}")
     out.append(f"latest release: {(r.get('latestRelease') or {}).get('tagName', 'none')}")
     out += releases(name)
     out += red_bot_prs(name)
     out += [f"{k} enabled (turn off if unused)" for k in ("hasWikiEnabled", "hasProjectsEnabled") if r.get(k)]
-    out.append(f"discussions: {'on' if r.get('hasDiscussionsEnabled') else 'off'}")
-    pvr = run("gh", "api", f"repos/{name}/private-vulnerability-reporting")
-    out.append("private vulnerability reporting: " + ("on" if '"enabled":true' in pvr.replace(" ", "") else "off/unknown"))
+    if r["visibility"] == "PUBLIC":
+        out.append(f"discussions: {'on' if r.get('hasDiscussionsEnabled') else 'off'}")
+        pvr = run("gh", "api", f"repos/{name}/private-vulnerability-reporting")
+        out.append("private vulnerability reporting: " + ("on" if '"enabled":true' in pvr.replace(" ", "") else "off/unknown"))
     out += security_settings(name)
     protected = run("gh", "api", f"repos/{name}/branches/{branch}", "--jq", ".protected").strip()
     rules = run("gh", "api", f"repos/{name}/rules/branches/{branch}", "--jq", "length").strip()
@@ -396,7 +416,7 @@ def security_settings(name: str) -> list[str]:
 
 
 def main(argv: list[str]) -> None:
-    global ROOT, TOP, REL
+    global ROOT, TOP, REL, VIS
     words = []
     if "--private" in argv:
         i = argv.index("--private")
@@ -408,7 +428,8 @@ def main(argv: list[str]) -> None:
         sys.exit(f"{ROOT} is not in a git repo")
     TOP = Path(top)
     REL = "" if TOP == ROOT else str(ROOT.relative_to(TOP))
-    print(f"# Preflight: {ROOT}" + (f" (subfolder of {TOP})" if REL else ""))
+    VIS = visibility()
+    print(f"# Preflight: {ROOT}" + (f" (subfolder of {TOP})" if REL else "") + f", repo: {VIS}")
     files()
     gitignore()
     secrets()

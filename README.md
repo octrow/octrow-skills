@@ -80,8 +80,12 @@ through the phases you pick, in this order:
 
 Anything other people can see (push, tag, release, visibility, GitHub settings, posts) waits for your yes.
 
+A private or local-only repo gets the same run: everything that lives in files is done now, and the settings that
+only work once public (Scorecard, social preview, private vulnerability reporting, push protection) end up in a
+checklist of `gh` commands for the day you flip it.
+
 The fixes come as ready files in [`assets/`](plugins/repo-publish/skills/repo-publish/assets): a pre-commit config
-(gitleaks, zizmor, actionlint), a security workflow (gitleaks over the whole history), OpenSSF Scorecard,
+(gitleaks, zizmor, actionlint, large-file and merge-marker checks), a security workflow (gitleaks over the whole history), OpenSSF Scorecard,
 `install.sh`/`install.ps1` installers with a CI check on three OSes, a release workflow (wheel, binaries for
 Linux/macOS/Windows, PyPI via trusted publishing, build provenance), and Dependabot with a cooldown. Actions are pinned to commit
 SHAs, and every file passes zizmor and actionlint. [repo-scout](https://github.com/octrow/repo-scout) uses all of

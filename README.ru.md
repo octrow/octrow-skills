@@ -81,8 +81,12 @@ preview, защиту ветки, secret scanning и приватные сооб
 
 Всё, что видят другие (push, тег, релиз, видимость, настройки GitHub, посты), ждёт вашего «да».
 
+Приватный или только локальный репозиторий проходит тот же путь: всё, что живёт в файлах, делается сразу, а
+настройки, которые работают только у публичного репо (Scorecard, social preview, приватные сообщения об уязвимостях,
+push protection), собираются в список команд `gh` на день, когда вы его откроете.
+
 Исправления лежат готовыми файлами в [`assets/`](plugins/repo-publish/skills/repo-publish/assets): конфиг
-pre-commit (gitleaks, zizmor, actionlint), workflow безопасности (gitleaks по всей истории), OpenSSF Scorecard,
+pre-commit (gitleaks, zizmor, actionlint, проверка больших файлов и маркеров конфликтов), workflow безопасности (gitleaks по всей истории), OpenSSF Scorecard,
 установщики `install.sh`/`install.ps1` с проверкой в CI на трёх ОС, workflow релиза (wheel, бинарники под
 Linux/macOS/Windows, PyPI через trusted publishing, подпись сборок) и Dependabot с cooldown. Экшены закреплены по SHA коммитов,
 каждый файл проходит zizmor и actionlint. [repo-scout](https://github.com/octrow/repo-scout) использует их все,

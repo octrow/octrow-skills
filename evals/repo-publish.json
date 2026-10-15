@@ -87,6 +87,20 @@
         "Workflows pin actions to 40-hex SHAs and pass zizmor and actionlint",
         "No push, tag or release was made"
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "подготовь ~/projects/notes-sync по максимуму, но он пока только локальный, на github не выкладывай",
+      "expected_output": "Preflight header says `repo: local`; the skill does every file-level phase in the working tree (security, install, README with mirror, community files, pre-commit and workflows), tests the installers via INSTALL_SOURCE, and ends with a flip checklist instead of creating the GitHub repo or pushing.",
+      "files": [],
+      "assertions": [
+        "Preflight header reports `repo: local` and the GitHub section says the checks run once the repo exists",
+        "Scorecard, social preview and private vulnerability reporting are marked deferred until public, not as gaps",
+        ".pre-commit-config.yaml is copied from assets and `pre-commit run --all-files` passes",
+        "README, its RU mirror and community files are written in the working tree",
+        "The report ends with a flip checklist of exact `gh` commands, visibility change first",
+        "No GitHub repo was created and nothing was pushed"
+      ]
     }
   ]
 }

@@ -4,7 +4,8 @@ description: >
   Get a repo ready for strangers to find, trust and install: use whenever the user wants to "облагородить
   репозиторий", "подготовить к публикации", make a project public or open-source it, make it "look like a real
   open source project", asks what's missing because the repo has few or no stars, or is about to release or
-  announce it (Show HN, Reddit, Habr, awesome lists). Runs a read-only preflight (secrets and private paths in
+  announce it (Show HN, Reddit, Habr, awesome lists). Also for a private or local-only repo the user wants
+  prepared as far as it goes before (or without) going public. Runs a read-only preflight (secrets and private paths in
   history, code provenance, package name, broken links and skills, GitHub metadata), then orchestrates
   github-repo, beautify-github-readme, humanizer, impeccable and security-review for README, EN/RU docs,
   SEO (description, topics, social preview), screenshots, community files, CI, install and release.
@@ -40,6 +41,27 @@ may be made in the working tree and listed; anything visible to others waits for
 
 Then Phase 1 is damage control, not prevention: a leaked secret is rotated now, private material in history is a
 judgement call with the user (rewriting a public repo's history breaks forks). The rest applies as is.
+
+## Private or local repo?
+
+"Prepare it as far as it goes" for a private or local-only repo is a full run, not a lighter one: everything that
+lives in files gets done now, so going public later is a settings change, not a project. The preflight header names
+the mode (`repo: local` = no `origin`, `private`, `public`) and holds back the checks that only apply once public.
+
+- **Do in full:** Phase 1 (cheapest now: history that never left the machine can be rewritten without breaking
+  anyone's clone; a secret that left it still gets rotated), Phase 2, Phase 3 with its mirror, Phase 4, the Phase 5
+  files (community files, `.pre-commit-config.yaml`, `dependabot.yml`, `security.yml`, `install.yml`, `release.yml`),
+  CHANGELOG, and the description and keywords in `pyproject.toml`/`package.json` so About and topics can copy them.
+- **Adapt:** the installers download from GitHub releases, which need auth while the repo is private; test them with
+  `INSTALL_SOURCE=<local wheel>` and keep the README's one-line install as is. macOS and Windows runners use a
+  private repo's free minutes several times faster than Linux, so run 3-OS jobs on tags or `workflow_dispatch`
+  until public. `release.yml` already skips attestations while private.
+- **Local only:** all of the above in the working tree. Creating the GitHub repo
+  (`gh repo create NAME --private --source .`) and pushing are outward-facing: ask first.
+- **Deferred until the flip** (scorecard status "deferred", not "gaps"): `scorecard.yml`, social preview upload,
+  private vulnerability reporting, secret scanning and push protection, Discussions, branch protection (GitHub Free
+  protects branches only on public repos), Phase 6 beyond the text, Phase 8. End the run with these as a flip
+  checklist: the exact `gh` commands in order (`references/security.md` §7), visibility change first, each after a yes.
 
 ## Phase 0: scope (one short exchange)
 
@@ -81,7 +103,8 @@ keep heavy data out of the package. Renaming the default branch to `main` change
 existing clones' tracking, so propose it and do it after a yes. Delegate a code-level review to
 `security-review` (or the `code-reviewer` agent) when the project handles keys, user input, subprocesses or files.
 
-Then keep it clean: `assets/pre-commit-config.yaml` (gitleaks, zizmor, actionlint) and
+Then keep it clean: `assets/pre-commit-config.yaml` (gitleaks, zizmor, actionlint, plus checks for large files,
+merge markers, case clashes and broken YAML/TOML; no auto-fixers, so the first run doesn't rewrite the repo) and
 `assets/workflows/security.yml` (gitleaks over the whole history in CI), push protection after the visibility flip
 (`references/security.md`, "Keep scanning after launch").
 
@@ -225,5 +248,5 @@ Next step: <recommendation>
 
 (Labels translated to the user's language, e.g. Было → стало / Проверено / Не сделано / Следующий шаг.)
 
-At the start (after preflight), give a scorecard: one row per phase, status (ok / gaps / not applicable), and the
+At the start (after preflight), give a scorecard: one row per phase, status (ok / gaps / deferred until public / not applicable), and the
 top finding for each.
