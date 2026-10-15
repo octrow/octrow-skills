@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "подготовь ~/dev/pylibs/nicegui-kit к публикации на GitHub: README, лицензия, EN/RU, SEO. пока ничего не коммить",
+      "prompt": "подготовь ~/projects/nicegui-kit к публикации на GitHub: README, лицензия, EN/RU, SEO. пока ничего не коммить",
       "expected_output": "Runs preflight, gives a phase scorecard, asks scope/audience/visibility in Russian with recommendations, proposes README + LICENSE + RU mirror + description/topics; edits nothing before scope is chosen; no commits.",
       "files": [],
       "assertions": [
@@ -73,7 +73,7 @@
     },
     {
       "id": 5,
-      "prompt": "сделай установку одной командой и автосборку релизов под linux/mac/windows для ~/dev/buy-smarter, ничего не пушь",
+      "prompt": "сделай установку одной командой и автосборку релизов под linux/mac/windows для ~/projects/buy-smarter, ничего не пушь",
       "expected_output": "Preflight lists the missing installers and release workflow; copies assets/install.sh, install.ps1, workflows/install.yml and workflows/release.yml with the placeholders filled from pyproject.toml, asks whether standalone binaries are needed (no by default for a plain CLI), lints the workflows, pushes and tags nothing.",
       "files": [],
       "assertions": [
