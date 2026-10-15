@@ -2,6 +2,16 @@
 
 Versions of the repo-publish plugin. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0] - 2026-10-15
+
+### Added
+- Private and local-only repos get a full run: the preflight names the mode (`local`, `private`, `public`), holds back
+  checks that only apply once public (Scorecard, social preview, Discussions, private vulnerability reporting), and
+  warns when macOS/Windows jobs eat a private repo's free Actions minutes. The skill ends such a run with a flip
+  checklist of `gh` commands.
+- `assets/pre-commit-config.yaml` adds `pre-commit-hooks` checks: files over 1 MB, merge markers, case-clashing
+  names, broken YAML/TOML. No auto-fixers, so the first run on an old repo doesn't rewrite it.
+
 ## [0.3.3] - 2026-10-15
 
 ### Fixed
