@@ -1,6 +1,13 @@
 # Changelog
 
-Versions of the repo-publish plugin. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+## [0.5.0] - 2026-10-16
+
+### Changed
+- The plugin is renamed `repo-publish` → `repo-ready`, to hold more scenarios than publishing (deploy readiness
+  next). The skill keeps its name: `/repo-ready:repo-publish`. Reinstall with
+  `claude plugin install repo-ready@octrow-skills` and remove the old `repo-publish` plugin. No behavior change.
 
 ## [0.4.0] - 2026-10-15
 

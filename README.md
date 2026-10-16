@@ -18,7 +18,7 @@ Claude Code:
 
 ```bash
 claude plugin marketplace add octrow/octrow-skills
-claude plugin install repo-publish@octrow-skills
+claude plugin install repo-ready@octrow-skills
 ```
 
 Other agents (Codex, Cursor, Gemini CLI and more) via [skills](https://github.com/vercel-labs/skills):
@@ -84,7 +84,7 @@ A private or local-only repo gets the same run: everything that lives in files i
 only work once public (Scorecard, social preview, private vulnerability reporting, push protection) end up in a
 checklist of `gh` commands for the day you flip it.
 
-The fixes come as ready files in [`assets/`](plugins/repo-publish/skills/repo-publish/assets): a pre-commit config
+The fixes come as ready files in [`assets/`](plugins/repo-ready/skills/repo-publish/assets): a pre-commit config
 (gitleaks, zizmor, actionlint, large-file and merge-marker checks), a security workflow (gitleaks over the whole history), OpenSSF Scorecard,
 `install.sh`/`install.ps1` installers with a CI check on three OSes, a release workflow (wheel, binaries for
 Linux/macOS/Windows, PyPI via trusted publishing, build provenance), and Dependabot with a cooldown. Actions are pinned to commit

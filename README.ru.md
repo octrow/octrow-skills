@@ -19,7 +19,7 @@ Claude Code:
 
 ```bash
 claude plugin marketplace add octrow/octrow-skills
-claude plugin install repo-publish@octrow-skills
+claude plugin install repo-ready@octrow-skills
 ```
 
 Другие агенты (Codex, Cursor, Gemini CLI и другие) через [skills](https://github.com/vercel-labs/skills):
@@ -85,7 +85,7 @@ preview, защиту ветки, secret scanning и приватные сооб
 настройки, которые работают только у публичного репо (Scorecard, social preview, приватные сообщения об уязвимостях,
 push protection), собираются в список команд `gh` на день, когда вы его откроете.
 
-Исправления лежат готовыми файлами в [`assets/`](plugins/repo-publish/skills/repo-publish/assets): конфиг
+Исправления лежат готовыми файлами в [`assets/`](plugins/repo-ready/skills/repo-publish/assets): конфиг
 pre-commit (gitleaks, zizmor, actionlint, проверка больших файлов и маркеров конфликтов), workflow безопасности (gitleaks по всей истории), OpenSSF Scorecard,
 установщики `install.sh`/`install.ps1` с проверкой в CI на трёх ОС, workflow релиза (wheel, бинарники под
 Linux/macOS/Windows, PyPI через trusted publishing, подпись сборок) и Dependabot с cooldown. Экшены закреплены по SHA коммитов,

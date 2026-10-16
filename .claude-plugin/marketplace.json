@@ -6,8 +6,8 @@
   },
   "plugins": [
     {
-      "name": "repo-publish",
-      "source": "./plugins/repo-publish",
+      "name": "repo-ready",
+      "source": "./plugins/repo-ready",
       "description": "Prepare a repository for publication: security, README, EN/RU, SEO, screenshots, CI, release, launch."
     },
     {
