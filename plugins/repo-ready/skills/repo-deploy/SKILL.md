@@ -25,8 +25,10 @@ The report groups failed and broken Checks by severity, each with a `fix:` path 
 (`engine/procedures/<topic>.md#<section>` or `engine/assets/...`). **error** blocks every outward-facing step
 (pushing an image, a release, a deploy) until fixed; a broken error-level Check blocks the same way. **warning**
 must be fixed or exempted before the part is done; **info** is advice. Judgement questions are Checks you answer
-by reading the code; count each as passed or failed at its severity, with one line of evidence. A Check that
-doesn't fit gets an exemption in `.repo-ready.yml` (`exempt:` then `  check_id: reason`), after the user agrees.
+by reading the code; count each as passed or failed at its severity. In the answer, list every one by id: passed or
+failed, and one line of evidence with the file it comes from ("migrations_outside_entrypoint: passed, `alembic
+upgrade head` runs as the one-shot `migrate` service, docker-compose.yml"). "All confirmed" is not an answer. A
+Check that doesn't fit gets an exemption in `.repo-ready.yml` (`exempt:` then `  check_id: reason`), after the user agrees.
 Skipped Checks name the fact they need: no `helm_chart`, no Helm part.
 
 Then ask only what the code can't tell, with a recommendation each: where it runs (a VPS with Compose, Kubernetes,

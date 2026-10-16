@@ -2,6 +2,17 @@
 
 Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.10.1] - 2026-10-17
+
+### Added
+- Evals `evals/repo-deploy.json` and `evals/repo-code-health.json`: one case that changes a project and one
+  read-only assessment for each skill.
+
+### Changed
+- repo-deploy lists every judgement answer by id with a line of evidence and its file.
+- repo-code-health answers "what first?" in the order of its parts (format before refactoring), and says when it
+  used ruff's unsafe fixes.
+
 ## [0.10.0] - 2026-10-17
 
 ### Added

@@ -36,13 +36,17 @@ Formatting first keeps later diffs readable; dead code goes before complexity so
 should be deleted.
 
 1. **Lint and format** (`#ruff-format`, `#ruff-lint`): the format run in a commit of its own, listed in
-   `.git-blame-ignore-revs`; then `ruff check --fix`, the rest by hand.
+   `.git-blame-ignore-revs`; then `ruff check --fix`, the rest by hand. `--unsafe-fixes` only after reading what
+   each one changes, and say so in the report.
 2. **Dead code** (`#dead-code`): delete what nothing uses after searching for the name as a string too; dynamic
    uses go to a vulture whitelist.
 3. **Complexity** (`#cyclomatic-complexity`, `#cognitive-complexity`): one function per commit, tests first if it
    has none, behaviour unchanged.
 4. **CI wiring** (`#ci-wiring`, `#type-checker`): ruff and the tests in a workflow and pre-commit, then a type
    checker with its defaults.
+
+Asked "what first?", answer in this order too: severity says how much a part matters, the order says when to do
+it. The worst complexity finding comes after the format commit, not before it.
 
 Each part ends with its tools run again and the tests green. Done when the preflight shows the part's Checks
 passed or exempted with a reason.

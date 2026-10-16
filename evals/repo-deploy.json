@@ -1,0 +1,36 @@
+{
+  "skill_name": "repo-deploy",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "подготовь ~/projects/orders-api к деплою на VPS через docker compose: dockerfile и compose. образ никуда не пушь и не коммить",
+      "expected_output": "Runs `preflight.py --scenario deploy`, gives a per-part scorecard, and keeps to the parts named (Dockerfile, health endpoints, Compose). Rewrites the Dockerfile as a multi-stage build with a numeric non-root USER, bases pinned by digest, a .dockerignore and a HEALTHCHECK; adds /health and /ready; binds the database port to 127.0.0.1. Builds the image and brings the stack up healthy under its own project name, then tears it down. Nothing is pushed or committed.",
+      "files": [],
+      "assertions": [
+        "The preflight was run with `--scenario deploy` before any file was edited",
+        "The Dockerfile has a build stage and a runtime stage, and the final stage runs as a numeric non-root USER",
+        "FROM lines are pinned by @sha256 digest, or the report says why one couldn't be",
+        "A .dockerignore exists and excludes .git and .env",
+        "The app has a /health endpoint without dependencies and a /ready endpoint that checks the database",
+        "docker-compose.yml no longer publishes the database port on all interfaces (127.0.0.1 or no ports)",
+        "The image was actually built and the stack brought up with `--wait` (or the report says Docker was unavailable), under its own COMPOSE_PROJECT_NAME, and ended with `down -v`",
+        "No image was pushed and no commit was made (git log unchanged)",
+        "The Helm and image-publishing parts are not done; the report lists them as next steps or not requested"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "готов ли ~/projects/buy-smarter к проду в kubernetes? просто оцени, ничего не меняй",
+      "expected_output": "Read-only: runs the deploy preflight, gives a scorecard per part (Dockerfile, health, Compose, image publishing, Helm and kind, observability) with the top finding each, answers the judgement questions with one line of evidence from the code, and recommends a next step. No file changes.",
+      "files": [],
+      "assertions": [
+        "The preflight was run with `--scenario deploy`",
+        "The answer has a scorecard with one row per part and a status (ok / gaps / not applicable)",
+        "Each judgement question (migrations outside the entrypoint, health endpoints, and the others in the report) gets an answer with evidence from a named file",
+        "Findings the preflight reports are not contradicted or inflated: no gaps are invented beyond the report and the judgement answers",
+        "No files were changed in the repo (git status clean, git log unchanged)",
+        "The answer is in Russian and ends with a recommended next step"
+      ]
+    }
+  ]
+}

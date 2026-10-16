@@ -1,0 +1,35 @@
+{
+  "skill_name": "repo-code-health",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "почисти код в ~/projects/pricing: линтер, форматирование и мёртвый код. сложные функции пока не трогай, коммитить не надо",
+      "expected_output": "Runs `preflight.py --scenario code-health`, gives a scorecard, then does only lint+format and dead code: ruff fixes the unused imports, the format run tidies the files, the unreachable code after return and the unused variable are removed, and the tests still pass. `tier` and `final_price` keep their structure. Nothing is committed; the report lists complexity and CI wiring as next steps.",
+      "files": [],
+      "assertions": [
+        "The preflight was run with `--scenario code-health` before any file was edited",
+        "`ruff check` and `ruff format --check` pass on the project afterwards",
+        "The unused imports, the unreachable `print` after `return` and the unused variable are gone",
+        "The tests pass after the changes (pytest was run)",
+        "`tier` and `final_price` keep their branching structure: complexity was left alone as asked",
+        "No commit was made (git log unchanged)",
+        "The report gives before → after counts per tool and lists complexity and CI wiring as next steps"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "насколько здоровый код в ~/projects/repo-scout? что исправить в первую очередь? пока только оценка",
+      "expected_output": "Read-only: runs the code-health preflight, gives a scorecard per part (lint and format, dead code, complexity, CI wiring) with the top finding each, and recommends an order with a reason (format first in its own commit, then the worst complex functions only where tests cover them). No file changes.",
+      "files": [],
+      "assertions": [
+        "The preflight was run with `--scenario code-health`",
+        "The answer has a scorecard with one row per part and the top finding for each",
+        "The worst complex functions are named with their file and score from the report",
+        "The recommended order puts formatting (in its own commit) before refactoring, and ties refactoring to test coverage",
+        "Dead-code hits are presented as candidates to verify, not as certain deletions",
+        "No files were changed in the repo (git status clean, git log unchanged)",
+        "The answer is in Russian"
+      ]
+    }
+  ]
+}
