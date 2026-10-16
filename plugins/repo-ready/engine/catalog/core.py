@@ -14,7 +14,8 @@ COMMUNITY = ["README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CODE_OF_
              ".github/ISSUE_TEMPLATE", ".github/pull_request_template.md", ".github/dependabot.yml",
              ".github/workflows"]
 SECRET_FILES = re.compile(r"(^|/)(\.env(\.[^/]*)?|id_rsa[^/]*|[^/]*\.pem|[^/]*\.key|credentials[^/]*\.json)$")
-MONO_LANG = re.compile(r"(^|/)(skills|plugins)/|(^|/)CHANGELOG\.md$")  # agent material, release notes: EN only
+# agent material (skills, plugins, the CONTEXT.md glossary) and release notes: EN only
+MONO_LANG = re.compile(r"(^|/)(skills|plugins)/|(^|/)(CHANGELOG|CONTEXT|CONTEXT-MAP)\.md$")
 SAFE_ENV = re.compile(r"\.env\.(example|sample|template)$")
 # ponytail: a few well-known token shapes, used only when gitleaks isn't installed
 TOKENS = r"(ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{40,}|sk-[A-Za-z0-9_-]{32,}|AKIA[0-9A-Z]{16}|xox[bp]-[A-Za-z0-9-]{20,})"
