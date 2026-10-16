@@ -1,6 +1,7 @@
 """Registry rules and an end-to-end preflight run on a throwaway repo. Run: python3 -m unittest discover tests"""
 import contextlib
 import io
+import re
 import shutil
 import subprocess
 import sys
@@ -73,6 +74,11 @@ class RegistryRules(unittest.TestCase):
         outcome = registry._run(c)
         self.assertEqual(outcome.state, "broken")
         self.assertIn("KeyError", outcome.lines[0])
+
+    def test_projects_folder_is_a_placeholder_not_a_private_path(self):
+        self.assertIsNone(re.search(catalog.core.PRIVATE_PATHS, "cd ~/projects/demo-app"))
+        for leak in ("~/work" + "/acme-billing", "/home" + "/kim/", "/Users" + "/Ann/"):  # split: not a hit here
+            self.assertIsNotNone(re.search(catalog.core.PRIVATE_PATHS, leak), leak)
 
     def test_missing_binary_reads_as_no_output(self):
         self.assertEqual(registry.run("no-such-binary-xyz"), "")

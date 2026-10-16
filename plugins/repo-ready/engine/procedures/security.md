@@ -53,7 +53,8 @@ A one-off scan protects today's history; the next commit can leak again. Install
   history say it came from a work project ("extracted from", a company path, a work email), ask the user whether
   they may publish it before doing anything public. Don't guess, don't "clean it up" to hide the origin.
 - **Private names and paths**: `/home/<user>/`, `~/work/...`, `C:\Users\...`, employer, client and internal project
-  names (`preflight.py --private name1,name2`). Replace them in files with neutral wording. Comments naming sibling
+  names (`preflight.py --private name1,name2`). Replace them in files with neutral wording; `~/projects/<name>` is
+  the placeholder for example paths and isn't reported. Comments naming sibling
   pet projects are harmless; the user decides.
 - **Author emails** in history are published with it. A work email there is a reason for a fresh export
   (or `git filter-repo --mailmap`).

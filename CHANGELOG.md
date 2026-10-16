@@ -2,6 +2,12 @@
 
 Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+- `private_paths_in_files` and `private_paths_in_history` treat `~/projects/<name>` as the placeholder for example
+  paths, so evals and docs that use it aren't reported.
+
 ## [0.10.1] - 2026-10-17
 
 ### Added

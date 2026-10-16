@@ -20,8 +20,9 @@ MONO_LANG = re.compile(r"(^|/)(skills|plugins)/|(^|/)(CHANGELOG|CONTEXT|CONTEXT-
 SAFE_ENV = re.compile(r"\.env\.(example|sample|template)$")
 # ponytail: a few well-known token shapes, used only when gitleaks isn't installed
 TOKENS = r"(ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{40,}|sk-[A-Za-z0-9_-]{32,}|AKIA[0-9A-Z]{16}|xox[bp]-[A-Za-z0-9-]{20,})"
-# `~/work/...` and `/home/<user>/` placeholders in docs don't match
-PRIVATE_PATHS = r"(/home/[a-z][a-z0-9_-]+/|/Users/[A-Za-z][^/ ]+/|C:\\\\Users\\\\|~/(dev|work|src|projects)/[A-Za-z0-9_.-]*[A-Za-z0-9])"
+# `~/work/...`, `/home/<user>/` and `~/projects/<name>` (the placeholder for example paths)
+# don't match
+PRIVATE_PATHS = r"(/home/[a-z][a-z0-9_-]+/|/Users/[A-Za-z][^/ ]+/|C:\\\\Users\\\\|~/(dev|work|src)/[A-Za-z0-9_.-]*[A-Za-z0-9])"
 INTERNAL = re.compile(r"(^|/)(prompts?/|\.claude/|\.agents/|\.cursor/|scratch[^/]*|HANDOFF[^/]*|continue-[^/]*\.md|"
                       r"PLAN(\.[a-z]{2})?\.md|TODO[^/]*\.md|notes?/)", re.I)
 EMPTY_NOTES = re.compile(r"^\s*(\*\*Full Changelog\*\*:?\s*\S+)?\s*$")
