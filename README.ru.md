@@ -105,6 +105,15 @@ Linux/macOS/Windows, PyPI через trusted publishing, подпись сбор
 каждый файл проходит zizmor и actionlint. [repo-scout](https://github.com/octrow/repo-scout) использует их все,
 заполненными под настоящее Python-приложение.
 
+## Готовность к деплою: repo-deploy
+
+В том же плагине есть второй скилл, `/repo-ready:repo-deploy`: он готовит сервис к запуску в контейнерах.
+Его preflight (`--scenario deploy`) проверяет Dockerfile (multi-stage, числовой пользователь не root, базовые образы
+по digest, `.dockerignore`), Compose (порты базы и очереди только на 127.0.0.1), workflow образа (provenance, SBOM,
+аттестация, сканирование, без кэша слоёв) и Helm-чарт (Pod Security `restricted`, пробы, `helm test`, smoke-тест в
+kind в CI). Рецепты взяты из того, как [buy-smarter](https://github.com/octrow/buy-smarter) прошёл путь от CLI до
+чарта, и этот репо проходит все проверки. Через npx ставится как `--skill repo-deploy`.
+
 ## Чем отличается от похожих скиллов
 
 - [github-repo](https://github.com/jdevalk/skills) проверяет и пишет README, файлы для сообщества, шаблоны и

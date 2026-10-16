@@ -104,6 +104,15 @@ Linux/macOS/Windows, PyPI via trusted publishing, build provenance), and Dependa
 SHAs, and every file passes zizmor and actionlint. [repo-scout](https://github.com/octrow/repo-scout) uses all of
 them, filled in for a real Python app.
 
+## Deploy readiness: repo-deploy
+
+The same plugin has a second skill, `/repo-ready:repo-deploy`, for getting a service ready to run as containers.
+Its preflight (`--scenario deploy`) checks the Dockerfile (multi-stage, a numeric non-root user, base images by
+digest, `.dockerignore`), Compose (database and queue ports bound to 127.0.0.1), the image workflow (provenance,
+SBOM, attestation, a scan, no layer cache), and a Helm chart (Pod Security `restricted`, probes, `helm test`, a kind
+smoke test in CI). The procedures come from taking [buy-smarter](https://github.com/octrow/buy-smarter) from a CLI
+to a chart, and that repo passes every check. Install it with npx as `--skill repo-deploy`.
+
 ## How it differs from similar skills
 
 - [github-repo](https://github.com/jdevalk/skills) audits and writes the README, community health files,

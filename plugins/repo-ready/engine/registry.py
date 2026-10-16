@@ -26,9 +26,16 @@ FACTS = {
     "public": "GitHub visibility is public",
     "local": "no `origin` remote",
     "subfolder": "the project is a subfolder of a bigger git repo",
+    "dockerfile": "a tracked Dockerfile",
+    "compose": "a tracked docker-compose.yml / compose.yaml",
+    "helm_chart": "a tracked Helm Chart.yaml",
+    "metrics": "dependencies include OpenTelemetry or a Prometheus client",
 }
+# stack markers shared by facts and packs: Dockerfile, Dockerfile.prod, api.Dockerfile, not *.dockerignore
+DOCKERFILE = re.compile(r"(^|/)([Dd]ockerfile([.-][\w.-]+)?|[^/]+\.Dockerfile)$(?<!\.dockerignore)")
+COMPOSE = re.compile(r"(^|/)(docker-)?compose(\.[\w-]+)?\.ya?ml$")
 SEVERITIES = ("error", "warning", "info")
-SCENARIOS = {"publish"}
+SCENARIOS = {"publish", "deploy"}
 KINDS = {"files", "git", "registry", "gh_api", "judgement"}
 EXEMPTIONS_FILE = ".repo-ready.yml"
 HTTP_TIMEOUT = 8

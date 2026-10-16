@@ -2,6 +2,16 @@
 
 Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.9.0] - 2026-10-16
+
+### Added
+- `repo-deploy` skill (`/repo-ready:repo-deploy`), the deploy Scenario: Dockerfile, health endpoints, Compose,
+  image publishing, Helm with a kind smoke test, observability. Its preflight runs `--scenario deploy`.
+- Stack packs `catalog/docker.py`, `compose.py`, `helm.py`, `observability.py` with 24 Checks (16 mechanical, 8
+  judgement), applied by the new Repo facts `dockerfile`, `compose`, `helm_chart` and `metrics`; procedures
+  `docker.md`, `compose.md`, `helm.md`, `observability.md` from the buy-smarter playbook.
+- Secrets, `.gitignore` and CI-hardening Checks from core run in both Scenarios.
+
 ## [0.8.0] - 2026-10-16
 
 ### Changed

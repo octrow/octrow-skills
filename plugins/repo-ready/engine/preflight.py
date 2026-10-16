@@ -5,22 +5,25 @@ usage: preflight.py [project-path] [--private word1,word2] [--scenario publish]
 
 project-path may be the repo root or a subfolder of a monorepo (then history checks cover that folder only).
 --private: extra words that must not be published (employer, client, internal project names).
---scenario: run only that Scenario's Checks; without it every Check runs (audit mode).
-Checks live in catalog/*.py, their Procedures in procedures/*.md and assets/; a repo excuses one in .repo-ready.yml (`exempt:` then `  check_id: reason`).
+--scenario: publish or deploy, to run only that Scenario's Checks; without it every Check runs (audit mode).
+Checks live in catalog/*.py, their Procedures in procedures/*.md and assets/.
+A repo excuses a Check in .repo-ready.yml (`exempt:` then `  check_id: reason`).
 Needs git; uses gitleaks (full secret scan) and `gh` (GitHub metadata) when available; asks PyPI/npm whether the
 package name is taken (network, read-only).
 """
 import importlib
+import re
 import sys
 import tomllib
 from pathlib import Path
 
 sys.dont_write_bytecode = True  # importing the catalog must not leave __pycache__ in an audited repo that holds it
 import registry  # noqa: E402  (after dont_write_bytecode on purpose)
-from registry import (EXEMPTIONS_FILE, FACTS, Outcome, evaluate, parse_exemptions,  # noqa: E402
-                      procedure_path, repo, run, tracked)
+from registry import (COMPOSE, DOCKERFILE, EXEMPTIONS_FILE, FACTS, Outcome, evaluate, parse_exemptions,  # noqa: E402
+                      procedure_path, read, repo, run, tracked)
 
-PACKS = ["catalog.core"]
+PACKS = ["catalog.core", "catalog.docker", "catalog.compose", "catalog.helm", "catalog.observability"]
+METRICS = re.compile(r"opentelemetry|prometheus[-_](client|fastapi)|prom-client", re.I)
 STATES = ("fail", "broken")
 TITLES = {"error": "Error (blocks outward-facing steps)", "warning": "Warning (fix or exempt before done)",
           "info": "Info (advice)"}
@@ -50,6 +53,10 @@ def detect_facts() -> set[str]:
         "public": repo.vis == "public",
         "local": repo.vis == "local",
         "subfolder": bool(repo.rel),
+        "dockerfile": any(DOCKERFILE.search(f) for f in names),
+        "compose": any(COMPOSE.search(f) for f in names),
+        "helm_chart": any(f.endswith("Chart.yaml") for f in names),
+        "metrics": bool(METRICS.search(read("pyproject.toml") + read("package.json") + read("requirements.txt"))),
     }
     assert found.keys() <= FACTS.keys()
     return {f for f, ok in found.items() if ok}

@@ -10,6 +10,7 @@ import tomllib
 from registry import Broken, check, http_json, judgement, read, repo, run, tracked
 
 PUB = {"publish"}
+BOTH = {"publish", "deploy"}  # history, secrets and CI hardening matter however the code ships
 COMMUNITY = ["README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CODE_OF_CONDUCT.md", "CHANGELOG.md",
              ".github/ISSUE_TEMPLATE", ".github/pull_request_template.md", ".github/dependabot.yml",
              ".github/workflows"]
@@ -75,7 +76,7 @@ def language_mirrors() -> list[str]:
     return out
 
 
-@check("secret_files_tracked", severity="error", scenarios=PUB, kind="files",
+@check("secret_files_tracked", severity="error", scenarios=BOTH, kind="files",
        why="a tracked .env or key file is published with the first push",
        procedure="security.md#2-files-that-shouldnt-be-tracked")
 def secret_files_tracked() -> list[str]:
@@ -97,7 +98,7 @@ def big_files_tracked() -> list[str]:
             if (repo.root / f).is_file() and (repo.root / f).stat().st_size > BIG_FILE]
 
 
-@check("gitignore_gaps", severity="warning", scenarios=PUB, kind="git",
+@check("gitignore_gaps", severity="warning", scenarios=BOTH, kind="git",
        why="an unignored .env or build folder gets committed by the next `git add .`",
        procedure="security.md#2-files-that-shouldnt-be-tracked")
 def gitignore_gaps() -> list[str]:
@@ -112,7 +113,7 @@ def gitignore_gaps() -> list[str]:
         or ["templates: gh api gitignore/templates (github/gitignore)"])
 
 
-@check("secrets_in_history", severity="error", scenarios=PUB, kind="git",
+@check("secrets_in_history", severity="error", scenarios=BOTH, kind="git",
        why="once public, history is copied and indexed; a leaked key is only safe after rotation",
        procedure="security.md#1-secrets-in-history-not-just-head")
 def secrets_in_history() -> list[str]:
@@ -317,7 +318,7 @@ def ci_text() -> str:
     return "".join(workflow_texts().values()) + read(".pre-commit-config.yaml")
 
 
-@check("workflow_permissions", severity="warning", when=("github_actions",), scenarios=PUB, kind="files",
+@check("workflow_permissions", severity="warning", when=("github_actions",), scenarios=BOTH, kind="files",
        why="without `permissions:` the default token may be read-write",
        procedure="security.md#8-workflow-hardening")
 def workflow_permissions() -> list[str]:
@@ -325,7 +326,7 @@ def workflow_permissions() -> list[str]:
             if not re.search(r"^permissions:", t, re.M)]
 
 
-@check("actions_pinned_sha", severity="warning", when=("github_actions",), scenarios=PUB, kind="files",
+@check("actions_pinned_sha", severity="warning", when=("github_actions",), scenarios=BOTH, kind="files",
        why="a moved tag runs someone else's code with your token (zizmor flags these)",
        procedure="security.md#8-workflow-hardening")
 def actions_pinned_sha() -> list[str]:
@@ -345,7 +346,7 @@ def action_runtime(uses: str) -> str:
     return ""
 
 
-@check("actions_node_runtime", severity="warning", when=("github_actions",), scenarios=PUB, kind="gh_api",
+@check("actions_node_runtime", severity="warning", when=("github_actions",), scenarios=BOTH, kind="gh_api",
        why="runners force Node 20 actions onto Node 24 with a warning; bump the major",
        procedure="security.md#8-workflow-hardening")
 def actions_node_runtime() -> list[str]:
@@ -368,7 +369,7 @@ def private_runner_minutes() -> list[str]:
     return ["until public, run the 3-OS jobs on tags or `workflow_dispatch`, not every push"]
 
 
-@check("secret_scan_ci", severity="warning", scenarios=PUB, kind="files",
+@check("secret_scan_ci", severity="warning", scenarios=BOTH, kind="files",
        why="a key committed after launch is caught only if something scans every push",
        procedure="assets/workflows/security.yml")
 def secret_scan_ci() -> list[str]:
@@ -377,14 +378,14 @@ def secret_scan_ci() -> list[str]:
     return ["no secret scan in CI or pre-commit: add engine/assets/workflows/security.yml + engine/assets/pre-commit-config.yaml"]
 
 
-@check("workflow_lint", severity="warning", when=("github_actions",), scenarios=PUB, kind="files",
+@check("workflow_lint", severity="warning", when=("github_actions",), scenarios=BOTH, kind="files",
        why="zizmor and actionlint catch template injection and broken run: steps before they ship",
        procedure="assets/pre-commit-config.yaml")
 def workflow_lint() -> list[str]:
     return [] if not action_refs() or re.search(r"zizmor|actionlint", ci_text()) else ["workflows aren't linted"]
 
 
-@check("dependabot_cooldown", severity="warning", scenarios=PUB, kind="files",
+@check("dependabot_cooldown", severity="warning", scenarios=BOTH, kind="files",
        why="a release-day dependency update is how a hijacked package reaches you",
        procedure="assets/dependabot.yml")
 def dependabot_cooldown() -> list[str]:
@@ -617,7 +618,7 @@ def release_notes() -> list[str]:
     return [f"releases with empty notes (only 'Full Changelog'): {', '.join(empty)}"] if empty else []
 
 
-@check("dependabot_prs_red", severity="warning", when=("github",), scenarios=PUB, kind="gh_api",
+@check("dependabot_prs_red", severity="warning", when=("github",), scenarios=BOTH, kind="gh_api",
        why="failing bot PRs pile up unnoticed and hide real breakage",
        procedure="security.md#7-github-settings-outward-facing-list-the-commands-run-after-a-yes")
 def dependabot_prs_red() -> list[str]:

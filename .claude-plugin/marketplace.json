@@ -11,7 +11,7 @@
     {
       "name": "repo-ready",
       "source": "./plugins/repo-ready",
-      "description": "Prepare a repository for publication: security, README, EN/RU, SEO, screenshots, CI, release, launch."
+      "description": "Repo readiness: publish safely (security, README, EN/RU, SEO, CI, release) and get deploy-ready (Docker, Compose, GHCR, Helm)."
     },
     {
       "name": "repo-scout",

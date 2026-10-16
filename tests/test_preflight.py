@@ -81,21 +81,28 @@ def git(cwd: Path, *args: str) -> None:
     subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True)
 
 
+def preflight_report(repo: Path, scenario: str, files: dict[str, str]) -> str:
+    """Commit `files` into a fresh repo at `repo` and return the preflight report for `scenario`."""
+    git(repo, "init", "-q", "-b", "main")
+    for name, text in files.items():
+        (repo / name).write_text(text)
+    git(repo, "add", "-f", ".")
+    git(repo, "-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-qm", "init")
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        preflight.main([str(repo), "--scenario", scenario])
+    return out.getvalue()
+
+
 class PreflightRun(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.tmp = tempfile.TemporaryDirectory()
-        repo = Path(cls.tmp.name)
-        git(repo, "init", "-q", "-b", "main")
-        (repo / "README.md").write_text("# demo\n\nSee [docs](docs/missing.md).\n")
-        (repo / ".env").write_text("TOKEN=x\n")
-        (repo / ".repo-ready.yml").write_text("exempt:\n  readme_demo: CLI with no visual output\n")
-        git(repo, "add", "-f", ".")
-        git(repo, "-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-qm", "init")
-        out = io.StringIO()
-        with contextlib.redirect_stdout(out):
-            preflight.main([str(repo), "--scenario", "publish"])
-        cls.report = out.getvalue()
+        cls.report = preflight_report(Path(cls.tmp.name), "publish", {
+            "README.md": "# demo\n\nSee [docs](docs/missing.md).\n",
+            ".env": "TOKEN=x\n",
+            ".repo-ready.yml": "exempt:\n  readme_demo: CLI with no visual output\n",
+        })
 
     @classmethod
     def tearDownClass(cls):
@@ -123,6 +130,95 @@ class PreflightRun(unittest.TestCase):
         judged = self.report.split("## Judgement")[1].split("\n## ")[0]
         for cid in ("provenance", "third_party_code", "first_run", "readme_claims_real", "readme_plain_language"):
             self.assertIn(f"- {cid} [", judged)
+
+
+class DeployRun(unittest.TestCase):
+    """A container project with the classic gaps: named user, unpinned base, infra ports open to the network."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        cls.report = preflight_report(Path(cls.tmp.name), "deploy", {
+            "Dockerfile": "FROM python:3.12-slim AS builder\nRUN true\n"
+                          "FROM python:3.12-slim\nCOPY --from=builder /x /x\nUSER app\n",
+            "docker-compose.yml": "services:\n  db:\n    image: postgres\n    ports:\n      - \"5432:5432\"\n",
+            "README.md": "# svc\n",
+        })
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmp.cleanup()
+
+    def failed(self) -> str:
+        return self.report.split("## Judgement")[0]
+
+    def test_container_gaps_are_found(self):
+        for cid in ("dockerfile_numeric_user", "dockerfile_base_digest", "dockerignore", "compose_infra_ports"):
+            self.assertIn(f"- {cid}", self.failed())
+
+    def test_multistage_build_passes(self):
+        self.assertIn("dockerfile_multistage", self.report.split("## Passed")[1])
+
+    def test_shared_core_checks_run_but_publish_only_ones_do_not(self):
+        self.assertIn("secret_files_tracked", self.report)
+        self.assertNotIn("readme_demo", self.report)
+
+    def test_helm_checks_skip_without_a_chart(self):
+        self.assertRegex(self.report, r"helm_pod_security: needs helm_chart")
+
+
+class DeployEdgeCases(unittest.TestCase):
+    """Real-world shapes the first version misread (code review, 2026-10-16)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        repo = Path(cls.tmp.name)
+        (repo / ".github/workflows").mkdir(parents=True)
+        (repo / "templates").mkdir()
+        cls.report = preflight_report(repo, "deploy", {
+            "Dockerfile.prod": "ARG BASE=python:3.12-slim@sha256:" + "a" * 64 + "\nFROM ${BASE} AS runtime\n"
+                               "USER 10001:10001\nHEALTHCHECK CMD true\nFROM runtime AS browser\nUSER 0\nRUN true\n"
+                               "USER 10001:10001\nFROM runtime AS slim\n",
+            ".dockerignore": "**/.git\n/.env\n",
+            "docker-compose.yml": "services:\n  db:\n    ports:\n      - \"${DB_PORT:-5432}:5432\"  # dev db\n",
+            "Chart.yaml": "apiVersion: v2\nname: svc\nversion: 0.1.0\n",
+            "templates/deployment.yaml": "runAsNonRoot: true\nreadOnlyRootFilesystem: true\ndrop: [ALL]\n"
+                                         "type: RuntimeDefault\nlivenessProbe: {}\nreadinessProbe: {}\n"
+                                         "automountServiceAccountToken: {{ .Values.sa.automount }}\n",
+            ".github/workflows/image.yml": "permissions: {}\njobs:\n  b:\n    steps:\n"
+                                          "      - uses: docker/build-push-action@v6\n        with:\n"
+                                          "          push: ${{ github.event_name != 'pull_request' }}\n"
+                                          "          provenance: false\n          sbom: true\n"
+                                          "      - uses: actions/attest@v1\n",
+        })
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmp.cleanup()
+
+    def failed(self) -> str:
+        return self.report.split("## Judgement")[0]
+
+    def passed(self) -> str:
+        return self.report.split("## Passed")[1]
+
+    def test_variant_stage_inherits_the_user_and_arg_base_is_not_judged(self):
+        for cid in ("dockerfile_numeric_user", "dockerfile_base_digest", "dockerfile_healthcheck", "dockerignore"):
+            self.assertIn(cid, self.passed())
+
+    def test_variable_host_port_with_a_comment_is_still_caught(self):
+        self.assertIn("- compose_infra_ports", self.failed())
+
+    def test_chart_at_the_repo_root_is_read(self):
+        for cid in ("helm_pod_security", "helm_probes", "helm_service_account_token"):
+            self.assertIn(cid, self.passed())
+
+    def test_expression_push_counts_as_publishing(self):
+        block = self.failed().split("- image_supply_chain")[1].split("\n- ")[0]
+        self.assertIn("provenance", block)
+        self.assertNotIn("no an attestation", block)
+        self.assertIn("image_workflow,", self.passed())
 
 
 if __name__ == "__main__":
