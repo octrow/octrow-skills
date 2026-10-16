@@ -2,6 +2,22 @@
 
 Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.10.0] - 2026-10-17
+
+### Added
+- `repo-code-health` skill (`/repo-ready:repo-code-health`), the code-health Scenario for Python projects: lint
+  and format, dead code, complexity, CI wiring. Its preflight runs `--scenario code-health`.
+- Stack pack `catalog/python_quality.py` with 8 Checks: `ruff_clean`, `ruff_format`, `complexity_cyclomatic`
+  (radon), `complexity_cognitive` (complexipy), `dead_code` (vulture, 80%+ confidence unless `[tool.vulture]` sets
+  it), `linter_in_ci`, `tests_in_ci`, `type_checker`. The tools run through `uvx` and write nothing into the
+  audited repo; without `uvx` they report broken. Project thresholds in `pyproject.toml` win over the defaults.
+- Procedure `python-quality.md`: what each tool finds, how to fix it, where the project sets its threshold, and
+  when an exemption fits.
+
+### Changed
+- `tracked()` reads `git ls-files -z`, so files with non-ASCII names reach the Checks.
+- An empty Judgement section in the report says `- none`, like the severity sections.
+
 ## [0.9.0] - 2026-10-16
 
 ### Added

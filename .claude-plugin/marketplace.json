@@ -11,7 +11,7 @@
     {
       "name": "repo-ready",
       "source": "./plugins/repo-ready",
-      "description": "Repo readiness: publish safely (security, README, EN/RU, SEO, CI, release) and get deploy-ready (Docker, Compose, GHCR, Helm)."
+      "description": "Repo readiness: publish safely (security, README, EN/RU, SEO, CI, release) get deploy-ready (Docker, Compose, GHCR, Helm), and keep Python code healthy (ruff, complexity, dead code)."
     },
     {
       "name": "repo-scout",

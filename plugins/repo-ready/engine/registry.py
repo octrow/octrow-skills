@@ -35,7 +35,7 @@ FACTS = {
 DOCKERFILE = re.compile(r"(^|/)([Dd]ockerfile([.-][\w.-]+)?|[^/]+\.Dockerfile)$(?<!\.dockerignore)")
 COMPOSE = re.compile(r"(^|/)(docker-)?compose(\.[\w-]+)?\.ya?ml$")
 SEVERITIES = ("error", "warning", "info")
-SCENARIOS = {"publish", "deploy"}
+SCENARIOS = {"publish", "deploy", "code-health"}
 KINDS = {"files", "git", "registry", "gh_api", "judgement"}
 EXEMPTIONS_FILE = ".repo-ready.yml"
 HTTP_TIMEOUT = 8
@@ -210,7 +210,7 @@ def run(*cmd: str, cwd: Path | None = None) -> str:
 
 
 def tracked() -> list[str]:
-    return run("git", "ls-files").splitlines()  # relative to repo.root
+    return run("git", "ls-files", "-z").split("\0")[:-1]  # relative to repo.root; -z keeps non-ASCII names as is
 
 
 def read(path: str) -> str:

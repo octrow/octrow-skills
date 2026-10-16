@@ -1,6 +1,7 @@
 """Registry rules and an end-to-end preflight run on a throwaway repo. Run: python3 -m unittest discover tests"""
 import contextlib
 import io
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -214,6 +215,80 @@ class DeployEdgeCases(ReportCase):
         self.assertIn("provenance", block)
         self.assertNotIn("no an attestation", block)
         self.assertIn("image_workflow,", self.passed())
+
+
+BRANCHY = "def branchy(x):\n" + "".join(f"    if x == {i}:\n        return {i}\n" for i in range(10)) + "    return 0\n"
+NESTED = ("def nested(rows):\n    total = 0\n    for r in rows:\n        if r:\n            for c in r:\n"
+          "                if c:\n                    while c > 0:\n                        if c % 2:\n"
+          "                            c -= 1\n                        else:\n                            c -= 2\n"
+          "                        total += c\n    return total\n")
+UNTIDY = "import os\n\n\ndef unused_helper():\n    return 1\n    print('never')\n\n\n" + BRANCHY + "\n\n" + NESTED
+NO_UVX = "uvx not installed: the code-health tools run through it"
+
+
+@unittest.skipUnless(shutil.which("uvx"), NO_UVX)
+class CodeHealthRun(ReportCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        cls.repo = Path(cls.tmp.name)
+        (cls.repo / "src").mkdir()
+        cls.report = preflight_report(cls.repo, "code-health", {
+            "pyproject.toml": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n",
+            "src/app.py": UNTIDY.replace("total = 0", "total=0"),
+            "src/-dash.py": "def wrap():\n    " + BRANCHY.replace("\n", "\n    ") + "return branchy\n",
+            "src/bad.py": "def broken(:\n",
+        })
+
+    def test_tool_findings_are_reported(self):
+        for cid in ("ruff_clean", "ruff_format", "complexity_cyclomatic", "complexity_cognitive", "dead_code"):
+            self.assertIn(f"- {cid}", self.failed())
+
+    def test_findings_name_the_place(self):
+        self.assertIn("F401", self.failed())
+        self.assertRegex(self.failed(), r"src/app\.py:\d+ branchy")
+        self.assertRegex(self.failed(), r"src/app\.py nested cognitive=\d+")
+
+    def test_missing_ci_wiring_is_reported(self):
+        for cid in ("linter_in_ci", "tests_in_ci", "type_checker"):
+            self.assertIn(f"- {cid}", self.failed())
+
+    def test_odd_files_do_not_break_the_tools(self):
+        self.assertNotIn("(broken", self.report)
+        self.assertRegex(self.failed(), r"src/-dash\.py:\d+ wrap\.branchy cc=11")  # a closure, and a name like an option
+        self.assertIn("src/bad.py", self.failed())
+
+    def test_audited_repo_is_left_untouched(self):
+        status = subprocess.run(["git", "status", "--porcelain", "--ignored"], cwd=self.repo,
+                                capture_output=True, text=True, check=True).stdout
+        self.assertEqual(status, "")
+
+
+@unittest.skipUnless(shutil.which("uvx"), NO_UVX)
+class CodeHealthProjectConfig(ReportCase):
+    """Project thresholds and CI wiring win over the tool defaults."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        repo = Path(cls.tmp.name)
+        (repo / ".github/workflows").mkdir(parents=True)
+        cls.report = preflight_report(repo, "code-health", {
+            "pyproject.toml": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n"
+                              "[tool.ruff.lint.mccabe]\nmax-complexity = 12\n"
+                              "[tool.complexipy]\nmax-complexity-allowed = 30\n[tool.mypy]\nstrict = true\n",
+            "app.py": BRANCHY + "\n\n" + NESTED + "\n\nprint(branchy(1), nested([]))\n",
+            ".github/workflows/ci.yml": "jobs:\n  t:\n    steps:\n      - run: uvx ruff check\n"
+                                        "      - run: uv run pytest\n",
+        })
+
+    def test_project_thresholds_override_the_defaults(self):
+        for cid in ("complexity_cyclomatic", "complexity_cognitive", "ruff_clean", "dead_code"):
+            self.assertIn(cid, self.passed())
+
+    def test_ci_wiring_passes(self):
+        for cid in ("linter_in_ci", "tests_in_ci", "type_checker"):
+            self.assertIn(cid, self.passed())
 
 
 if __name__ == "__main__":

@@ -113,6 +113,15 @@ SBOM, attestation, a scan, no layer cache), and a Helm chart (Pod Security `rest
 smoke test in CI). The procedures come from taking [buy-smarter](https://github.com/octrow/buy-smarter) from a CLI
 to a chart, and that repo passes every check. Install it with npx as `--skill repo-deploy`.
 
+## Code health: repo-code-health
+
+The third skill, `/repo-ready:repo-code-health`, cleans up a Python codebase and keeps it clean. Its preflight
+(`--scenario code-health`) runs ruff (lint and format), radon (cyclomatic complexity), complexipy (cognitive
+complexity) and vulture (dead code) through `uvx`, without installing anything in the project or writing into it,
+and checks that CI runs the linter, the tests and a type checker. Thresholds are the tools' defaults unless
+`pyproject.toml` sets its own. Install it with npx as `--skill repo-code-health`; it needs
+[uv](https://docs.astral.sh/uv/).
+
 ## How it differs from similar skills
 
 - [github-repo](https://github.com/jdevalk/skills) audits and writes the README, community health files,

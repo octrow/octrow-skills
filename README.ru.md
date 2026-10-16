@@ -114,6 +114,15 @@ Linux/macOS/Windows, PyPI через trusted publishing, подпись сбор
 kind в CI). Рецепты взяты из того, как [buy-smarter](https://github.com/octrow/buy-smarter) прошёл путь от CLI до
 чарта, и этот репо проходит все проверки. Через npx ставится как `--skill repo-deploy`.
 
+## Здоровье кода: repo-code-health
+
+Третий скилл, `/repo-ready:repo-code-health`, чистит Python-код и не даёт ему снова зарасти. Его preflight
+(`--scenario code-health`) запускает через `uvx` ruff (линтер и форматирование), radon (цикломатическая сложность),
+complexipy (когнитивная сложность) и vulture (мёртвый код). В проект он ничего не ставит и ничего в нём не пишет.
+Ещё он проверяет, что CI запускает линтер, тесты и проверку типов. Пороги берутся по умолчанию из самих
+инструментов, если в `pyproject.toml` не заданы свои. Через npx ставится как `--skill repo-code-health`, нужен
+[uv](https://docs.astral.sh/uv/).
+
 ## Чем отличается от похожих скиллов
 
 - [github-repo](https://github.com/jdevalk/skills) проверяет и пишет README, файлы для сообщества, шаблоны и

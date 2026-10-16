@@ -1,7 +1,7 @@
 {
   "name": "repo-ready",
-  "description": "Repo readiness for Claude Code: publish a repo safely (history, secrets, CI, README, SEO, release) and get a service deploy-ready (Docker, Compose, GHCR, Helm).",
-  "version": "0.9.0",
+  "description": "Repo readiness for Claude Code: publish a repo safely (history, secrets, CI, README, SEO, release) get a service deploy-ready (Docker, Compose, GHCR, Helm), and keep Python code healthy (ruff, radon, complexipy, vulture).",
+  "version": "0.10.0",
   "author": {
     "name": "Daniil Petrov"
   },
@@ -14,6 +14,8 @@
     "release",
     "skills",
     "docker",
-    "helm"
+    "helm",
+    "code-quality",
+    "ruff"
   ]
 }

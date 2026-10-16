@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Read-only readiness report for a project in a git repo. Changes nothing.
 
-usage: preflight.py [project-path] [--private word1,word2] [--scenario publish]
+usage: preflight.py [project-path] [--private word1,word2] [--scenario publish|deploy|code-health]
 
 project-path may be the repo root or a subfolder of a monorepo (then history checks cover that folder only).
 --private: extra words that must not be published (employer, client, internal project names).
---scenario: publish or deploy, to run only that Scenario's Checks; without it every Check runs (audit mode).
+--scenario: publish, deploy or code-health, to run only that Scenario's Checks; without it every Check runs (audit mode).
 Checks live in catalog/*.py, their Procedures in procedures/*.md and assets/.
 A repo excuses a Check in .repo-ready.yml (`exempt:` then `  check_id: reason`).
 Needs git; uses gitleaks (full secret scan) and `gh` (GitHub metadata) when available; asks PyPI/npm whether the
@@ -22,7 +22,8 @@ import registry  # noqa: E402  (after dont_write_bytecode on purpose)
 from registry import (COMPOSE, DOCKERFILE, EXEMPTIONS_FILE, FACTS, Outcome, evaluate, parse_exemptions,  # noqa: E402
                       procedure_path, read, repo, run, tracked)
 
-PACKS = ["catalog.core", "catalog.docker", "catalog.compose", "catalog.helm", "catalog.observability"]
+PACKS = ["catalog.core", "catalog.docker", "catalog.compose", "catalog.helm", "catalog.observability",
+         "catalog.python_quality"]
 METRICS = re.compile(r"opentelemetry|prometheus[-_](client|fastapi)|prom-client", re.I)
 STATES = ("fail", "broken")
 TITLES = {"error": "Error (blocks outward-facing steps)", "warning": "Warning (fix or exempt before done)",
@@ -97,6 +98,8 @@ def print_findings(outcomes: list[Outcome]) -> None:
 
 def print_judgements(outcomes: list[Outcome]) -> None:
     print("\n## Judgement (answer by reading the repo)")
+    if not outcomes:
+        print("- none")
     for o in outcomes:
         print("\n".join([f"- {o.check.id} [{o.check.severity}]: {o.check.question}",
                          *(f"  - {x}" for x in o.lines), f"  fix: {procedure_path(o.check.procedure)}"]))
