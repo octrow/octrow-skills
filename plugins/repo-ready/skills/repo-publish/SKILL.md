@@ -81,6 +81,10 @@ fixed; a broken error-level Check (it couldn't run, e.g. no gitleaks) blocks the
 or exempted before the phase is done; **info** is advice. Then judgement questions for you to answer by reading the
 repo, exemptions, skipped Checks with the condition they need, and the ids that passed. A Check that doesn't fit
 this repo gets an exemption in `.repo-ready.yml` (`exempt:` then `  check_id: reason`), after the user agrees.
+
+Judgement questions are Checks too, only answered by you: read the repo, then count each as passed or failed at
+its severity, with the evidence in one line, in the scorecard next to the mechanical ones. Ask the user only what
+the repo can't settle (provenance usually); an unanswered error-level question blocks like a failed Check.
 If the user mentioned an employer or client, pass its names with `--private`.
 
 Then ask only what the repo can't tell you, in the user's language, with a recommendation for each:
@@ -98,10 +102,10 @@ Then ask only what the repo can't tell you, in the user's language, with a recom
 ## Phase 1: security and history hygiene
 
 Read `references/security.md`. Short version: scan the whole history for secrets (not just HEAD), make sure
-`.env` and local data are ignored, check licenses of vendored or ported code (`THIRD_PARTY_NOTICES.md`),
+`.env` and local data are ignored, check licenses of vendored or ported code (`third_party_code`),
 keep heavy data out of the package. Renaming the default branch to `main` changes the remote and breaks
 existing clones' tracking, so propose it and do it after a yes. Delegate a code-level review to
-`security-review` (or the `code-reviewer` agent) when the project handles keys, user input, subprocesses or files.
+`security-review` (or the `code-reviewer` agent) when `code_security_review` says it's needed.
 
 Then keep it clean: `assets/pre-commit-config.yaml` (gitleaks, zizmor, actionlint, plus checks for large files,
 merge markers, case clashes and broken YAML/TOML; no auto-fixers, so the first run doesn't rewrite the repo) and
@@ -119,8 +123,8 @@ either move out or get published on purpose: ask which.
 
 ## Phase 2: install, first run, releases
 
-Read `references/release.md`. The goal is one command per OS to install and one to run, keys optional where
-possible, and a `doctor`/`config` step that tells the user what is missing in plain words. Test the installers in CI
+Read `references/release.md`. The goal is `first_run`: one command per OS to install and one to run, keys
+optional where possible, and a `doctor`/`config` step that tells the user what is missing in plain words. Test the installers in CI
 on Linux, macOS and Windows; installers break on the platform nobody ran locally (legacy code pages on Windows,
 missing PATH entries).
 

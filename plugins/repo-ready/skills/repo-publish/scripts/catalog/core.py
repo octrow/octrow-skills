@@ -172,6 +172,16 @@ judgement("provenance", severity="error", scenarios=PUB,
                    "Ask before publishing; it blocks anything public until answered.",
           procedure="references/security.md")
 
+judgement("third_party_code", severity="warning", scenarios=PUB,
+          question="Is any code vendored, ported or copied from elsewhere? If so, is its license compatible and "
+                   "credited in THIRD_PARTY_NOTICES.md?",
+          procedure="references/security.md")
+
+judgement("code_security_review", severity="warning", scenarios=PUB,
+          question="Does the project handle keys, user input, subprocesses or files? Then a code-level security "
+                   "review has to happen before it goes public.",
+          procedure="skill:security-review")
+
 
 @check("default_branch_master", severity="warning", scenarios=PUB, kind="git",
        why="`main` is the default new contributors and tools expect",
@@ -245,6 +255,26 @@ judgement("readme_opening", severity="warning", when=("has_readme",), scenarios=
           question="Do the first 200 words say what it is, for whom, and show a proof?",
           procedure="references/seo.md",
           evidence=lambda: [f"{readme_words()} words"])
+
+
+judgement("readme_claims_real", severity="warning", when=("has_readme",), scenarios=PUB,
+          question="Does every number, benchmark and compatibility claim in the README come from a real run, test "
+                   "or release? No made-up adoption numbers or testimonials.",
+          procedure="skill:github-repo")
+
+judgement("readme_plain_language", severity="info", when=("has_readme",), scenarios=PUB,
+          question="Do the README and other prose read like the author wrote it, without AI tells or sales "
+                   "language?",
+          procedure="skill:humanizer")
+
+judgement("readme_visual_story", severity="info", when=("has_readme",), scenarios=PUB,
+          question="Does the README open with a hero and a proof image built from real output of the project?",
+          procedure="skill:beautify-github-readme")
+
+judgement("gui_screenshots_fresh", severity="info", when=("has_readme",), scenarios=PUB,
+          question="Does the project have a GUI? Then are the README screenshots newer than the last change to it, "
+                   "at the same file names and sizes?",
+          procedure="references/gui.md")
 
 
 # Agent skills
@@ -369,6 +399,12 @@ def scorecard_workflow() -> list[str]:
 
 
 # Install and release
+
+
+judgement("first_run", severity="warning", scenarios=PUB,
+          question="Is there one command per OS to install and one to run, keys optional where possible, and a "
+                   "doctor/config step that says in plain words what is missing?",
+          procedure="references/release.md")
 
 
 def pyproject() -> dict:

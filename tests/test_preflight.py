@@ -111,7 +111,9 @@ class PreflightRun(unittest.TestCase):
         self.assertIn("readme_demo: CLI with no visual output", self.report)
 
     def test_judgement_questions_are_listed(self):
-        self.assertIn("provenance", self.report.split("## Judgement")[1])
+        judged = self.report.split("## Judgement")[1].split("\n## ")[0]
+        for cid in ("provenance", "third_party_code", "first_run", "readme_claims_real", "readme_plain_language"):
+            self.assertIn(f"- {cid} [", judged)
 
 
 if __name__ == "__main__":

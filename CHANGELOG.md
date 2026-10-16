@@ -2,6 +2,14 @@
 
 Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.7.0] - 2026-10-16
+
+### Added
+- Seven judgement Checks that used to live only as prose in SKILL.md: `third_party_code`, `code_security_review`,
+  `first_run`, `readme_claims_real`, `readme_plain_language`, `readme_visual_story`, `gui_screenshots_fresh`. The
+  preflight lists them with their severity and fix, so the agent answers them in every run, and the skill counts
+  each answer in the scorecard like a mechanical Check.
+
 ## [0.6.0] - 2026-10-16
 
 ### Changed
