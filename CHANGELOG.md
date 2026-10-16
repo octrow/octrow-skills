@@ -37,7 +37,8 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ### Changed
 - The plugin is renamed `repo-publish` → `repo-ready`, to hold more scenarios than publishing (deploy readiness
   next). The skill keeps its name: `/repo-ready:repo-publish`. Reinstall with
-  `claude plugin install repo-ready@octrow-skills` and remove the old `repo-publish` plugin. No behavior change.
+  `claude plugin install repo-ready@octrow-skills`; the marketplace's `renames` map moves an existing `repo-publish`
+  install over (fixed in 0.7.0). No behavior change.
 
 ## [0.4.0] - 2026-10-15
 

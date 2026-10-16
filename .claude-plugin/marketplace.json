@@ -4,6 +4,9 @@
   "owner": {
     "name": "Daniil Petrov"
   },
+  "renames": {
+    "repo-publish": "repo-ready"
+  },
   "plugins": [
     {
       "name": "repo-ready",
