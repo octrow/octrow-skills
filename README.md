@@ -6,9 +6,18 @@
 
 <p align="center"><a href="https://scorecard.dev/viewer/?uri=github.com/octrow/octrow-skills"><img src="https://api.scorecard.dev/projects/github.com/octrow/octrow-skills/badge" alt="OpenSSF Scorecard"></a></p>
 
-repo-publish is a skill for Claude Code and Claude Tag that takes a working project to a public GitHub repo a
-stranger can find, trust and install. It reads the repo and its history before anything goes public, then does the
-publishing work in a safe order and hands parts to other skills when they're installed.
+repo-ready is a plugin for Claude Code and Claude Tag with three skills. Each one takes a working project to the
+state a goal needs, starting with the same read-only preflight: it lists the gaps as named Checks, each with a
+severity and a pointer to its fix, and the skill then fixes only the parts you pick.
+
+| Skill | Use it when | What it looks at |
+|---|---|---|
+| `repo-publish` | a repo is about to go public | history and secrets, install, README, CI, SEO, release |
+| `repo-deploy` | a service should run as containers | Dockerfile, health endpoints, Compose, image publishing, Helm, metrics |
+| `repo-code-health` | Python code is harder to change than it should be | ruff, complexity, dead code, CI for lint, tests and types |
+
+repo-publish reads the repo and its history before anything goes public, does the publishing work in a safe order,
+and hands parts to other skills when they're installed. Below, its preflight on a test repo:
 
 <img src=".github/demo.gif" width="100%" alt="The preflight run on a test repo: a GitHub token in history, a tracked .env, a home path and an employer name in the code, a work email in commits, unpinned actions on Node 20, no installers.">
 
@@ -25,9 +34,11 @@ Other agents (Codex, Cursor, Gemini CLI and more) via [skills](https://github.co
 
 ```bash
 npx skills add octrow/octrow-skills --skill repo-publish -g
+npx skills add octrow/octrow-skills --skill repo-deploy -g
+npx skills add octrow/octrow-skills --skill repo-code-health -g
 ```
 
-On Windows, run `git config --global core.symlinks true` first: the skill links in its shared `engine/` folder, and
+On Windows, run `git config --global core.symlinks true` first: each skill links in the shared `engine/` folder, and
 Git for Windows checks symlinks out as plain text files by default.
 
 From a local clone: `claude plugin marketplace add ./octrow-skills`.
@@ -39,13 +50,14 @@ so install that first (one command, see its README).
 Claude Tag: an admin registers this repository under Organization settings → Plugins & skills → Sync from GitHub,
 then adds the plugin to a bundle.
 
-Then ask in a project: "prepare this repo for publishing", "what's missing before I open-source this?", or just one
-part: "add a Russian README", "refresh the screenshots".
+Then ask in a project: "prepare this repo for publishing", "add a Russian README", "is this service ready for
+Kubernetes?", "put it in Docker", "clean up the code", "find the dead code". Requests in Russian work too.
 
 ## What the preflight finds
 
-The first step changes nothing: it reads the repo, its history and its GitHub settings. An excerpt from a run on a
-test repo:
+Every skill starts with `preflight.py --scenario publish`, `deploy` or `code-health`. It changes nothing: it reads
+the repo, its history and its GitHub settings, and the code-health tools run through `uvx` without writing into the
+project. An excerpt from a publish run on a test repo:
 
 ```text
 ## Error (blocks outward-facing steps)
@@ -65,18 +77,19 @@ test repo:
 - scorecard_workflow: needs public
 ```
 
-Each finding is a named Check with a severity and a pointer to its fix. An **error** blocks every outward-facing
-step (visibility change, release, an install command in the README) until fixed; a Check that doesn't fit the repo
-is skipped with the condition it needs, or exempted with a reason in `.repo-ready.yml`.
+An error blocks every outward-facing step (visibility change, release, an install command in the README) until it
+is fixed. A warning has to be fixed or exempted before the part is done, and info is advice. A Check that doesn't
+fit the repo is skipped with the condition it needs (no Helm chart, no Helm Checks), or exempted with a reason in
+`.repo-ready.yml`.
 
-It also checks secrets in the whole history (gitleaks), private paths, employer names and author emails, code
+For publishing it also checks secrets in the whole history (gitleaks), private paths, employer names and author emails, code
 provenance, whether the package name is free on PyPI/npm, broken README links, SKILL.md frontmatter that agents
 can't load, failing Dependabot PRs, and the repo's description, topics, social preview, branch protection, secret
 scanning and private vulnerability reporting.
 
-## How it works
+## Publishing: repo-publish
 
-After the preflight and a few questions (audience, right to publish, visibility, languages), the skill works
+After the preflight and a few questions (audience, right to publish, visibility, languages), repo-publish works
 through the phases you pick, in this order:
 
 1. Security and history: secrets in history get rotated first, private material gets a fresh-history export,
@@ -106,23 +119,23 @@ them, filled in for a real Python app.
 
 ## Deploy readiness: repo-deploy
 
-The same plugin has a second skill, `/repo-ready:repo-deploy`, for getting a service ready to run as containers.
-Its preflight (`--scenario deploy`) checks the Dockerfile (multi-stage, a numeric non-root user, base images by
+`/repo-ready:repo-deploy` gets a service ready to run as containers. Its preflight (`--scenario deploy`) checks the Dockerfile (multi-stage, a numeric non-root user, base images by
 digest, `.dockerignore`), Compose (database and queue ports bound to 127.0.0.1), the image workflow (provenance,
 SBOM, attestation, a scan, no layer cache), and a Helm chart (Pod Security `restricted`, probes, `helm test`, a kind
 smoke test in CI). The procedures come from taking [buy-smarter](https://github.com/octrow/buy-smarter) from a CLI
-to a chart, and that repo passes every check. Install it with npx as `--skill repo-deploy`.
+to a chart, and that repo passes every check. The skill builds the image and brings the stack up for real before
+it calls a part done; pushing an image or deploying waits for your yes.
 
 ## Code health: repo-code-health
 
-The third skill, `/repo-ready:repo-code-health`, cleans up a Python codebase and keeps it clean. Its preflight
+`/repo-ready:repo-code-health` cleans up a Python codebase and wires CI so it stays that way. Its preflight
 (`--scenario code-health`) runs ruff (lint and format), radon (cyclomatic complexity), complexipy (cognitive
 complexity) and vulture (dead code) through `uvx`, without installing anything in the project or writing into it,
 and checks that CI runs the linter, the tests and a type checker. Thresholds are the tools' defaults unless
-`pyproject.toml` sets its own. Install it with npx as `--skill repo-code-health`; it needs
-[uv](https://docs.astral.sh/uv/).
+`pyproject.toml` sets its own. Fixes go in this order: format in a commit of its own, lint, dead code, then
+complex functions one per commit and only where tests cover them. It needs [uv](https://docs.astral.sh/uv/).
 
-## How it differs from similar skills
+## How repo-publish differs from similar skills
 
 - [github-repo](https://github.com/jdevalk/skills) audits and writes the README, community health files,
   templates and metadata. repo-publish calls it for that part and adds what comes before and after: history and
@@ -135,18 +148,19 @@ and checks that CI runs the linter, the tests and a type checker. Thresholds are
 
 ## Repository layout
 
-This repo is a plugin marketplace. repo-publish lives here; repo-scout lives in its own repo, and the marketplace
-entry points there.
+This repo is a plugin marketplace. repo-ready and its three skills live here; repo-scout lives in its own repo, and
+the marketplace entry points there.
 
 ```
 .claude-plugin/marketplace.json     list of plugins
 plugins/<name>/.claude-plugin/      plugin manifest
-plugins/<name>/skills/<name>/       SKILL.md of one Scenario, plus the `engine/` link
+plugins/<name>/skills/<skill>/      SKILL.md of one Scenario, plus the `engine/` link
 plugins/repo-ready/engine/          preflight, Check catalog, procedures/ and assets/ shared by the Scenarios
-evals/<name>.json                   test prompts and assertions used to tune each skill
+tests/                              preflight tests (stdlib unittest)
+evals/<skill>.json                  test prompts and assertions used to tune each skill
 ```
 
-Check before a commit: `claude plugin validate .` Changes per version: [CHANGELOG.md](CHANGELOG.md). How to
+Check before a commit: `claude plugin validate .` and `python3 -m unittest discover tests`. Changes per version: [CHANGELOG.md](CHANGELOG.md). How to
 contribute: [CONTRIBUTING.md](CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md).
 
 ## License
