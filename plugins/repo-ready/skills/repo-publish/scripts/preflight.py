@@ -25,16 +25,21 @@ TITLES = {"error": "Error (blocks outward-facing steps)", "warning": "Warning (f
           "info": "Info (advice)"}
 
 
-def detect_facts() -> set[str]:
-    names = tracked()
+def pyproject_scripts() -> bool:
+    """Whether pyproject.toml declares commands; a malformed file reads as no, and its Checks report it broken."""
     py = repo.root / "pyproject.toml"
     try:
         meta = tomllib.loads(py.read_text(encoding="utf-8")) if py.exists() else {}
     except (tomllib.TOMLDecodeError, UnicodeDecodeError):
-        meta = {}  # the Checks that read it report it as broken
+        return False
+    return bool(meta.get("project", {}).get("scripts"))
+
+
+def detect_facts() -> set[str]:
+    names = tracked()
     found = {
-        "python": py.exists(),
-        "python_app": bool(meta.get("project", {}).get("scripts")),
+        "python": (repo.root / "pyproject.toml").exists(),
+        "python_app": pyproject_scripts(),
         "node": (repo.root / "package.json").exists(),
         "has_readme": (repo.root / "README.md").exists(),
         "bilingual": any(f.endswith(".ru.md") and "/." not in f and not f.startswith(".") for f in names),
