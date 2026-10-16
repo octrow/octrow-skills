@@ -2,6 +2,28 @@
 
 Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.0] - 2026-10-16
+
+### Changed
+- The preflight is a catalog of named Checks (`scripts/catalog/core.py`, model in `scripts/registry.py`). Each has
+  an id, a severity, the Repo facts it needs, a one-line why and a `fix:` pointer. The report groups failures by
+  severity: **error** blocks every outward-facing step, and an error-level Check that couldn't run (no gitleaks)
+  blocks too. Then judgement questions for the agent, exemptions, skipped Checks with the condition they need
+  (`needs public` is the flip checklist), and the ids that passed. `--scenario publish` runs one Scenario.
+- Without gitleaks, the weak history grep finding nothing is reported as broken, not as clean.
+
+### Added
+- `.repo-ready.yml` in the audited repo excuses a Check: `exempt:` then `  check_id: reason`. A missing reason or an
+  unknown id is an error, so a typo never exempts silently.
+- `dependabot_security_updates` Check on private repos too (it was only reported together with secret scanning).
+- `tests/test_preflight.py` (stdlib unittest): registry rules and a run on a throwaway repo.
+
+### Fixed
+- A Check that hits an unexpected error (an old `gh`, a rate limit, a malformed `pyproject.toml`) is reported as
+  broken instead of ending the run with a traceback; a failed `gh repo view` no longer reads as "no description,
+  no topics, no license".
+- Importing the catalog doesn't leave `__pycache__` in an audited repo that contains the skill.
+
 ## [0.5.0] - 2026-10-16
 
 ### Changed

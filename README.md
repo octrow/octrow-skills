@@ -45,16 +45,26 @@ The first step changes nothing: it reads the repo, its history and its GitHub se
 test repo:
 
 ```text
-## .gitignore
-- not ignored: .env, .env.local, .venv/x, dist/x.whl, x.egg-info/PKG-INFO
-- append the template: gh api gitignore/templates/Python --jq .source >> .gitignore
+## Error (blocks outward-facing steps)
+- secrets_in_history: once public, history is copied and indexed; a leaked key is only safe after rotation
+  - gitleaks: github-pat in config.ini at 94d0ab7f (rotate the key, then ask about a rewrite)
+  fix: references/security.md
 
-## CI workflows
-- ci.yml: no top-level `permissions:` (default token may be read-write)
-- third-party actions pinned by tag, not SHA: softprops/action-gh-release@v2 (zizmor flags these)
-- actions/checkout@v4: targets node20, deprecated (forced onto Node 24 with a warning); bump the major
-- dependabot.yml: no `cooldown` (wait ~7 days before proposing a release; assets/dependabot.yml)
+## Warning (fix or exempt before done)
+- actions_node_runtime: runners force Node 20 actions onto Node 24 with a warning; bump the major
+  - actions/checkout@v4: targets node20, deprecated; bump the major
+  fix: references/security.md
+- dependabot_cooldown: a release-day dependency update is how a hijacked package reaches you
+  - dependabot.yml: no `cooldown` (wait ~7 days before proposing a release)
+  fix: assets/dependabot.yml
+
+## Skipped (condition not met)
+- scorecard_workflow: needs public
 ```
+
+Each finding is a named Check with a severity and a pointer to its fix. An **error** blocks every outward-facing
+step (visibility change, release, an install command in the README) until fixed; a Check that doesn't fit the repo
+is skipped with the condition it needs, or exempted with a reason in `.repo-ready.yml`.
 
 It also checks secrets in the whole history (gitleaks), private paths, employer names and author emails, code
 provenance, whether the package name is free on PyPI/npm, broken README links, SKILL.md frontmatter that agents

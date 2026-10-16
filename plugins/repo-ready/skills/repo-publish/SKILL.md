@@ -46,7 +46,8 @@ judgement call with the user (rewriting a public repo's history breaks forks). T
 
 "Prepare it as far as it goes" for a private or local-only repo is a full run, not a lighter one: everything that
 lives in files gets done now, so going public later is a settings change, not a project. The preflight header names
-the mode (`repo: local` = no `origin`, `private`, `public`) and holds back the checks that only apply once public.
+the mode (`repo: local` = no `origin`, `private`, `public`); Checks that only apply once public are listed as
+skipped with `needs public`.
 
 - **Do in full:** Phase 1 (cheapest now: history that never left the machine can be rewritten without breaking
   anyone's clone; a secret that left it still gets rotated), Phase 2, Phase 3 with its mirror, Phase 4, the Phase 5
@@ -58,7 +59,7 @@ the mode (`repo: local` = no `origin`, `private`, `public`) and holds back the c
   until public. `release.yml` already skips attestations while private.
 - **Local only:** all of the above in the working tree. Creating the GitHub repo
   (`gh repo create NAME --private --source .`) and pushing are outward-facing: ask first.
-- **Deferred until the flip** (scorecard status "deferred", not "gaps"): `scorecard.yml`, social preview upload,
+- **Deferred until the flip** (scorecard status "deferred", not "gaps"; the preflight's `needs public` list): `scorecard.yml`, social preview upload,
   private vulnerability reporting, secret scanning and push protection, Discussions, branch protection (GitHub Free
   protects branches only on public repos), Phase 6 beyond the text, Phase 8. End the run with these as a flip
   checklist: the exact `gh` commands in order (`references/security.md` §7), visibility change first, each after a yes.
@@ -68,19 +69,18 @@ the mode (`repo: local` = no `origin`, `private`, `public`) and holds back the c
 Run the preflight first; it answers most questions without bothering the user:
 
 ```bash
-python3 <skill-dir>/scripts/preflight.py [project-path] [--private employer,client,internal-name]
+python3 <skill-dir>/scripts/preflight.py [project-path] --scenario publish [--private employer,client,internal-name]
 ```
 
-It prints a read-only report: missing community files and language mirrors, secret-looking and
-internal-looking tracked files (prompts, plans, agent folders), a gitleaks scan of history (when installed),
-private paths and names in files and history, author emails, monorepo subfolder status, broken or
-project-escaping README links, SKILL.md frontmatter that agents can't load, workflows without `permissions:`,
-actions still on Node 20 (deprecated; runners force them onto Node 24 with a warning), tag-pinned third-party actions, no secret scan
-in CI or pre-commit, no Scorecard,
-a Python app with a command but no installer or release workflow,
-whether the package name is free on PyPI/npm, and GitHub metadata (description vs package description, topics,
-social preview, empty release notes, branch protection, private vulnerability reporting, secret scanning and push
-protection).
+It prints a read-only report of named Checks (catalog in `scripts/catalog/`): history and secrets, private paths
+and provenance, community files and mirrors, README links and story, SKILL.md frontmatter, CI hardening, install
+and release, the package name on PyPI/npm, and GitHub metadata and settings. Failed and broken Checks come grouped
+by severity, each with its finding lines and a `fix:` pointer (a reference section, an asset, or a skill):
+**error** blocks every outward-facing step (visibility change, release, an install command in the README) until
+fixed; a broken error-level Check (it couldn't run, e.g. no gitleaks) blocks the same way. **warning** must be fixed
+or exempted before the phase is done; **info** is advice. Then judgement questions for you to answer by reading the
+repo, exemptions, skipped Checks with the condition they need, and the ids that passed. A Check that doesn't fit
+this repo gets an exemption in `.repo-ready.yml` (`exempt:` then `  check_id: reason`), after the user agrees.
 If the user mentioned an employer or client, pass its names with `--private`.
 
 Then ask only what the repo can't tell you, in the user's language, with a recommendation for each:

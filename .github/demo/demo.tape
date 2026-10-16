@@ -14,7 +14,7 @@ Type "export PS1='$ ' LESS=-R P=$PWD/plugins/repo-ready/skills/repo-publish/scri
 Enter
 Show
 
-Type "python3 $P/preflight.py . --private acme | grep -v '^- ok' | cat -s | less"
+Type "python3 $P/preflight.py . --scenario publish --private acme | less"
 Sleep 400ms
 Enter
 Sleep 6s
