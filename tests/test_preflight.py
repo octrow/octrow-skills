@@ -94,7 +94,23 @@ def preflight_report(repo: Path, scenario: str, files: dict[str, str]) -> str:
     return out.getvalue()
 
 
-class PreflightRun(unittest.TestCase):
+class ReportCase(unittest.TestCase):
+    """A preflight report built once per class in a throwaway repo (`cls.tmp`), with section helpers."""
+
+    report = ""
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmp.cleanup()
+
+    def failed(self) -> str:
+        return self.report.split("## Judgement")[0]
+
+    def passed(self) -> str:
+        return self.report.split("## Passed")[1]
+
+
+class PreflightRun(ReportCase):
     @classmethod
     def setUpClass(cls):
         cls.tmp = tempfile.TemporaryDirectory()
@@ -103,10 +119,6 @@ class PreflightRun(unittest.TestCase):
             ".env": "TOKEN=x\n",
             ".repo-ready.yml": "exempt:\n  readme_demo: CLI with no visual output\n",
         })
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.tmp.cleanup()
 
     def test_header_names_the_mode(self):
         self.assertIn("repo: local", self.report.splitlines()[0])
@@ -132,7 +144,7 @@ class PreflightRun(unittest.TestCase):
             self.assertIn(f"- {cid} [", judged)
 
 
-class DeployRun(unittest.TestCase):
+class DeployRun(ReportCase):
     """A container project with the classic gaps: named user, unpinned base, infra ports open to the network."""
 
     @classmethod
@@ -144,13 +156,6 @@ class DeployRun(unittest.TestCase):
             "docker-compose.yml": "services:\n  db:\n    image: postgres\n    ports:\n      - \"5432:5432\"\n",
             "README.md": "# svc\n",
         })
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.tmp.cleanup()
-
-    def failed(self) -> str:
-        return self.report.split("## Judgement")[0]
 
     def test_container_gaps_are_found(self):
         for cid in ("dockerfile_numeric_user", "dockerfile_base_digest", "dockerignore", "compose_infra_ports"):
@@ -167,7 +172,7 @@ class DeployRun(unittest.TestCase):
         self.assertRegex(self.report, r"helm_pod_security: needs helm_chart")
 
 
-class DeployEdgeCases(unittest.TestCase):
+class DeployEdgeCases(ReportCase):
     """Real-world shapes the first version misread (code review, 2026-10-16)."""
 
     @classmethod
@@ -192,16 +197,6 @@ class DeployEdgeCases(unittest.TestCase):
                                           "          provenance: false\n          sbom: true\n"
                                           "      - uses: actions/attest@v1\n",
         })
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.tmp.cleanup()
-
-    def failed(self) -> str:
-        return self.report.split("## Judgement")[0]
-
-    def passed(self) -> str:
-        return self.report.split("## Passed")[1]
 
     def test_variant_stage_inherits_the_user_and_arg_base_is_not_judged(self):
         for cid in ("dockerfile_numeric_user", "dockerfile_base_digest", "dockerfile_healthcheck", "dockerignore"):
