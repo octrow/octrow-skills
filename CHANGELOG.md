@@ -2,6 +2,20 @@
 
 Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.8.0] - 2026-10-16
+
+### Changed
+- The preflight, the Check catalog, the procedures (formerly `references/`) and the templates (`assets/`) move to
+  `plugins/repo-ready/engine/`, shared by every Scenario skill through an `engine/` symlink in the skill. The
+  Claude Code plugin keeps the link; `npx skills add` copies the folder in its place. On Windows, `npx` needs
+  `git config --global core.symlinks true` (README).
+- Every Check points at an exact section (`security.md#8-workflow-hardening`), and registration fails when the
+  heading doesn't exist; the report prints the path from the skill folder (`engine/procedures/...`).
+
+### Fixed
+- A pointer to a section that never existed (`#fresh-history-export`) and a duplicated line in `security.md`.
+- `language_mirrors` treats everything under `plugins/` as agent material (EN only), like `skills/`.
+
 ## [0.7.0] - 2026-10-16
 
 ### Added

@@ -12,7 +12,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-SKILL_DIR = Path(__file__).resolve().parent.parent
+ENGINE_DIR = Path(__file__).resolve().parent  # each Scenario skill links it in as `engine/`
 EXTERNAL_SKILLS = {"github-repo", "beautify-github-readme", "humanizer", "impeccable", "security-review"}
 FACTS = {
     "python": "pyproject.toml at the project root",
@@ -86,10 +86,34 @@ def _validate(c: Check) -> None:
         raise ValueError(f"{c.id}: needs a known scenario, got {sorted(c.scenarios)}")
     if c.severity not in SEVERITIES or c.kind not in KINDS:
         raise ValueError(f"{c.id}: bad severity {c.severity!r} or kind {c.kind!r}")
-    target = c.procedure.removeprefix("skill:")
-    # ponytail: checks the file, not the #anchor inside it
-    if target not in EXTERNAL_SKILLS and not (SKILL_DIR / target.split("#")[0]).exists():
-        raise ValueError(f"{c.id}: procedure {c.procedure} not found")
+    if problem := procedure_problem(c.procedure):
+        raise ValueError(f"{c.id}: procedure {c.procedure}: {problem}")
+
+
+def procedure_problem(proc: str) -> str:
+    """Why a Procedure pointer doesn't resolve: `skill:<name>`, `assets/<path>`, or `<file>.md#<heading-slug>`."""
+    if proc.startswith("skill:"):
+        return "" if proc[6:] in EXTERNAL_SKILLS else "unknown skill"
+    if proc.startswith("assets/"):
+        return "" if (ENGINE_DIR / proc).is_file() else "asset not found"
+    name, _, anchor = proc.partition("#")
+    path = ENGINE_DIR / "procedures" / name
+    if not path.is_file():
+        return "procedure file not found"
+    return "" if anchor in heading_slugs(path) else "no such anchor (a GitHub heading slug is required)"
+
+
+def heading_slugs(path: Path) -> set[str]:
+    """GitHub's anchors for the headings of a Markdown file."""
+    heads = re.findall(r"^#+\s+(.+?)\s*$", path.read_text(encoding="utf-8"), re.M)
+    return {re.sub(r"\s", "-", re.sub(r"[^\w\s-]", "", h.lower())) for h in heads}
+
+
+def procedure_path(proc: str) -> str:
+    """The pointer as a path from the Scenario skill's folder, the way the agent opens it."""
+    if proc.startswith("skill:"):
+        return proc
+    return f"engine/{proc}" if proc.startswith("assets/") else f"engine/procedures/{proc}"
 
 
 def check(id: str, *, severity: str, when: tuple[str, ...] = (), scenarios: set[str], kind: str, why: str,

@@ -62,17 +62,17 @@ skipped with `needs public`.
 - **Deferred until the flip** (scorecard status "deferred", not "gaps"; the preflight's `needs public` list): `scorecard.yml`, social preview upload,
   private vulnerability reporting, secret scanning and push protection, Discussions, branch protection (GitHub Free
   protects branches only on public repos), Phase 6 beyond the text, Phase 8. End the run with these as a flip
-  checklist: the exact `gh` commands in order (`references/security.md` §7), visibility change first, each after a yes.
+  checklist: the exact `gh` commands in order (`engine/procedures/security.md` §7), visibility change first, each after a yes.
 
 ## Phase 0: scope (one short exchange)
 
 Run the preflight first; it answers most questions without bothering the user:
 
 ```bash
-python3 <skill-dir>/scripts/preflight.py [project-path] --scenario publish [--private employer,client,internal-name]
+python3 <skill-dir>/engine/preflight.py [project-path] --scenario publish [--private employer,client,internal-name]
 ```
 
-It prints a read-only report of named Checks (catalog in `scripts/catalog/`): history and secrets, private paths
+It prints a read-only report of named Checks (catalog in `engine/catalog/`): history and secrets, private paths
 and provenance, community files and mirrors, README links and story, SKILL.md frontmatter, CI hardening, install
 and release, the package name on PyPI/npm, and GitHub metadata and settings. Failed and broken Checks come grouped
 by severity, each with its finding lines and a `fix:` pointer (a reference section, an asset, or a skill):
@@ -101,16 +101,16 @@ Then ask only what the repo can't tell you, in the user's language, with a recom
 
 ## Phase 1: security and history hygiene
 
-Read `references/security.md`. Short version: scan the whole history for secrets (not just HEAD), make sure
+Read `engine/procedures/security.md`. Short version: scan the whole history for secrets (not just HEAD), make sure
 `.env` and local data are ignored, check licenses of vendored or ported code (`third_party_code`),
 keep heavy data out of the package. Renaming the default branch to `main` changes the remote and breaks
 existing clones' tracking, so propose it and do it after a yes. Delegate a code-level review to
 `security-review` (or the `code-reviewer` agent) when `code_security_review` says it's needed.
 
-Then keep it clean: `assets/pre-commit-config.yaml` (gitleaks, zizmor, actionlint, plus checks for large files,
+Then keep it clean: `engine/assets/pre-commit-config.yaml` (gitleaks, zizmor, actionlint, plus checks for large files,
 merge markers, case clashes and broken YAML/TOML; no auto-fixers, so the first run doesn't rewrite the repo) and
-`assets/workflows/security.yml` (gitleaks over the whole history in CI), push protection after the visibility flip
-(`references/security.md`, "Keep scanning after launch").
+`engine/assets/workflows/security.yml` (gitleaks over the whole history in CI), push protection after the visibility flip
+(`engine/procedures/security.md`, "Keep scanning after launch").
 
 A secret found in history means rotate first, then rewrite history; rotation is the part that actually helps.
 Tell the user; don't rewrite history without asking.
@@ -118,19 +118,19 @@ Tell the user; don't rewrite history without asking.
 Private paths (`/home/<user>`, `~/work/...`), employer or client names, internal project names and work emails are
 not secrets to a scanner, but they publish more than the user intends. Clean the files; for history, and for a
 project that lives in a monorepo subfolder, recommend exporting it as its own repo with fresh history
-(`references/security.md`, "Fresh-history export"). Internal working files (session prompts, plans, scratch notes)
+(`engine/procedures/security.md`, "Fresh-history export"). Internal working files (session prompts, plans, scratch notes)
 either move out or get published on purpose: ask which.
 
 ## Phase 2: install, first run, releases
 
-Read `references/release.md`. The goal is `first_run`: one command per OS to install and one to run, keys
+Read `engine/procedures/release.md`. The goal is `first_run`: one command per OS to install and one to run, keys
 optional where possible, and a `doctor`/`config` step that tells the user what is missing in plain words. Test the installers in CI
 on Linux, macOS and Windows; installers break on the platform nobody ran locally (legacy code pages on Windows,
 missing PATH entries).
 
-Python + uv apps start from the templates rather than from scratch: `assets/install.sh` and `assets/install.ps1`
-(uv, then the wheel from the latest GitHub release; `--version`, `--main`, `--uninstall`), `assets/workflows/install.yml`
-(runs both installers on three OSes against the current commit) and `assets/workflows/release.yml` (tag → tests →
+Python + uv apps start from the templates rather than from scratch: `engine/assets/install.sh` and `engine/assets/install.ps1`
+(uv, then the wheel from the latest GitHub release; `--version`, `--main`, `--uninstall`), `engine/assets/workflows/install.yml`
+(runs both installers on three OSes against the current commit) and `engine/assets/workflows/release.yml` (tag → tests →
 wheel, sdist, optional PyInstaller binaries for Linux x86_64/arm64, macOS arm64 and Windows → optional PyPI → one
 attested GitHub release). Fill the placeholders (`OWNER/REPO`, `PKG`, `CMD`, `PKG_DIR`), then adapt or delete each
 `# PROJECT:` block; https://github.com/octrow/repo-scout has every block filled in. Ask whether the project needs
@@ -160,27 +160,27 @@ GitHub release only, and say so in the README.
    Sub-skill not in the skill list? It may be installed per project (`<repo>/.agents/skills/<name>`); read its
    SKILL.md from there, or apply the reference files here, and say which you did.
 3. **Plain language**: `humanizer` skill on README and other prose. Prose should read like the author wrote it.
-4. **SEO pass on the opening**: `references/seo.md`, "README opening" section.
-5. **Mirror**: `references/bilingual.md`.
+4. **SEO pass on the opening**: `engine/procedures/seo.md`, "README opening" section.
+5. **Mirror**: `engine/procedures/bilingual.md`.
 
 ## Phase 4: GUI (if the project has one)
 
-Read `references/gui.md`. Delegate the design work to `impeccable` (critique, polish, audit) or, for NiceGUI
+Read `engine/procedures/gui.md`. Delegate the design work to `impeccable` (critique, polish, audit) or, for NiceGUI
 projects on the shared kit, `nicegui-kit-gui`. The rule that came from real use: compare against the screenshots
 already in the README before changing a look, and show before/after. A "best practice" is a hypothesis, and the
-user may like what they have better. Then refresh the README screenshots with `scripts/shots.py`, at the same file
+user may like what they have better. Then refresh the README screenshots with `engine/shots.py`, at the same file
 names, sizes and device scale, so the README needs no edits.
 
 ## Phase 5: community files and CI
 
 `github-repo` skill covers the files: LICENSE, CONTRIBUTING, SECURITY (private advisory link), CODE_OF_CONDUCT
 (Contributor Covenant 2.1), YAML issue forms with `config.yml`, PR template, Dependabot, CI with tests and lint.
-Each prose file gets its mirror (`references/bilingual.md`).
+Each prose file gets its mirror (`engine/procedures/bilingual.md`).
 
-CI files come from `assets/` rather than being written from scratch: `dependabot.yml`, `workflows/security.yml`,
+CI files come from `engine/assets/` rather than being written from scratch: `dependabot.yml`, `workflows/security.yml`,
 `workflows/scorecard.yml` (public repos) and `pre-commit-config.yaml`. Actions in them are pinned to commit SHAs
 with the version in a comment; adapt the details (package ecosystem, branch), keep the hardening
-(`references/security.md`, §8–9). Lint the result before committing:
+(`engine/procedures/security.md`, §8–9). Lint the result before committing:
 `uvx zizmor .github/workflows && uvx --from actionlint-py actionlint`. Settings that live on GitHub, not in files:
 private vulnerability reporting, secret scanning and push protection, branch protection or a ruleset on `main`,
 unused Wiki/Projects off.
@@ -195,15 +195,15 @@ project: a stale bot (it closes valid reports and reads as an unmaintained repo)
 
 ## Phase 6: discoverability (SEO)
 
-Read `references/seo.md`. Description, topics, homepage, social preview image, README opening, release cadence.
+Read `engine/procedures/seo.md`. Description, topics, homepage, social preview image, README opening, release cadence.
 The social preview can't be set via API; generate the 1280×640 PNG and tell the user where to upload it.
 No buying stars, no star-for-star rings, no fake accounts: that breaks GitHub's terms, the burst shows on any
 star chart, and stars vanish when GitHub removes the accounts.
 
 ## Phase 7: release
 
-Python package: start from `assets/workflows/release.yml` (one workflow for wheel, binaries, PyPI and the GitHub
-release). Going to PyPI: set up trusted publishing first, so no API token is ever stored (`references/release.md`, "Publishing without tokens"). Then bump the version, update CHANGELOG/release notes from `git log <last-tag>..HEAD`, tag, push the tag, and wait
+Python package: start from `engine/assets/workflows/release.yml` (one workflow for wheel, binaries, PyPI and the GitHub
+release). Going to PyPI: set up trusted publishing first, so no API token is ever stored (`engine/procedures/release.md`, "Publishing without tokens"). Then bump the version, update CHANGELOG/release notes from `git log <last-tag>..HEAD`, tag, push the tag, and wait
 for the release workflow to go green before announcing. Check the built artifacts' size (sdist excludes) and that the
 README's install commands point at the new release.
 
@@ -213,7 +213,7 @@ Off by default: no channel plan, post or article drafts (Reddit, Habr, Product H
 unless the user asks for a launch or for posts. Otherwise end with one line offering it.
 
 Stars come from people seeing the project, not from files: a day-old repo with a perfect README still has zero.
-Read `references/launch.md`: a readiness gate (install works on a clean machine, a 10–20 s demo GIF, README answers
+Read `engine/procedures/launch.md`: a readiness gate (install works on a clean machine, a 10–20 s demo GIF, README answers
 "why not just X"), then a plan per channel with drafts written for the Phase 0 audience, and how to measure.
 Drafting posts is fine; posting anything, opening PRs to awesome lists or messaging people needs a yes per item.
 

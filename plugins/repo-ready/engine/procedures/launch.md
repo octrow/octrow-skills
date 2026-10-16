@@ -15,7 +15,7 @@ Everything here is advice and drafts. Posting, opening PRs to lists or messaging
   `vhs` (a `.tape` script → GIF, re-record after changes) or `asciinema rec` + `agg` for terminal tools; for a GUI,
   a short screen capture converted with `ffmpeg` (keep it under ~5 MB).
 - **"Why not just X?"** answered in the README: a short honest comparison with the obvious alternatives.
-- **Social preview uploaded**, description and topics set (`references/seo.md`): every link shared below shows them.
+- **Social preview uploaded**, description and topics set (`engine/procedures/seo.md`): every link shared below shows them.
 - **Release with notes** (not just "Full Changelog"), so "what's new" has an answer.
 - **Issues open, templates in place**, and the user has time that week to answer within a day.
 

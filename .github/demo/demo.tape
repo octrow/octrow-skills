@@ -10,7 +10,7 @@ Set Theme "GitHub Dark"
 Set TypingSpeed 40ms
 
 Hide
-Type "export PS1='$ ' LESS=-R P=$PWD/plugins/repo-ready/skills/repo-publish/scripts && cd /tmp/weather-cli && clear"
+Type "export PS1='$ ' LESS=-R P=$PWD/plugins/repo-ready/engine && cd /tmp/weather-cli && clear"
 Enter
 Show
 

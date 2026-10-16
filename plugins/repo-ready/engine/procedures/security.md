@@ -23,12 +23,12 @@ Found one:
 
 ### Keep scanning after launch
 
-A one-off scan protects today's history; the next commit can leak again. Install both layers from `assets/`:
+A one-off scan protects today's history; the next commit can leak again. Install both layers from `engine/assets/`:
 
-- **Pre-commit** (stops a leak before it's a commit): copy `assets/pre-commit-config.yaml` to
+- **Pre-commit** (stops a leak before it's a commit): copy `engine/assets/pre-commit-config.yaml` to
   `.pre-commit-config.yaml`, then `pre-commit install`. It runs gitleaks on staged changes, zizmor and
   actionlint on workflows, and refuses files over 1 MB, merge markers and case-clashing names. Revs go stale; `pre-commit autoupdate` refreshes them.
-- **CI** (catches what skipped the hook, `--no-verify` or a web edit): `assets/workflows/security.yml` runs
+- **CI** (catches what skipped the hook, `--no-verify` or a web edit): `engine/assets/workflows/security.yml` runs
   `gitleaks-action@v3` over the whole history (`fetch-depth: 0`) on push, PR and weekly. `@v2` targets Node 20, which
   runners now force onto Node 24 with a warning. Personal repos need no license; an organization repo needs the free
   `GITLEAKS_LICENSE` secret from gitleaks.io (ask the user to request it), or swap the job for
@@ -116,10 +116,7 @@ gh api -X PUT repos/OWNER/REPO/automated-security-fixes            # Dependabot 
 
 - `SECURITY.md` links to `https://github.com/OWNER/REPO/security/advisories/new`, states a response time and
   which versions get fixes, and says where the tool keeps keys and where it sends them.
-- Dependabot for the package manager and for `github-actions`.
-- Package name: free on PyPI/npm, or published from this repo (preflight). A taken name means `pipx install <name>`
-  installs someone else's code.
-- Dependabot (`assets/dependabot.yml`) for the package manager and for `github-actions`; the latter keeps
+- Dependabot (`engine/assets/dependabot.yml`) for the package manager and for `github-actions`; the latter keeps
   SHA pins current.
 - Package name: free on PyPI/npm, or published from this repo (preflight). A taken name means `pipx install <name>`
   installs someone else's code.
@@ -153,12 +150,12 @@ Workflows run with a token and often with secrets; a bad one is a supply-chain h
   Both need the repo public or GitHub Advanced Security.
 - Checklists found online (e.g. github/awesome-copilot's CI/CD instructions) agree on SHA pins, least privilege,
   OIDC and secret scanning, but their example pins can be Node 20 versions; check them like any other `uses:`.
-- `zizmor` and `actionlint` catch the rest; both are in `assets/pre-commit-config.yaml`
+- `zizmor` and `actionlint` catch the rest; both are in `engine/assets/pre-commit-config.yaml`
   (or one-off: `uvx zizmor .github/workflows`, `uvx --from actionlint-py actionlint`).
 
 ## 9. OpenSSF Scorecard (public repos)
 
-`assets/workflows/scorecard.yml` runs the Scorecard checks weekly (branch protection, pinned deps, token
+`engine/assets/workflows/scorecard.yml` runs the Scorecard checks weekly (branch protection, pinned deps, token
 permissions, SAST, signed releases…), uploads the result to Security → Code scanning and publishes it to
 scorecard.dev. The badge in the README is a trust signal for people deciding whether to install. Its findings
 are a to-do list, not a target: a solo project won't get "Code-Review" points, and that's fine. Keep the

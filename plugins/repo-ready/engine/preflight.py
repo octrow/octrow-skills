@@ -6,7 +6,7 @@ usage: preflight.py [project-path] [--private word1,word2] [--scenario publish]
 project-path may be the repo root or a subfolder of a monorepo (then history checks cover that folder only).
 --private: extra words that must not be published (employer, client, internal project names).
 --scenario: run only that Scenario's Checks; without it every Check runs (audit mode).
-Checks live in catalog/*.py; a repo excuses one in .repo-ready.yml (`exempt:` then `  check_id: reason`).
+Checks live in catalog/*.py, their Procedures in procedures/*.md and assets/; a repo excuses one in .repo-ready.yml (`exempt:` then `  check_id: reason`).
 Needs git; uses gitleaks (full secret scan) and `gh` (GitHub metadata) when available; asks PyPI/npm whether the
 package name is taken (network, read-only).
 """
@@ -17,7 +17,8 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True  # importing the catalog must not leave __pycache__ in an audited repo that holds it
 import registry  # noqa: E402  (after dont_write_bytecode on purpose)
-from registry import EXEMPTIONS_FILE, FACTS, Outcome, evaluate, parse_exemptions, repo, run, tracked  # noqa: E402
+from registry import (EXEMPTIONS_FILE, FACTS, Outcome, evaluate, parse_exemptions,  # noqa: E402
+                      procedure_path, repo, run, tracked)
 
 PACKS = ["catalog.core"]
 STATES = ("fail", "broken")
@@ -71,7 +72,7 @@ def exemptions() -> dict[str, str]:
 def finding(o: Outcome) -> str:
     c = o.check
     head = f"- {c.id}{' (broken: could not run)' if o.state == 'broken' else ''}: {c.why}"
-    return "\n".join([head, *(f"  - {x}" for x in o.lines), f"  fix: {c.procedure}"])
+    return "\n".join([head, *(f"  - {x}" for x in o.lines), f"  fix: {procedure_path(c.procedure)}"])
 
 
 def report(outcomes: list[Outcome]) -> None:
@@ -91,7 +92,7 @@ def print_judgements(outcomes: list[Outcome]) -> None:
     print("\n## Judgement (answer by reading the repo)")
     for o in outcomes:
         print("\n".join([f"- {o.check.id} [{o.check.severity}]: {o.check.question}",
-                         *(f"  - {x}" for x in o.lines), f"  fix: {o.check.procedure}"]))
+                         *(f"  - {x}" for x in o.lines), f"  fix: {procedure_path(o.check.procedure)}"]))
 
 
 def print_rest(outcomes: list[Outcome]) -> None:

@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SCRIPTS = Path(__file__).resolve().parent.parent / "plugins/repo-ready/skills/repo-publish/scripts"
+SCRIPTS = Path(__file__).resolve().parent.parent / "plugins/repo-ready/engine"
 sys.path.insert(0, str(SCRIPTS))
 
 import catalog.core  # noqa: F401  registers the Checks the tests refer to
@@ -15,7 +15,7 @@ import preflight
 import registry
 
 GOOD = {"severity": "warning", "when": (), "scenarios": {"publish"}, "kind": "files", "why": "w",
-        "procedure": "references/security.md"}
+        "procedure": "security.md#1-secrets-in-history-not-just-head"}
 
 
 class RegistryRules(unittest.TestCase):
@@ -29,7 +29,16 @@ class RegistryRules(unittest.TestCase):
 
     def test_missing_procedure_file_fails(self):
         with self.assertRaisesRegex(ValueError, "procedure"):
-            registry.check("t_proc", **{**GOOD, "procedure": "references/nope.md"})(list)
+            registry.check("t_proc", **{**GOOD, "procedure": "nope.md#x"})(list)
+
+    def test_missing_procedure_anchor_fails(self):
+        with self.assertRaisesRegex(ValueError, "anchor"):
+            registry.check("t_anchor", **{**GOOD, "procedure": "security.md#no-such-section"})(list)
+
+    def test_procedure_is_shown_as_a_path_from_the_skill(self):
+        self.assertEqual(registry.procedure_path("security.md#x"), "engine/procedures/security.md#x")
+        self.assertEqual(registry.procedure_path("assets/dependabot.yml"), "engine/assets/dependabot.yml")
+        self.assertEqual(registry.procedure_path("skill:humanizer"), "skill:humanizer")
 
     def test_duplicate_id_fails(self):
         with self.assertRaisesRegex(ValueError, "duplicate"):
@@ -102,7 +111,7 @@ class PreflightRun(unittest.TestCase):
     def test_failure_carries_its_procedure(self):
         block = self.report.split("readme_links")[1].split("\n- ")[0]
         self.assertIn("docs/missing.md", block)
-        self.assertIn("fix:", block)
+        self.assertIn("fix: skill:github-repo", block)
 
     def test_github_checks_are_skipped_with_the_missing_fact(self):
         self.assertRegex(self.report, r"repo_topics: needs github")

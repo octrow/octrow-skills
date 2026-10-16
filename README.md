@@ -27,6 +27,9 @@ Other agents (Codex, Cursor, Gemini CLI and more) via [skills](https://github.co
 npx skills add octrow/octrow-skills --skill repo-publish -g
 ```
 
+On Windows, run `git config --global core.symlinks true` first: the skill links in its shared `engine/` folder, and
+Git for Windows checks symlinks out as plain text files by default.
+
 From a local clone: `claude plugin marketplace add ./octrow-skills`.
 
 The same marketplace has [repo-scout](https://github.com/octrow/repo-scout), a skill that finds GitHub repos to
@@ -48,15 +51,15 @@ test repo:
 ## Error (blocks outward-facing steps)
 - secrets_in_history: once public, history is copied and indexed; a leaked key is only safe after rotation
   - gitleaks: github-pat in config.ini at 94d0ab7f (rotate the key, then ask about a rewrite)
-  fix: references/security.md
+  fix: engine/procedures/security.md#1-secrets-in-history-not-just-head
 
 ## Warning (fix or exempt before done)
 - actions_node_runtime: runners force Node 20 actions onto Node 24 with a warning; bump the major
   - actions/checkout@v4: targets node20, deprecated; bump the major
-  fix: references/security.md
+  fix: engine/procedures/security.md#8-workflow-hardening
 - dependabot_cooldown: a release-day dependency update is how a hijacked package reaches you
   - dependabot.yml: no `cooldown` (wait ~7 days before proposing a release)
-  fix: assets/dependabot.yml
+  fix: engine/assets/dependabot.yml
 
 ## Skipped (condition not met)
 - scorecard_workflow: needs public
@@ -94,7 +97,7 @@ A private or local-only repo gets the same run: everything that lives in files i
 only work once public (Scorecard, social preview, private vulnerability reporting, push protection) end up in a
 checklist of `gh` commands for the day you flip it.
 
-The fixes come as ready files in [`assets/`](plugins/repo-ready/skills/repo-publish/assets): a pre-commit config
+The fixes come as ready files in [`assets/`](plugins/repo-ready/engine/assets): a pre-commit config
 (gitleaks, zizmor, actionlint, large-file and merge-marker checks), a security workflow (gitleaks over the whole history), OpenSSF Scorecard,
 `install.sh`/`install.ps1` installers with a CI check on three OSes, a release workflow (wheel, binaries for
 Linux/macOS/Windows, PyPI via trusted publishing, build provenance), and Dependabot with a cooldown. Actions are pinned to commit
@@ -120,7 +123,8 @@ entry points there.
 ```
 .claude-plugin/marketplace.json     list of plugins
 plugins/<name>/.claude-plugin/      plugin manifest
-plugins/<name>/skills/<name>/       SKILL.md, references/, scripts/, assets/
+plugins/<name>/skills/<name>/       SKILL.md of one Scenario, plus the `engine/` link
+plugins/repo-ready/engine/          preflight, Check catalog, procedures/ and assets/ shared by the Scenarios
 evals/<name>.json                   test prompts and assertions used to tune each skill
 ```
 

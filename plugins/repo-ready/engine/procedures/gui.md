@@ -9,7 +9,7 @@
    expected a difference (another branch, stash, machine).
 1. Find the screenshots the README already shows (`assets/readme/`, `docs/`). They are the "before", and the user has
    seen and accepted them.
-2. Run the app and take the same views at the same sizes (`scripts/shots.py`), so "before" and "after" compare 1:1.
+2. Run the app and take the same views at the same sizes (`engine/shots.py`), so "before" and "after" compare 1:1.
 3. Read the user's saved taste in memory (e.g. dense tables, one value per column, one line per row). Taste beats
    a generic best practice.
 
@@ -46,7 +46,7 @@ that part fully and record why in memory; don't keep half of a rejected change.
 - Keep images small: PNG of UI is fine at ~100–300 KB each; exclude `assets/` from the package.
 - The spec is the only record of viewport heights (a dialog's PNG size depends on the window height and can't be
   read back from the image), so save it even when nothing needed re-shooting; offer it as a file to commit.
-- Use `scripts/shots.py <spec.json> <out-dir> [base-url]`; write the spec once per repo next to the screenshots
+- Use `engine/shots.py <spec.json> <out-dir> [base-url]`; write the spec once per repo next to the screenshots
   (e.g. `assets/readme/shots.json`) in a folder the package build excludes. Check the excludes:
   `docs/` often ships in the sdist.
 - Changed PNGs only if pixels changed: re-encoding an identical image still shows up as a binary diff.

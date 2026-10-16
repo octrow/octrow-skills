@@ -28,6 +28,9 @@ claude plugin install repo-ready@octrow-skills
 npx skills add octrow/octrow-skills --skill repo-publish -g
 ```
 
+На Windows сначала выполните `git config --global core.symlinks true`: скилл подключает общую папку `engine/`
+символической ссылкой, а Git for Windows по умолчанию превращает ссылки в обычные текстовые файлы.
+
 Из локального клона: `claude plugin marketplace add ./octrow-skills`.
 
 В том же маркетплейсе есть [repo-scout](https://github.com/octrow/repo-scout), скилл, который ищет на GitHub
@@ -49,15 +52,15 @@ Claude Tag: администратор подключает этот репоз�
 ## Error (blocks outward-facing steps)
 - secrets_in_history: once public, history is copied and indexed; a leaked key is only safe after rotation
   - gitleaks: github-pat in config.ini at 94d0ab7f (rotate the key, then ask about a rewrite)
-  fix: references/security.md
+  fix: engine/procedures/security.md#1-secrets-in-history-not-just-head
 
 ## Warning (fix or exempt before done)
 - actions_node_runtime: runners force Node 20 actions onto Node 24 with a warning; bump the major
   - actions/checkout@v4: targets node20, deprecated; bump the major
-  fix: references/security.md
+  fix: engine/procedures/security.md#8-workflow-hardening
 - dependabot_cooldown: a release-day dependency update is how a hijacked package reaches you
   - dependabot.yml: no `cooldown` (wait ~7 days before proposing a release)
-  fix: assets/dependabot.yml
+  fix: engine/assets/dependabot.yml
 
 ## Skipped (condition not met)
 - scorecard_workflow: needs public
@@ -95,7 +98,7 @@ preview, защиту ветки, secret scanning и приватные сооб
 настройки, которые работают только у публичного репо (Scorecard, social preview, приватные сообщения об уязвимостях,
 push protection), собираются в список команд `gh` на день, когда вы его откроете.
 
-Исправления лежат готовыми файлами в [`assets/`](plugins/repo-ready/skills/repo-publish/assets): конфиг
+Исправления лежат готовыми файлами в [`assets/`](plugins/repo-ready/engine/assets): конфиг
 pre-commit (gitleaks, zizmor, actionlint, проверка больших файлов и маркеров конфликтов), workflow безопасности (gitleaks по всей истории), OpenSSF Scorecard,
 установщики `install.sh`/`install.ps1` с проверкой в CI на трёх ОС, workflow релиза (wheel, бинарники под
 Linux/macOS/Windows, PyPI через trusted publishing, подпись сборок) и Dependabot с cooldown. Экшены закреплены по SHA коммитов,
@@ -121,7 +124,8 @@ Linux/macOS/Windows, PyPI через trusted publishing, подпись сбор
 ```
 .claude-plugin/marketplace.json     список плагинов
 plugins/<name>/.claude-plugin/      манифест плагина
-plugins/<name>/skills/<name>/       SKILL.md, references/, scripts/, assets/
+plugins/<name>/skills/<name>/       SKILL.md одного сценария и ссылка `engine/`
+plugins/repo-ready/engine/          preflight, каталог проверок, procedures/ и assets/, общие для сценариев
 evals/<name>.json                   тестовые запросы и проверки, по которым настраивался скилл
 ```
 

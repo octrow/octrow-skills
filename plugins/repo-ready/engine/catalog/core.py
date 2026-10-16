@@ -14,7 +14,7 @@ COMMUNITY = ["README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", "CODE_OF_
              ".github/ISSUE_TEMPLATE", ".github/pull_request_template.md", ".github/dependabot.yml",
              ".github/workflows"]
 SECRET_FILES = re.compile(r"(^|/)(\.env(\.[^/]*)?|id_rsa[^/]*|[^/]*\.pem|[^/]*\.key|credentials[^/]*\.json)$")
-MONO_LANG = re.compile(r"(^|/)skills/|(^|/)CHANGELOG\.md$")  # agent instructions, release notes: EN only
+MONO_LANG = re.compile(r"(^|/)(skills|plugins)/|(^|/)CHANGELOG\.md$")  # agent material, release notes: EN only
 SAFE_ENV = re.compile(r"\.env\.(example|sample|template)$")
 # ponytail: a few well-known token shapes, used only when gitleaks isn't installed
 TOKENS = r"(ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{40,}|sk-[A-Za-z0-9_-]{32,}|AKIA[0-9A-Z]{16}|xox[bp]-[A-Za-z0-9-]{20,})"
@@ -60,7 +60,7 @@ def community_files() -> list[str]:
 
 @check("language_mirrors", severity="warning", when=("bilingual",), scenarios=PUB, kind="files",
        why="a bilingual repo where some docs exist in one language only reads as abandoned halfway",
-       procedure="references/bilingual.md")
+       procedure="bilingual.md#docs-layout")
 def language_mirrors() -> list[str]:
     docs = [f for f in tracked() if f.endswith(".md") and "/." not in f and not f.startswith(".")]
     stems, out = {f[:-3] for f in docs}, []
@@ -76,21 +76,21 @@ def language_mirrors() -> list[str]:
 
 @check("secret_files_tracked", severity="error", scenarios=PUB, kind="files",
        why="a tracked .env or key file is published with the first push",
-       procedure="references/security.md")
+       procedure="security.md#2-files-that-shouldnt-be-tracked")
 def secret_files_tracked() -> list[str]:
     return [f for f in tracked() if SECRET_FILES.search(f) and not SAFE_ENV.search(f)]
 
 
 @check("internal_files_tracked", severity="warning", scenarios=PUB, kind="files",
        why="session prompts, plans and agent folders publish more than intended",
-       procedure="references/security.md")
+       procedure="security.md#3-provenance-private-names-fresh-history")
 def internal_files_tracked() -> list[str]:
     return [f"{f} (publish on purpose or remove)" for f in tracked() if INTERNAL.search(f)]
 
 
 @check("big_files_tracked", severity="warning", scenarios=PUB, kind="files",
        why="heavy data bloats every clone and the package",
-       procedure="references/security.md")
+       procedure="security.md#5-package-contents")
 def big_files_tracked() -> list[str]:
     return [f"{f} ({(repo.root / f).stat().st_size // 1024} KB)" for f in tracked()
             if (repo.root / f).is_file() and (repo.root / f).stat().st_size > BIG_FILE]
@@ -98,7 +98,7 @@ def big_files_tracked() -> list[str]:
 
 @check("gitignore_gaps", severity="warning", scenarios=PUB, kind="git",
        why="an unignored .env or build folder gets committed by the next `git add .`",
-       procedure="references/security.md")
+       procedure="security.md#2-files-that-shouldnt-be-tracked")
 def gitignore_gaps() -> list[str]:
     found = [name for name, (marker, _) in PROBES.items() if (repo.root / marker).exists()]
     probes = PROBES_ANY + [p for name in found for p in PROBES[name][1]]
@@ -113,7 +113,7 @@ def gitignore_gaps() -> list[str]:
 
 @check("secrets_in_history", severity="error", scenarios=PUB, kind="git",
        why="once public, history is copied and indexed; a leaked key is only safe after rotation",
-       procedure="references/security.md")
+       procedure="security.md#1-secrets-in-history-not-just-head")
 def secrets_in_history() -> list[str]:
     if not shutil.which("gitleaks"):
         hits = sorted(set(re.findall(TOKENS, history_of(TOKENS, "-p"))))
@@ -135,7 +135,7 @@ def private_pattern() -> str:
 
 @check("private_paths_in_files", severity="warning", scenarios=PUB, kind="git",
        why="home paths, employer or client names are not secrets to a scanner but publish more than intended",
-       procedure="references/security.md")
+       procedure="security.md#3-provenance-private-names-fresh-history")
 def private_paths_in_files() -> list[str]:
     now = list(dict.fromkeys(run("git", "grep", "-n", "-I", "-i", "-o", "-E", private_pattern()).splitlines()))
     out = capped(now)
@@ -147,7 +147,7 @@ def private_paths_in_files() -> list[str]:
 
 @check("private_paths_in_history", severity="warning", scenarios=PUB, kind="git",
        why="a fix in HEAD leaves the old commits public",
-       procedure="references/security.md#fresh-history-export")
+       procedure="security.md#3-provenance-private-names-fresh-history")
 def private_paths_in_history() -> list[str]:
     past = history_of(private_pattern(), "-i").split()
     return [f"in {len(past)} past commits (still public after a fix; a fresh-history export avoids it)"] if past else []
@@ -155,7 +155,7 @@ def private_paths_in_history() -> list[str]:
 
 @check("subfolder_project", severity="warning", when=("subfolder",), scenarios=PUB, kind="git",
        why="publishing a monorepo folder publishes the whole repo's history",
-       procedure="references/security.md#fresh-history-export")
+       procedure="security.md#3-provenance-private-names-fresh-history")
 def subfolder_project() -> list[str]:
     return [f"project is the subfolder `{repo.rel}` of {repo.top.name}: publish it as its own repo; "
             "export the folder with fresh history unless the old commits are clean"]
@@ -163,19 +163,19 @@ def subfolder_project() -> list[str]:
 
 judgement("author_emails", severity="info", scenarios=PUB,
           question="Are all author emails in history fine to publish? A work email here is published too.",
-          procedure="references/security.md#fresh-history-export",
+          procedure="security.md#3-provenance-private-names-fresh-history",
           evidence=lambda: [", ".join(sorted(set(run("git", "log", "--all", "--format=%ae", "--",
                                                      repo.rel or ".", cwd=repo.top).split())))])
 
 judgement("provenance", severity="error", scenarios=PUB,
           question="Was any of this code written for an employer or client, or taken from another project? "
                    "Ask before publishing; it blocks anything public until answered.",
-          procedure="references/security.md")
+          procedure="security.md#3-provenance-private-names-fresh-history")
 
 judgement("third_party_code", severity="warning", scenarios=PUB,
           question="Is any code vendored, ported or copied from elsewhere? If so, is its license compatible and "
                    "credited in THIRD_PARTY_NOTICES.md?",
-          procedure="references/security.md")
+          procedure="security.md#4-licenses-of-borrowed-code")
 
 judgement("code_security_review", severity="warning", scenarios=PUB,
           question="Does the project handle keys, user input, subprocesses or files? Then a code-level security "
@@ -185,15 +185,15 @@ judgement("code_security_review", severity="warning", scenarios=PUB,
 
 @check("default_branch_master", severity="warning", scenarios=PUB, kind="git",
        why="`main` is the default new contributors and tools expect",
-       procedure="references/security.md")
+       procedure="security.md#7-github-settings-outward-facing-list-the-commands-run-after-a-yes")
 def default_branch_master() -> list[str]:
     branch = run("git", "symbolic-ref", "--short", "HEAD").strip()
     return [f"current branch is `{branch}`, default should be `main` (rename after a yes)"] if branch == "master" else []
 
 
 @check("master_mentions", severity="info", scenarios=PUB, kind="git",
-       why="docs and scripts that say `master` break after the branch rename",
-       procedure="references/security.md")
+       why="docs and scripts that name the old default branch break after the rename",
+       procedure="security.md#7-github-settings-outward-facing-list-the-commands-run-after-a-yes")
 def master_mentions() -> list[str]:
     hits = [h for h in run("git", "grep", "-n", "-I", "-w", "master", "--", ".", ":!CHANGELOG.md").splitlines()
             if not NOT_BRANCH.search(h)]
@@ -226,7 +226,7 @@ def readme_links() -> list[str]:
 
 @check("readme_image_alt", severity="warning", when=("has_readme",), scenarios=PUB, kind="files",
        why="images without alt text are invisible to screen readers and search",
-       procedure="references/seo.md")
+       procedure="seo.md#readme-opening-the-first-screen")
 def readme_image_alt() -> list[str]:
     text = readme_text()
     return ([f"image without alt: {m}" for m in re.findall(r"<img(?![^>]*\balt=\"[^\"]+\")[^>]*>", text)]
@@ -235,14 +235,14 @@ def readme_image_alt() -> list[str]:
 
 @check("readme_demo", severity="info", when=("has_readme",), scenarios=PUB, kind="files",
        why="10–20 s of a real run under the hero shows the project works before anyone installs it",
-       procedure="references/launch.md")
+       procedure="launch.md#1-readiness-gate-check-before-any-post")
 def readme_demo() -> list[str]:
     return [] if DEMO.search(readme_text()) else ["no demo GIF/video in README"]
 
 
 @check("readme_alternatives", severity="info", when=("has_readme",), scenarios=PUB, kind="files",
        why="readers ask 'why not just X?' before they install",
-       procedure="references/launch.md")
+       procedure="launch.md#1-readiness-gate-check-before-any-post")
 def readme_alternatives() -> list[str]:
     return [] if VERSUS.search(readme_text()) else ["no 'alternatives / how it differs' section"]
 
@@ -253,7 +253,7 @@ def readme_words() -> int:
 
 judgement("readme_opening", severity="warning", when=("has_readme",), scenarios=PUB,
           question="Do the first 200 words say what it is, for whom, and show a proof?",
-          procedure="references/seo.md",
+          procedure="seo.md#readme-opening-the-first-screen",
           evidence=lambda: [f"{readme_words()} words"])
 
 
@@ -274,7 +274,7 @@ judgement("readme_visual_story", severity="info", when=("has_readme",), scenario
 judgement("gui_screenshots_fresh", severity="info", when=("has_readme",), scenarios=PUB,
           question="Does the project have a GUI? Then are the README screenshots newer than the last change to it, "
                    "at the same file names and sizes?",
-          procedure="references/gui.md")
+          procedure="gui.md#refreshing-readme-screenshots")
 
 
 # Agent skills
@@ -282,7 +282,7 @@ judgement("gui_screenshots_fresh", severity="info", when=("has_readme",), scenar
 
 @check("skill_frontmatter", severity="warning", when=("skills",), scenarios=PUB, kind="files",
        why="a SKILL.md with broken frontmatter is silently not loaded by agents",
-       procedure="references/release.md")
+       procedure="release.md#agent-skills-skillmd")
 def skill_frontmatter() -> list[str]:
     out = []
     for f in [f for f in tracked() if f.endswith(("SKILL.md", "SKILL.ru.md"))]:
@@ -318,7 +318,7 @@ def ci_text() -> str:
 
 @check("workflow_permissions", severity="warning", when=("github_actions",), scenarios=PUB, kind="files",
        why="without `permissions:` the default token may be read-write",
-       procedure="references/security.md")
+       procedure="security.md#8-workflow-hardening")
 def workflow_permissions() -> list[str]:
     return [f"{name}: no top-level `permissions:`" for name, t in workflow_texts().items()
             if not re.search(r"^permissions:", t, re.M)]
@@ -326,7 +326,7 @@ def workflow_permissions() -> list[str]:
 
 @check("actions_pinned_sha", severity="warning", when=("github_actions",), scenarios=PUB, kind="files",
        why="a moved tag runs someone else's code with your token (zizmor flags these)",
-       procedure="references/security.md")
+       procedure="security.md#8-workflow-hardening")
 def actions_pinned_sha() -> list[str]:
     return [f"pinned by tag, not SHA: {r}" for r in sorted(action_refs())
             if not SHA.search(r) and not r.startswith(("actions/", "github/"))]
@@ -346,7 +346,7 @@ def action_runtime(uses: str) -> str:
 
 @check("actions_node_runtime", severity="warning", when=("github_actions",), scenarios=PUB, kind="gh_api",
        why="runners force Node 20 actions onto Node 24 with a warning; bump the major",
-       procedure="references/security.md")
+       procedure="security.md#8-workflow-hardening")
 def actions_node_runtime() -> list[str]:
     if not shutil.which("gh") or subprocess.run(["gh", "auth", "status"], capture_output=True).returncode:
         raise Broken("`gh` not installed or not logged in: Node runtime of actions not checked")
@@ -360,7 +360,7 @@ def actions_node_runtime() -> list[str]:
 
 @check("private_runner_minutes", severity="info", when=("github_actions", "!public"), scenarios=PUB, kind="files",
        why="macOS/Windows runners burn a private repo's free minutes several times faster than Linux",
-       procedure="references/release.md")
+       procedure="release.md#ci-for-the-install-path")
 def private_runner_minutes() -> list[str]:
     if not re.search(r"macos|windows", "".join(workflow_texts().values())):
         return []
@@ -373,7 +373,7 @@ def private_runner_minutes() -> list[str]:
 def secret_scan_ci() -> list[str]:
     if re.search(r"gitleaks|trufflehog", ci_text()):
         return []
-    return ["no secret scan in CI or pre-commit: add assets/workflows/security.yml + assets/pre-commit-config.yaml"]
+    return ["no secret scan in CI or pre-commit: add engine/assets/workflows/security.yml + engine/assets/pre-commit-config.yaml"]
 
 
 @check("workflow_lint", severity="warning", when=("github_actions",), scenarios=PUB, kind="files",
@@ -404,7 +404,7 @@ def scorecard_workflow() -> list[str]:
 judgement("first_run", severity="warning", scenarios=PUB,
           question="Is there one command per OS to install and one to run, keys optional where possible, and a "
                    "doctor/config step that says in plain words what is missing?",
-          procedure="references/release.md")
+          procedure="release.md#first-run")
 
 
 def pyproject() -> dict:
@@ -435,7 +435,7 @@ def pypi(name: str) -> dict:
 
 @check("deps_unpublished", severity="error", when=("python_app",), scenarios=PUB, kind="registry",
        why="a wheel resolves dependencies from PyPI by name; one that isn't there makes the install fail",
-       procedure="references/release.md")
+       procedure="release.md#one-command-install")
 def deps_unpublished() -> list[str]:
     return [f"`{n}` comes from {k} and isn't on PyPI: a wheel of this project won't install. Publish it first"
             for n, k, _ in git_sources() if not pypi(n)]
@@ -443,7 +443,7 @@ def deps_unpublished() -> list[str]:
 
 @check("deps_drift", severity="warning", when=("python_app",), scenarios=PUB, kind="registry",
        why="the PyPI release a wheel installs may lack what the git checkout has",
-       procedure="references/release.md")
+       procedure="release.md#one-command-install")
 def deps_drift() -> list[str]:
     out = []
     for name, kind, spec in git_sources():
@@ -458,9 +458,9 @@ def deps_drift() -> list[str]:
 
 @check("installers", severity="warning", when=("python_app",), scenarios=PUB, kind="files",
        why="one command per OS to install is what turns a visitor into a user",
-       procedure="references/release.md")
+       procedure="release.md#one-command-install")
 def installers() -> list[str]:
-    return [f"no {f}: copy assets/{f}" for f in ("install.sh", "install.ps1") if not (repo.root / f).exists()]
+    return [f"no {f}: copy engine/assets/{f}" for f in ("install.sh", "install.ps1") if not (repo.root / f).exists()]
 
 
 @check("installers_ci", severity="warning", when=("python_app",), scenarios=PUB, kind="files",
@@ -468,7 +468,7 @@ def installers() -> list[str]:
        procedure="assets/workflows/install.yml")
 def installers_ci() -> list[str]:
     if (repo.root / "install.sh").exists() and not any("install.sh" in t for t in workflow_texts().values()):
-        return ["installers aren't run in CI on Linux/macOS/Windows: copy assets/workflows/install.yml"]
+        return ["installers aren't run in CI on Linux/macOS/Windows: copy engine/assets/workflows/install.yml"]
     return []
 
 
@@ -478,7 +478,7 @@ def installers_ci() -> list[str]:
 def release_workflow() -> list[str]:
     if any(re.search(r"gh release create|action-gh-release|gh-action-pypi-publish", t) for t in workflow_texts().values()):
         return []
-    return ["no release workflow (wheel, binaries, GitHub release): copy assets/workflows/release.yml"]
+    return ["no release workflow (wheel, binaries, GitHub release): copy engine/assets/workflows/release.yml"]
 
 
 def package_meta() -> tuple[str, str, str, dict | None, str]:
@@ -503,7 +503,7 @@ def _package_meta(root: object) -> tuple[str, str, str, dict | None, str]:
 
 @check("package_name_taken", severity="error", scenarios=PUB, kind="registry",
        why="if the name is someone else's, `pipx/uvx/npx NAME` installs their code",
-       procedure="references/release.md")
+       procedure="release.md#one-command-install")
 def package_name_taken() -> list[str]:
     registry_name, name, _, info, owner = package_meta()
     if not registry_name or not name:
@@ -564,7 +564,7 @@ def context() -> list[str]:
 
 @check("repo_description", severity="warning", when=("github",), scenarios=PUB, kind="gh_api",
        why="the About line is what search results and link previews show",
-       procedure="references/seo.md")
+       procedure="seo.md#description-about")
 def repo_description() -> list[str]:
     desc = gh_repo().get("description") or ""
     return ["description: MISSING"] if not desc else [f"description is {len(desc)} chars, keep it ≤ {DESC_MAX}"] if len(desc) > DESC_MAX else []
@@ -572,7 +572,7 @@ def repo_description() -> list[str]:
 
 @check("description_matches_package", severity="info", when=("github",), scenarios=PUB, kind="gh_api",
        why="About, package and README pitch should say the same thing",
-       procedure="references/seo.md")
+       procedure="seo.md#description-about")
 def description_matches_package() -> list[str]:
     pkg_desc, desc = package_meta()[2], gh_repo().get("description") or ""
     if pkg_desc and pkg_desc.strip(". ").lower() != desc.strip(". ").lower():
@@ -582,7 +582,7 @@ def description_matches_package() -> list[str]:
 
 @check("repo_topics", severity="warning", when=("github",), scenarios=PUB, kind="gh_api",
        why="topics are how GitHub search and topic pages find the repo",
-       procedure="references/seo.md")
+       procedure="seo.md#topics")
 def repo_topics() -> list[str]:
     n = len(gh_repo().get("repositoryTopics") or [])
     return [f"{n} topics, add at least {TOPICS_MIN}"] if n < TOPICS_MIN else []
@@ -597,7 +597,7 @@ def license_detected() -> list[str]:
 
 @check("social_preview", severity="warning", when=("github", "public"), scenarios=PUB, kind="gh_api",
        why="links shared in chats and posts show this 1280×640 image",
-       procedure="references/seo.md")
+       procedure="seo.md#homepage-and-social-preview")
 def social_preview() -> list[str]:
     if gh_repo().get("usesCustomOpenGraphImage"):
         return []
@@ -608,7 +608,7 @@ def social_preview() -> list[str]:
 
 @check("release_notes", severity="info", when=("github",), scenarios=PUB, kind="gh_api",
        why="a release with only 'Full Changelog' tells watchers nothing",
-       procedure="references/release.md")
+       procedure="release.md#release")
 def release_notes() -> list[str]:
     rels = gh_json("api", f"repos/{gh_repo()['nameWithOwner']}/releases?per_page=20", "--jq",
                    "[.[] | {t: .tag_name, b: (.body // \"\")}]")
@@ -618,7 +618,7 @@ def release_notes() -> list[str]:
 
 @check("dependabot_prs_red", severity="warning", when=("github",), scenarios=PUB, kind="gh_api",
        why="failing bot PRs pile up unnoticed and hide real breakage",
-       procedure="references/security.md")
+       procedure="security.md#7-github-settings-outward-facing-list-the-commands-run-after-a-yes")
 def dependabot_prs_red() -> list[str]:
     prs = gh_json("pr", "list", "-R", gh_repo()["nameWithOwner"], "--author", "app/dependabot", "--state", "open",
                   "--json", "number,statusCheckRollup")
@@ -630,7 +630,7 @@ def dependabot_prs_red() -> list[str]:
 
 @check("unused_features", severity="info", when=("github",), scenarios=PUB, kind="gh_api",
        why="an empty Wiki or Projects tab reads as an abandoned repo",
-       procedure="references/security.md")
+       procedure="security.md#7-github-settings-outward-facing-list-the-commands-run-after-a-yes")
 def unused_features() -> list[str]:
     return [f"{k} enabled (turn off if unused)" for k in ("hasWikiEnabled", "hasProjectsEnabled") if gh_repo().get(k)]
 
@@ -644,7 +644,7 @@ def discussions() -> list[str]:
 
 @check("private_vuln_reporting", severity="warning", when=("github", "public"), scenarios=PUB, kind="gh_api",
        why="SECURITY.md's private advisory link works only with this on",
-       procedure="references/security.md")
+       procedure="security.md#7-github-settings-outward-facing-list-the-commands-run-after-a-yes")
 def private_vuln_reporting() -> list[str]:
     pvr = run("gh", "api", f"repos/{gh_repo()['nameWithOwner']}/private-vulnerability-reporting")
     return [] if '"enabled":true' in pvr.replace(" ", "") else ["private vulnerability reporting: off/unknown"]
@@ -661,21 +661,21 @@ def security_and_analysis(*keys: str) -> list[str]:
 
 @check("secret_scanning", severity="warning", when=("github", "public"), scenarios=PUB, kind="gh_api",
        why="push protection stops a key at `git push`, before it is public (free once public)",
-       procedure="references/security.md")
+       procedure="security.md#7-github-settings-outward-facing-list-the-commands-run-after-a-yes")
 def secret_scanning() -> list[str]:
     return security_and_analysis("secret_scanning", "secret_scanning_push_protection")
 
 
 @check("dependabot_security_updates", severity="warning", when=("github",), scenarios=PUB, kind="gh_api",
        why="security updates open a fix PR as soon as an advisory hits a dependency",
-       procedure="references/security.md")
+       procedure="security.md#7-github-settings-outward-facing-list-the-commands-run-after-a-yes")
 def dependabot_security_updates() -> list[str]:
     return security_and_analysis("dependabot_security_updates")
 
 
 @check("branch_protection", severity="warning", when=("github", "public"), scenarios=PUB, kind="gh_api",
        why="an unprotected default branch takes force-pushes and unreviewed merges",
-       procedure="references/security.md")
+       procedure="security.md#7-github-settings-outward-facing-list-the-commands-run-after-a-yes")
 def branch_protection() -> list[str]:
     r = gh_repo()
     branch = (r.get("defaultBranchRef") or {}).get("name", "main")

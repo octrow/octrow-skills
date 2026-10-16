@@ -9,7 +9,7 @@
   prints the exact command to start and the full path if PATH isn't updated yet.
 - Python tools: `uv tool install` of the wheel attached to the GitHub release (works with or without PyPI, and
   with a package name someone else holds there); a standalone binary per OS for GUI and heavy apps.
-- Templates: `assets/install.sh`, `assets/install.ps1` (Python + uv; filled-in example: octrow/repo-scout).
+- Templates: `engine/assets/install.sh`, `engine/assets/install.ps1` (Python + uv; filled-in example: octrow/repo-scout).
   Options go in as flags for `sh -s --` and as environment variables for `irm | iex`, which can't pass arguments.
 
 ## First run
@@ -26,7 +26,7 @@
 
 ## CI for the install path
 
-- Run the installers on `ubuntu-latest`, `macos-latest`, `windows-latest` (`assets/workflows/install.yml`), then run
+- Run the installers on `ubuntu-latest`, `macos-latest`, `windows-latest` (`engine/assets/workflows/install.yml`), then run
   the installed command once (`--help` or `doctor`). `INSTALL_SOURCE` points the installer at the checked-out commit,
   so CI tests the change instead of the last release.
 - Windows pitfalls seen in practice: legacy console code pages crash on non-ASCII output (reconfigure stdout to
@@ -44,7 +44,7 @@
 
 ## Publishing without tokens, with provenance
 
-`assets/workflows/release.yml` is the Python shape: tag `vX.Y.Z` → tests and a tag-matches-version check → wheel,
+`engine/assets/workflows/release.yml` is the Python shape: tag `vX.Y.Z` → tests and a tag-matches-version check → wheel,
 sdist and optional binaries → PyPI (optional) + GitHub release with every file attested. A push to `main` that
 changes the workflow runs it as a build-only dry run. Binaries: PyInstaller on `ubuntu-22.04` (old glibc, wide reach),
 `ubuntu-22.04-arm`, `macos-latest` (arm64) and `windows-latest`, each smoke-tested with `--help`; Intel Macs use the
@@ -68,3 +68,8 @@ For a project with regular releases, `googleapis/release-please-action` (v5) rep
 conventional commits on `main`, keeps a "release PR" with the version bump and CHANGELOG, and tags on merge.
 Worth it from the third or fourth release; before that the manual steps above are less to set up and explain.
 
+## Agent skills (SKILL.md)
+
+An agent loads a skill only from valid frontmatter: `---` on the first line, then `name:` and `description:`, then
+`---`. A value with `: ` in it needs quotes or `>`, or the YAML breaks and the skill silently disappears. A language
+switcher line goes below the frontmatter, never above it.
