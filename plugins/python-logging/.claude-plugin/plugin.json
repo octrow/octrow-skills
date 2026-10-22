@@ -1,0 +1,17 @@
+{
+  "name": "python-logging",
+  "description": "Set up, fix or improve logging in a Python project: a hard disk budget for all logs, size-based rotation, wide events (one JSON line per request, message or job), secret redaction, one-line records for journald, and tests that prove the cap.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Daniil Petrov"
+  },
+  "license": "MIT",
+  "keywords": [
+    "logging",
+    "python",
+    "wide-events",
+    "observability",
+    "journald",
+    "skills"
+  ]
+}

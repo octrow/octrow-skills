@@ -1,0 +1,34 @@
+{
+  "skill_name": "python-logging",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "у меня сервис app/main.py крутится под systemd, вчера папка logs/ выросла до 12 гигов и диск забился. сделай чтобы логи никогда не занимали больше 500 МБ, и чтоб это было проверено тестом",
+      "expected_output": "Time-only rotation is replaced by size-based rotation whose maxBytes x (backupCount+1) fits the 500 MB budget, plus a start-up prune that trims the logs folder by total size; the per-second DEBUG dump of the whole payload is removed or shortened; a test proves the cap with large (sparse) files; journald is mentioned as a separate, manual limit.",
+      "files": [
+        "evals/files/python-logging/cap-time-only-rotation/app/main.py"
+      ],
+      "assertions": [
+        "The service's log file handler rotates by size (RotatingFileHandler or equivalent) and its maxBytes x (backupCount + 1) is at most 500 MB",
+        "There is code that trims the logs folder by total size (deleting the oldest files until under the budget), not only by age",
+        "A test creates files whose total exceeds the budget and asserts the folder ends up at or under it, and the run shows the test passing",
+        "The full payload is no longer logged at DEBUG every second (the line is removed, shortened, or replaced by a count)",
+        "The final answer mentions journald / systemd journal size as a separate limit and does not edit files under /etc"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "в worker/jobs.py логи бесполезные: строки от разных задач вперемешку, \"job failed: timeout\" а какая задача и сколько шла - непонятно. переделай логирование так чтобы по id задачи сразу было видно всё что с ней случилось",
+      "expected_output": "Each job produces exactly one structured (JSON) event written at the end of the job, carrying the job id, outcome ok/error with the error type/message, duration and the steps' facts (fetch size, summary length); scattered per-step lines and the page-body dump are gone; a failing job is recorded and the loop continues; running the worker shows one event per job.",
+      "files": [
+        "evals/files/python-logging/wide-events-job-worker/worker/jobs.py"
+      ],
+      "assertions": [
+        "Running the worker produces exactly one JSON log line per job (3 jobs -> 3 event lines)",
+        "Each job event contains the job id, a duration in ms, and an outcome field; the failing job's event has outcome error with the error type (ConnectionError) and message",
+        "The page body is not written to the log (only its length or nothing), and the per-step info lines of the original are removed or folded into the event",
+        "After job 2 fails, job 3 still runs and gets its own event"
+      ]
+    }
+  ]
+}

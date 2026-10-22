@@ -14,6 +14,11 @@
       "description": "Repo readiness: publish safely (security, README, EN/RU, SEO, CI, release) get deploy-ready (Docker, Compose, GHCR, Helm), and keep Python code healthy (ruff, complexity, dead code)."
     },
     {
+      "name": "python-logging",
+      "source": "./plugins/python-logging",
+      "description": "Logging for Python projects: a disk budget for all logs, size rotation, wide events (one JSON line per unit of work), secret redaction, journald-friendly records, and tests that prove the cap."
+    },
+    {
       "name": "repo-scout",
       "source": {
         "source": "github",

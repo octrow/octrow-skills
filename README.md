@@ -47,6 +47,12 @@ The same marketplace has [repo-scout](https://github.com/octrow/repo-scout), a s
 build on before you write your own: `claude plugin install repo-scout@octrow-skills`. It drives the repo-scout CLI,
 so install that first (one command, see its README).
 
+It also has python-logging, a skill that sets up, fixes or improves logging in a Python project: one disk budget
+for all logs with size rotation, wide events (one JSON line per request, message or job), secret redaction,
+records that stay one line in journald, and tests that prove the cap. Install it with
+`claude plugin install python-logging@octrow-skills` or `npx skills add octrow/octrow-skills --skill python-logging -g`,
+then ask "logs filled the disk, cap them at 1 GB" or "I can't tell what happened to job 42 from the logs".
+
 Claude Tag: an admin registers this repository under Organization settings → Plugins & skills → Sync from GitHub,
 then adds the plugin to a bundle.
 
@@ -148,7 +154,7 @@ complex functions one per commit and only where tests cover them. It needs [uv](
 
 ## Repository layout
 
-This repo is a plugin marketplace. repo-ready and its three skills live here; repo-scout lives in its own repo, and
+This repo is a plugin marketplace. repo-ready with its three skills and python-logging live here; repo-scout lives in its own repo, and
 the marketplace entry points there.
 
 ```

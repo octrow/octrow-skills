@@ -4,6 +4,13 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 
 ## [Unreleased]
 
+### Added
+- Marketplace: `python-logging` plugin 0.1.0 with the `python-logging` skill. It sets up, fixes or improves logging
+  in a Python project: a disk budget for all logs with size rotation and a start-up prune, wide events, secret
+  redaction (by value, library loggers and tracebacks included), journald-friendly one-line records, and tests that
+  prove the cap. Templates in `assets/`, a read-only audit in `scripts/log_audit.py`, evals in
+  `evals/python-logging.json`.
+
 ### Changed
 - `private_paths_in_files` and `private_paths_in_history` treat `~/projects/<name>` as the placeholder for example
   paths, so evals and docs that use it aren't reported.
