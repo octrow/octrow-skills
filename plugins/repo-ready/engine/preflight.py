@@ -121,6 +121,8 @@ def print_rest(outcomes: list[Outcome]) -> None:
 
 def parse_args(argv: list[str]) -> tuple[str, dict[str, str]]:
     """(project path, {--private, --scenario}); exits on an unknown scenario."""
+    if {"-h", "--help"} & set(argv):
+        sys.exit(print(__doc__))
     opts = {"--private": "", "--scenario": ""}
     for flag in opts:
         if flag in argv:

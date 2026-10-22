@@ -15,10 +15,15 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
   classifier, a cheaper or stronger LLM, context cuts and gateway route fixes, measured from app logs, the LLM cache
   and gateway logs. Read-only report by default. A Jev cheat-sheet and a worked example in `references/`, evals in
   `evals/llm-call-audit.json`.
+- CI workflow `tests.yml`: the preflight tests and the python-logging template tests run on every push and PR.
 
 ### Changed
 - `private_paths_in_files` and `private_paths_in_history` treat `~/projects/<name>` as the placeholder for example
   paths, so evals and docs that use it aren't reported.
+
+### Fixed
+- `preflight.py --help` and `log_audit.py --help` print the usage instead of auditing a folder named `--help`;
+  `log_audit.py` stops on a path that is not a directory instead of reporting an empty audit.
 
 ## [0.10.1] - 2026-10-17
 

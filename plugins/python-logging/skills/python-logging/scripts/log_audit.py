@@ -104,4 +104,9 @@ def report(root: Path) -> str:
 
 
 if __name__ == "__main__":
-    print(report(Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()))
+    arg = sys.argv[1] if len(sys.argv) > 1 else "."
+    if arg in ("-h", "--help"):
+        sys.exit(print(__doc__))
+    if not Path(arg).is_dir():
+        sys.exit(f"log_audit: not a directory: {arg}")
+    print(report(Path(arg).resolve()))
