@@ -1,0 +1,45 @@
+{
+  "skill_name": "llm-call-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "у нас поиск в ~/projects/buy-smarter занимает минуту, подозреваю LLM-вызовы. пройдись по всем местам где зовём generate() и скажи что можно заменить кодом или jev. только отчёт, ничего не меняй",
+      "expected_output": "An inventory of every generate() and system_one() call site with file:line, what it decides, model and when it fires; numbers pulled from the app log, the sqlite LLM cache and gateway logs, each labelled measured or estimated; per-site recommendations on the ladder (code, Jev, cheaper LLM, stronger LLM) with why quality holds, risk and a regression check; a ranked Top 5 table; no files changed.",
+      "files": [],
+      "assertions": [
+        "Every generate() and system_one() call site in the repo is listed with file:line and what it decides",
+        "Latency or token numbers come from the app log, the LLM cache DB or gateway logs, and each one is labelled measured (with its source) or estimated",
+        "Each recommendation names a rung (plain code, Jev, cheaper LLM, stronger LLM) or a context/route change, with evidence why quality holds and a regression check",
+        "The fallback paths (Jev unsure -> LLM, cache -> LLM) are examined, not only the main call",
+        "The report ends with a Top 5 table ranked by saving x confidence and a list of what was not measured",
+        "No project file was edited (git status is clean)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "omniroute free-stack combo seems slow, every call takes 40s+. can you check our llm calls and the gateway logs and tell me what's going on",
+      "expected_output": "Reads the gateway combo (rung order, per-rung timeout) and its call logs, finds which model actually answers and whether a first rung times out on every call, and recommends reordering or removing the dead rung or a shorter timeout, citing the log lines; read-only.",
+      "files": [],
+      "assertions": [
+        "The combo's rung order and per-rung timeout are read from the gateway config, not assumed",
+        "The answer states which model actually answered the calls, taken from the gateway logs",
+        "A rung that times out on every call is named as the latency cause, with the log lines or counts as evidence",
+        "The recommendation is a route change (reorder, remove the rung or shorten its timeout), not a model swap in the app code",
+        "Nothing is changed in the gateway or the repo without the user asking"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "где использовать jev вместо gpt в классификации тикетов? там просто 6 категорий, и ещё в промпт вываливается весь docstring схемы",
+      "expected_output": "Recommends a Jev Choice over the 6 categories (plus an other/none option) for the ticket classifier, with batching of any other questions about the same ticket into one request, a confidence threshold and a check on real tickets because of non-English accuracy; separately recommends removing the dumped schema docstring and any LLM-generated fields that code overrides or ignores.",
+      "files": [],
+      "assertions": [
+        "The classifier is recommended as a Jev Choice question over the 6 categories with an other/none option",
+        "The answer cites Jev limits or fit from the cheat-sheet (closed set, confidence, no generation) rather than generic claims",
+        "Low Jev confidence is handled as no match or a review queue, not by a fallback to a weak LLM by default",
+        "Dropping the schema docstring from the prompt is listed as a separate context cut",
+        "Unread or overridden output fields of the current LLM schema are checked and named if present"
+      ]
+    }
+  ]
+}

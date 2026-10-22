@@ -54,6 +54,12 @@ CLI repo-scout, поэтому сначала поставьте его (одн�
 `claude plugin install python-logging@octrow-skills` или `npx skills add octrow/octrow-skills --skill python-logging -g`.
 Потом попросите: «логи забили диск, ограничь их 1 ГБ» или «по логам непонятно, что случилось с задачей 42».
 
+И llm-call-audit, скилл, который проходит по всем вызовам моделей в коде и для каждого ищет самый дешёвый вариант
+без потери качества: обычный код, классификатор TypeSafe/Jev, более дешёвую или более сильную LLM, сокращённый
+промпт, исправленный маршрут в шлюзе. Цифры он берёт из логов приложения, кэша ответов LLM и логов шлюза и пишет
+отчёт, ничего не меняя. Установка: `claude plugin install llm-call-audit@octrow-skills` или
+`npx skills add octrow/octrow-skills --skill llm-call-audit -g`. Потом попросите: «проверь вызовы LLM, поиск идёт минуту».
+
 Claude Tag: администратор подключает этот репозиторий в Organization settings → Plugins & skills → Sync from GitHub
 и добавляет плагин в bundle.
 
@@ -156,7 +162,7 @@ complexipy (когнитивная сложность) и vulture (мёртвы�
 
 ## Структура репозитория
 
-Этот репозиторий является маркетплейсом плагинов. repo-ready с тремя скиллами и python-logging лежат здесь, а repo-scout живёт в
+Этот репозиторий является маркетплейсом плагинов. repo-ready с тремя скиллами, python-logging и llm-call-audit лежат здесь, а repo-scout живёт в
 своём репозитории, и на него ссылается запись маркетплейса.
 
 ```

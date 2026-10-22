@@ -53,6 +53,12 @@ records that stay one line in journald, and tests that prove the cap. Install it
 `claude plugin install python-logging@octrow-skills` or `npx skills add octrow/octrow-skills --skill python-logging -g`,
 then ask "logs filled the disk, cap them at 1 GB" or "I can't tell what happened to job 42 from the logs".
 
+And llm-call-audit, a skill that goes through every model call in a codebase and finds the cheapest option that
+keeps quality: plain code, a TypeSafe/Jev classifier, a cheaper or stronger LLM, smaller prompts, a fixed gateway
+route. It takes the numbers from app logs, the LLM response cache and gateway logs and writes a read-only report.
+Install it with `claude plugin install llm-call-audit@octrow-skills` or
+`npx skills add octrow/octrow-skills --skill llm-call-audit -g`, then ask "audit the LLM calls, search takes a minute".
+
 Claude Tag: an admin registers this repository under Organization settings → Plugins & skills → Sync from GitHub,
 then adds the plugin to a bundle.
 
@@ -154,7 +160,7 @@ complex functions one per commit and only where tests cover them. It needs [uv](
 
 ## Repository layout
 
-This repo is a plugin marketplace. repo-ready with its three skills and python-logging live here; repo-scout lives in its own repo, and
+This repo is a plugin marketplace. repo-ready with its three skills, python-logging and llm-call-audit live here; repo-scout lives in its own repo, and
 the marketplace entry points there.
 
 ```

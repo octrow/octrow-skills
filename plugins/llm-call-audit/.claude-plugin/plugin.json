@@ -1,0 +1,17 @@
+{
+  "name": "llm-call-audit",
+  "description": "Audit every model call in a codebase and recommend, per call site, the cheapest option that keeps quality: plain code, a TypeSafe/Jev classifier, a cheaper or stronger LLM, context cuts and gateway route fixes, measured from app logs, the LLM cache and gateway logs. Read-only report by default.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Daniil Petrov"
+  },
+  "license": "MIT",
+  "keywords": [
+    "llm",
+    "cost",
+    "latency",
+    "audit",
+    "typesafe",
+    "skills"
+  ]
+}

@@ -19,6 +19,11 @@
       "description": "Logging for Python projects: a disk budget for all logs, size rotation, wide events (one JSON line per unit of work), secret redaction, journald-friendly records, and tests that prove the cap."
     },
     {
+      "name": "llm-call-audit",
+      "source": "./plugins/llm-call-audit",
+      "description": "Audit LLM calls per call site: plain code, a Jev classifier or a cheaper model where quality holds, context cuts and gateway route fixes, backed by numbers from logs and the LLM cache."
+    },
+    {
       "name": "repo-scout",
       "source": {
         "source": "github",

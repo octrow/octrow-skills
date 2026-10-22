@@ -10,6 +10,11 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
   redaction (by value, library loggers and tracebacks included), journald-friendly one-line records, and tests that
   prove the cap. Templates in `assets/`, a read-only audit in `scripts/log_audit.py`, evals in
   `evals/python-logging.json`.
+- Marketplace: `llm-call-audit` plugin 0.1.0 with the `llm-call-audit` skill. It audits every model call in a
+  codebase and recommends, per call site, the cheapest option that keeps quality: plain code, a TypeSafe/Jev
+  classifier, a cheaper or stronger LLM, context cuts and gateway route fixes, measured from app logs, the LLM cache
+  and gateway logs. Read-only report by default. A Jev cheat-sheet and a worked example in `references/`, evals in
+  `evals/llm-call-audit.json`.
 
 ### Changed
 - `private_paths_in_files` and `private_paths_in_history` treat `~/projects/<name>` as the placeholder for example
