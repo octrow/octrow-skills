@@ -15,6 +15,11 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
   classifier, a cheaper or stronger LLM, context cuts and gateway route fixes, measured from app logs, the LLM cache
   and gateway logs. Read-only report by default. A Jev cheat-sheet and a worked example in `references/`, evals in
   `evals/llm-call-audit.json`.
+- Marketplace: `logic-map` plugin 0.1.0 with the `logic-map` skill. It writes, updates or checks a project's
+  `docs/logic-map.md`: an agent-first map under 500 lines of where the main flow splits, what each step decides,
+  what changes without the optional dependency, how it fails and which module does it, with Known gaps linked to a
+  numbered findings plan. A map template and a sync-test recipe in `references/`, trigger evals and two eval cases
+  in `evals/logic-map/`.
 - CI workflow `tests.yml`: the preflight tests and the python-logging template tests run on every push and PR.
 
 ### Changed

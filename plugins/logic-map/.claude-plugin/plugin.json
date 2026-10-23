@@ -1,0 +1,16 @@
+{
+  "name": "logic-map",
+  "description": "Write, update or check a project's logic map (docs/logic-map.md): one agent-first file that shows step by step where the main flow splits, what each step decides, what changes without the optional dependency, how it fails and which module does it. Kept honest by a same-commit rule and a test on its Module: lines.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Daniil Petrov"
+  },
+  "license": "MIT",
+  "keywords": [
+    "documentation",
+    "architecture",
+    "agents",
+    "pipeline",
+    "skills"
+  ]
+}

@@ -1,0 +1,15 @@
+[
+  {"query": "сделай в persona-crm карту логики: на каком шаге что решается и в какие модули идёт, для агентов, до 500 строк", "should_trigger": true},
+  {"query": "нужен ключевой файл по логике проекта, чтобы новый агент сразу понимал, где поток делится по типу документа", "should_trigger": true},
+  {"query": "обнови карту логики, я поменял дефолты в MCP-сервере и выкинул шаг дедупликации", "should_trigger": true},
+  {"query": "сверь docs/logic-map.md с кодом, по-моему там половина устарела после рефакторинга", "should_trigger": true},
+  {"query": "where does the request pipeline branch on tenant? write one doc for agents that maps every step to its module", "should_trigger": true},
+  {"query": "map the ingestion pipeline of chat-watch step by step: what each stage decides, what happens offline, which module, and log the logic bugs you find in a plan", "should_trigger": true},
+  {"query": "в каком месте у нас поток делится на лекарства и обувь? хочу это видеть в одном файле, а не в голове", "should_trigger": true},
+  {"query": "перерисуй схему pipeline.svg в README покрасивее", "should_trigger": false},
+  {"query": "добавь термин capability в CONTEXT.md и запиши ADR про профили категорий", "should_trigger": false},
+  {"query": "audit LLM calls in this repo and tell me where jev can replace the model", "should_trigger": false},
+  {"query": "write a mermaid sequence diagram of the oauth login for the onboarding doc", "should_trigger": false},
+  {"query": "почему тест test_dedup падает после моего коммита? почини", "should_trigger": false},
+  {"query": "оцени, насколько репо готов для агентов: AGENTS.md, навигация, тесты", "should_trigger": false}
+]

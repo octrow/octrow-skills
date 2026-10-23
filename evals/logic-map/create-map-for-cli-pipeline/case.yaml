@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: create-map-for-cli-pipeline
+expected_outcome: |
+  A docs/logic-map.md under 500 lines that describes the get_cool_event CLI pipeline as the code is:
+  flow diagram, entry points with their defaults, numbered steps with Decides / Branches / Fails / Module,
+  side effects, and Known gaps that link to a separate numbered findings plan. Logic errors found go to the
+  plan, not into code changes. AGENTS.md (or CLAUDE.md) gets the same-commit rule, and a test checks the
+  Module: lines. The final message lists the defaults chosen without asking. Nothing is committed.

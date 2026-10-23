@@ -59,6 +59,13 @@ route. It takes the numbers from app logs, the LLM response cache and gateway lo
 Install it with `claude plugin install llm-call-audit@octrow-skills` or
 `npx skills add octrow/octrow-skills --skill llm-call-audit -g`, then ask "audit the LLM calls, search takes a minute".
 
+And logic-map, a skill that writes, updates or checks `docs/logic-map.md`: one file an agent reads first, showing
+step by step where the main flow splits, what each step decides, what changes without the LLM, network or key, how
+it fails and which module does it. Logic bugs it finds go to a numbered findings plan, not into code changes; a
+same-commit rule in AGENTS.md and a test on the `Module:` lines keep the map honest. Install it with
+`claude plugin install logic-map@octrow-skills` or `npx skills add octrow/octrow-skills --skill logic-map -g`,
+then ask "map this pipeline for agents: where it splits and which module does each step".
+
 Claude Tag: an admin registers this repository under Organization settings → Plugins & skills → Sync from GitHub,
 then adds the plugin to a bundle.
 
@@ -160,7 +167,7 @@ complex functions one per commit and only where tests cover them. It needs [uv](
 
 ## Repository layout
 
-This repo is a plugin marketplace. repo-ready with its three skills, python-logging and llm-call-audit live here; repo-scout lives in its own repo, and
+This repo is a plugin marketplace. repo-ready with its three skills, python-logging, llm-call-audit and logic-map live here; repo-scout lives in its own repo, and
 the marketplace entry points there.
 
 ```

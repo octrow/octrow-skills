@@ -24,6 +24,11 @@
       "description": "Audit LLM calls per call site: plain code, a Jev classifier or a cheaper model where quality holds, context cuts and gateway route fixes, backed by numbers from logs and the LLM cache."
     },
     {
+      "name": "logic-map",
+      "source": "./plugins/logic-map",
+      "description": "Logic map for agents: one file (docs/logic-map.md) that shows where the main flow splits, what each step decides, how it fails and which module does it, checked against the code by a test."
+    },
+    {
       "name": "repo-scout",
       "source": {
         "source": "github",

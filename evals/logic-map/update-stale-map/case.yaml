@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: update-stale-map
+expected_outcome: |
+  The stale docs/logic-map.md is corrected against the code: --model default haiku, --source also matches by
+  substring, no Instagram adapter, a failing source does not stop collect, transcribe is a Phase-1 no-op,
+  the dedup Module line points to dedup, the digest threshold is min_relevance (5), --force does not change
+  the digest, and digest writes to the database. Problems in the code go to a numbered findings plan linked
+  from Known gaps. No source code is changed and nothing is committed.
+context:
+  scaffold_script: place-files.sh
