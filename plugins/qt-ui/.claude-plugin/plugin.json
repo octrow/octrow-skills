@@ -1,7 +1,7 @@
 {
   "name": "qt-ui",
   "description": "Fast, house-style visual fixes for a PySide6 / PyQt6 desktop GUI: offscreen screenshots of every screen in light and dark, a defect list, fixes through theme tokens and QSS that copy the neighbour screen, then a before/after pixel diff and the contrast and GUI tests.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": {
     "name": "Daniil Petrov"
   },

@@ -69,7 +69,9 @@ then ask "map this pipeline for agents: where it splits and which module does ea
 And qt-ui, a skill for visual fixes in a PySide6 / PyQt6 desktop app. It shoots every screen offscreen in light and
 dark, lists the defects (clipped text, squeezed table columns, spacing off the grid, font weights that never
 render), fixes them through the project's theme tokens by copying the neighbour screen that already gets it right,
-then pixel-diffs before/after so a shared QSS change can't quietly break another screen. Install it with
+then pixel-diffs before/after so a shared QSS change can't quietly break another screen. A reference lists the Qt
+quirks that look like design defects (labels pinned above their fields, columns squeezed to letters, bold that
+renders regular), and a bare run picks up the project's list of open defects. Install it with
 `claude plugin install qt-ui@octrow-skills` or `npx skills add octrow/octrow-skills --skill qt-ui -g`, then ask
 "the GUI looks broken, find what's wrong on every screen" or "the report doesn't fit the small window".
 

@@ -5,6 +5,10 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ## [Unreleased]
 
 ### Added
+- `qt-ui` 0.3.0: a bare run works the project's open-defects list before any new audit, with a "left on purpose"
+  list beside it so known Qt limits are not reported again; reference screenshots get a name map and never show the
+  user's own data. `references/qt-pitfalls.md` gains form labels pinned above their field, a capped status that
+  stretches the button beside it, and thumbnails of different widths.
 - `qt-ui` 0.2.0: `references/qt-pitfalls.md` (Qt quirks that look like design defects, and process traps:
   piped pytest, shared models, a shared git index); the skill also shoots the maximised window on a large screen.
 - Marketplace: `python-logging` plugin 0.1.0 with the `python-logging` skill. It sets up, fixes or improves logging

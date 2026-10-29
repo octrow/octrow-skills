@@ -12,6 +12,12 @@ When sources disagree, this order decides:
 **the user's remark → the neighbour screen → the design doc → the theme module → this skill → taste.**
 If the user's remark contradicts the design doc or the neighbour, name the conflict in one line and ask.
 
+**Invoked with no task**, don't start a fresh audit: work the project's open-defects list top down, then audit only
+once it is empty. Keep two lists in the project (its own copy of this skill, or the design doc), updated in the
+same commit as the fix: **open defects** (seen, not fixed yet) and **left on purpose**, each with its reason (a Qt
+limit, a grouping by meaning, the user's call), so the next audit doesn't report them again. A list that lives
+only in the conversation is lost when the context is compacted.
+
 ## Step 0. Find the four anchors (once per project)
 
 | Anchor | Typical place | If missing |
@@ -111,3 +117,7 @@ First line: what changed on screen. Then 2-4 points: what was fixed (screen · t
 checked (themes, minimum size, tests), paths to the BEFORE and AFTER screenshots. A conflict with the design doc or
 the neighbour goes on its own line for the user to decide. If a screen's look changed, offer to refresh the
 README/docs screenshots and the design doc.
+
+When refreshing reference screenshots, keep a table in the project from the script's output names to the
+reference names (they rarely match), and never put a screen that shows the user's own data (their photos, saved
+reports, keys) into the repo: the script may read real local data.
