@@ -29,7 +29,10 @@ means in a PySide6 / PyQt6 widgets app. The project's design doc still wins over
   the italic file or drop italics.
 - **Body size** is the design doc's: dense desktop UIs often use 13-14px instead of the web's 16px. Don't "fix" it.
 - **Line length 40-70 characters** for prose: a hint or status text spanning the whole 1200px card is a defect.
-  Cap it with a max width on the label or wrap it (`setWordWrap(True)`).
+  Cap paragraphs at about 560px with a small `QLabel` subclass that sets the maximum width *and* overrides
+  `heightForWidth(min(width, maximumWidth()))`: a plain wrapped `QLabel` (and a QSS `max-width`) measures its
+  height at the width the layout offers, so the capped label wraps to more lines than it got room for and the
+  last one is cut. Leave a status beside buttons uncapped, or the width it gives up stretches the buttons.
 - **Line height ~1.5** applies to rich text only (`QTextBrowser` HTML/CSS); `QLabel` QSS has no line-height.
 - **Left-aligned, ragged right**; no justified text. All caps only for short group labels.
 - Widows and orphans can't be controlled in Qt; shorten the text instead.
@@ -37,7 +40,9 @@ means in a PySide6 / PyQt6 widgets app. The project's design doc still wins over
 ## Grid and spacing
 
 - **One spacing scale** (4px or 8px based), with 4px only for micro gaps (icon to label). Qt's default layout
-  spacing (6px) and margins (9-11px) are off any scale: set them explicitly.
+  spacing (6px) and margins (9-11px) are off any scale: set them explicitly. Name the rhythm once in the theme
+  (a page gap between cards, a card gap between rows inside, set by the card helper) so every screen uses the
+  same two values instead of picking from the scale.
 - **Internal ≤ external**: the padding inside a card is not larger than the gap between cards, or the cards stop
   reading as separate units. Check card padding in the QSS against the page layout's `setSpacing`.
 - **Keylines**: every element aligns with at least one other along a vertical or horizontal line: field starts,
