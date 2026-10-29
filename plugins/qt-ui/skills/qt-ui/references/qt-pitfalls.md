@@ -10,6 +10,9 @@ workaround: the symptom on the screenshot rarely points at the cause.
 | A table column squeezed to letters stacked in a column | `Stretch` next to `ResizeToContents` columns gets only the leftovers → make it `Fixed` and give it the spare width yourself, with a floor (~160px), and let the table scroll sideways below that |
 | A `resizeSection` call doesn't stick | the header overwrites it in its own layout pass → defer with `QTimer.singleShot(0, ...)` |
 | A wrapped `QLabel` with a max width cuts its last line | the height is measured at the full offered width → subclass and override `heightForWidth(min(width, maximumWidth()))` |
+| A `QFormLayout` label sits ~4px above its field's text | Qt gives the label less height than the row and pins it to the top, whatever `setLabelAlignment` says → give text labels the field's height (36px) and add a strut of that height to a row that is a layout (check boxes) |
+| A button next to a status text is wide at one window size and normal at another | the status label has a max width, and the width it gives up goes to the button → leave a status beside buttons uncapped |
+| Thumbnails in an icon grid have different widths | aspect-kept scaling → decode a centred square: `KeepAspectRatioByExpanding` plus `setScaledClipRect` on `QImageReader` |
 | Gaps "almost" on the grid | Qt's default spacing is 6px and margins 9-11px → set `setSpacing` / `setContentsMargins` on every layout |
 | Bold renders as regular | a variable font registers as one Regular style → bundle static weight files |
 | `_text_` in markdown shows underlined | Qt's markdown maps emphasis this way → restyle the blocks after `setMarkdown`, or drop the markup |
