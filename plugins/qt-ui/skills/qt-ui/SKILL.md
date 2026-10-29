@@ -74,6 +74,10 @@ column · cell text not aligned with its header · scrolling inside scrolling ·
 horizontal scrollbar in a text browser · a missing or misplaced screen heading · an empty state without a heading
 · an element that differs from the same element on the neighbour screen.
 
+For an audit, also go through [references/ux-rules.md](references/ux-rules.md): the UX laws and the typography
+and grid rules translated for Qt, with the web rules that don't apply. Two that catch real defects: line length
+over ~70 characters in hints and status text, and card padding larger than the gap between cards.
+
 Then check that **the tokens actually render**, not just that they are written. Zoom into a crop of a card title
 next to body text: if 600 looks like 400, the font weight isn't applied (Qt often sees a variable font as a single
 Regular style; register static weights or set the weight through `QFont`). That defect hits every screen at once
