@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: layout-fix-goes-to-qt-ui
+expected_outcome: |
+  A layout fix on an existing screen is not qt-app's job: the run recognises that, says in one line that this
+  is qt-ui's work and follows qt-ui (or hands over to it). It does not scaffold anything, copy the qt-app
+  template, add a bridge, theme or screen, or touch pyproject. Any edit stays inside the existing theme/screen
+  files for the spacing and field height. Nothing is committed.

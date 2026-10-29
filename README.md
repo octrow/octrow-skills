@@ -75,6 +75,14 @@ renders regular), and a bare run picks up the project's list of open defects. In
 `claude plugin install qt-ui@octrow-skills` or `npx skills add octrow/octrow-skills --skill qt-ui -g`, then ask
 "the GUI looks broken, find what's wrong on every screen" or "the report doesn't fit the small window".
 
+And qt-app, its pair: a skill that builds a PySide6 desktop GUI from scratch for a Python project, or adds a new
+screen to an existing Qt app. It checks how the core can be called in-process, runs it on an asyncio loop in a
+worker thread with results back as Qt signals, scaffolds the `gui` extra, a `<app> gui` command, a sidebar window
+and an own light/dark token theme from a runnable template, builds screens one at a time test-first with pytest-qt
+offscreen, sharing texts and calls with the CLI, and hands screenshots of both themes to qt-ui for layout polish.
+Install it with `claude plugin install qt-app@octrow-skills` or `npx skills add octrow/octrow-skills --skill qt-app -g`,
+then ask "add a desktop window to this CLI" or "add a «Журнал» screen to the app".
+
 Claude Tag: an admin registers this repository under Organization settings → Plugins & skills → Sync from GitHub,
 then adds the plugin to a bundle.
 
@@ -176,7 +184,7 @@ complex functions one per commit and only where tests cover them. It needs [uv](
 
 ## Repository layout
 
-This repo is a plugin marketplace. repo-ready with its three skills, python-logging, llm-call-audit, logic-map and qt-ui live here; repo-scout lives in its own repo, and
+This repo is a plugin marketplace. repo-ready with its three skills, python-logging, llm-call-audit, logic-map, qt-ui and qt-app live here; repo-scout lives in its own repo, and
 the marketplace entry points there.
 
 ```

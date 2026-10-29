@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: new-screen-in-existing-app
+expected_outcome: |
+  In a buy-smarter worktree, a new screen src/buysmarter/gui/screens/<name>.py shows the tail of the app's log
+  file with refresh and open-folder buttons, wired into the sidebar. It reuses the app's own CoreRunner/theme
+  helpers (no second bridge or theme), reads the file off the GUI thread or cheaply, its texts are Russian and
+  shared with a CLI equivalent (a CLI command for the same log tail is added or the gap is named), a pytest-qt
+  test for the screen was written first and passes offscreen with the existing GUI tests it touches, and
+  screenshots of the screen in both themes at 960x640 exist. Nothing is committed.

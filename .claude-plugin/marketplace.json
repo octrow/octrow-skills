@@ -34,6 +34,11 @@
       "description": "Visual fixes for PySide6 / PyQt6 desktop GUIs: screenshots of every screen in both themes, fixes through theme tokens that copy the neighbour screen, a before/after pixel diff."
     },
     {
+      "name": "qt-app",
+      "source": "./plugins/qt-app",
+      "description": "PySide6 desktop GUI from scratch for a Python project: the core on an asyncio thread with Qt signals, a sidebar window and an own token theme from a runnable template, screens test-first with pytest-qt and the same texts and calls as the CLI; pairs with qt-ui for layout polish."
+    },
+    {
       "name": "repo-scout",
       "source": {
         "source": "github",

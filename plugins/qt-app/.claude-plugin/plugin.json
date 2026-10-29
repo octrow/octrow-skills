@@ -1,0 +1,17 @@
+{
+  "name": "qt-app",
+  "description": "Build a PySide6 desktop GUI from scratch for a Python project: the core on an asyncio thread with Qt signals, a sidebar window and an own light/dark token theme from a runnable template, screens test-first with pytest-qt and the same texts and calls as the CLI, screenshots in both themes handed to qt-ui.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Daniil Petrov"
+  },
+  "license": "MIT",
+  "keywords": [
+    "qt",
+    "pyside6",
+    "gui",
+    "desktop",
+    "pytest-qt",
+    "skills"
+  ]
+}

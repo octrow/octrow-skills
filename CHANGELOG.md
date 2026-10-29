@@ -31,6 +31,13 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
   QSS that copy the neighbour screen, a before/after pixel diff in `scripts/shotdiff.py`, and a screenshot-script
   recipe with the blind spots seen in real runs and the UX laws, typography and grid rules translated for Qt
   in `references/`.
+- Marketplace: `qt-app` plugin 0.1.0 with the `qt-app` skill, the builder paired with `qt-ui`. It adds a PySide6
+  desktop GUI to a Python project or a new screen to an existing Qt app: checks how the core is called in-process,
+  runs it through `CoreRunner` (an asyncio loop in a worker thread, Qt signals back, cancel and shutdown), scaffolds
+  the `gui` extra, a `<app> gui` command, a sidebar window and an own light/dark token theme from a runnable template
+  in `scripts/template/` (13 offscreen tests), builds screens test-first in parity with the CLI, and hands
+  screenshots of both themes to `qt-ui`. The bridge, scaffold, screen, packaging guides and the pitfalls seen in real
+  apps in `references/`; eval cases in `evals/qt-app/`.
 - CI workflow `tests.yml`: the preflight tests and the python-logging template tests run on every push and PR.
 
 ### Changed

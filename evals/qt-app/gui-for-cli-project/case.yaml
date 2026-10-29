@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: gui-for-cli-project
+expected_outcome: |
+  In a copy of greenkeep (a sync argparse CLI with a NiceGUI ui), a PySide6 GUI package appears under
+  src/greenkeep/gui/ with a bridge that runs the core off the GUI thread (CoreRunner with asyncio.to_thread or
+  an equivalent), an own light/dark token theme, a sidebar window, a run screen with progress and a working
+  cancel, and a status/settings screen. pyproject gets a gui extra with PySide6-Essentials and qtawesome, the
+  CLI gets a gui command that imports Qt lazily. pytest-qt tests run offscreen and pass; screens call the same
+  functions as the CLI. UI text is Russian. Screenshots of both themes exist. Nothing is committed.
