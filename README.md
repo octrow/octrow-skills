@@ -66,6 +66,13 @@ same-commit rule in AGENTS.md and a test on the `Module:` lines keep the map hon
 `claude plugin install logic-map@octrow-skills` or `npx skills add octrow/octrow-skills --skill logic-map -g`,
 then ask "map this pipeline for agents: where it splits and which module does each step".
 
+And qt-ui, a skill for visual fixes in a PySide6 / PyQt6 desktop app. It shoots every screen offscreen in light and
+dark, lists the defects (clipped text, squeezed table columns, spacing off the grid, font weights that never
+render), fixes them through the project's theme tokens by copying the neighbour screen that already gets it right,
+then pixel-diffs before/after so a shared QSS change can't quietly break another screen. Install it with
+`claude plugin install qt-ui@octrow-skills` or `npx skills add octrow/octrow-skills --skill qt-ui -g`, then ask
+"the GUI looks broken, find what's wrong on every screen" or "the report doesn't fit the small window".
+
 Claude Tag: an admin registers this repository under Organization settings → Plugins & skills → Sync from GitHub,
 then adds the plugin to a bundle.
 
@@ -167,7 +174,7 @@ complex functions one per commit and only where tests cover them. It needs [uv](
 
 ## Repository layout
 
-This repo is a plugin marketplace. repo-ready with its three skills, python-logging, llm-call-audit and logic-map live here; repo-scout lives in its own repo, and
+This repo is a plugin marketplace. repo-ready with its three skills, python-logging, llm-call-audit, logic-map and qt-ui live here; repo-scout lives in its own repo, and
 the marketplace entry points there.
 
 ```

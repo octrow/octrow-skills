@@ -20,6 +20,10 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
   what changes without the optional dependency, how it fails and which module does it, with Known gaps linked to a
   numbered findings plan. A map template and a sync-test recipe in `references/`, trigger evals and two eval cases
   in `evals/logic-map/`.
+- Marketplace: `qt-ui` plugin 0.1.0 with the `qt-ui` skill. Fast, house-style visual fixes for a PySide6 / PyQt6
+  desktop GUI: offscreen screenshots of every screen in both themes, a defect list, fixes through theme tokens and
+  QSS that copy the neighbour screen, a before/after pixel diff in `scripts/shotdiff.py`, and a screenshot-script
+  recipe with the blind spots seen in real runs in `references/`.
 - CI workflow `tests.yml`: the preflight tests and the python-logging template tests run on every push and PR.
 
 ### Changed

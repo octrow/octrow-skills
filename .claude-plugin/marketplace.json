@@ -29,6 +29,11 @@
       "description": "Logic map for agents: one file (docs/logic-map.md) that shows where the main flow splits, what each step decides, how it fails and which module does it, checked against the code by a test."
     },
     {
+      "name": "qt-ui",
+      "source": "./plugins/qt-ui",
+      "description": "Visual fixes for PySide6 / PyQt6 desktop GUIs: screenshots of every screen in both themes, fixes through theme tokens that copy the neighbour screen, a before/after pixel diff."
+    },
+    {
       "name": "repo-scout",
       "source": {
         "source": "github",
