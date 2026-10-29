@@ -34,6 +34,8 @@ Know the script's blind spots before you trust it. The usual ones are in the scr
 shot only in its empty state, only one screen shot at the minimum window size, and state that leaks from the light
 pass into the dark one. Shoot the screen you are fixing filled with data and at the minimum size, even if the
 script doesn't.
+Shoot the maximised window on a large screen (e.g. 2560×1440) too: cards stretched in height and rows wider than
+the content cap only show there.
 
 Look at the PNGs yourself (Read), every screen in both themes. If the user named problems, start there. If they
 said "find them yourself", go through the defect checklist below and hand over a **list before any edit**: screen ·
@@ -77,6 +79,7 @@ horizontal scrollbar in a text browser · a missing or misplaced screen heading 
 For an audit, also go through [references/ux-rules.md](references/ux-rules.md): the UX laws and the typography
 and grid rules translated for Qt, with the web rules that don't apply. Two that catch real defects: line length
 over ~70 characters in hints and status text, and card padding larger than the gap between cards.
+When a fix doesn't take, check [references/qt-pitfalls.md](references/qt-pitfalls.md) first: Qt quirks that look like design defects.
 
 Then check that **the tokens actually render**, not just that they are written. Zoom into a crop of a card title
 next to body text: if 600 looks like 400, the font weight isn't applied (Qt often sees a variable font as a single
@@ -96,9 +99,11 @@ and is invisible in the screens' code.
 3. Look at AFTER yourself next to BEFORE and the neighbour: same type size, control height, spacing, both themes,
    minimum window size.
 4. Only the affected tests: the contrast test plus the tests of the touched screens, and the linter on the GUI
-   package.
+   package. Don't pipe pytest through `tail`: the pipe hides its exit code.
 
 A failing test gets reported with its output; a screenshot is not a substitute for a check.
+
+Commit only your own paths (`git commit -m … -- <paths>`): other sessions may share the index.
 
 ## Report
 

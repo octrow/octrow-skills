@@ -5,6 +5,8 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ## [Unreleased]
 
 ### Added
+- `qt-ui` 0.2.0: `references/qt-pitfalls.md` (Qt quirks that look like design defects, and process traps:
+  piped pytest, shared models, a shared git index); the skill also shoots the maximised window on a large screen.
 - Marketplace: `python-logging` plugin 0.1.0 with the `python-logging` skill. It sets up, fixes or improves logging
   in a Python project: a disk budget for all logs with size rotation and a start-up prune, wide events, secret
   redaction (by value, library loggers and tracebacks included), journald-friendly one-line records, and tests that
