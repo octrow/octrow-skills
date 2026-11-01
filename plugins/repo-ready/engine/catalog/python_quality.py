@@ -4,6 +4,7 @@ The tools run through `uvx`, so the audited project needs none of them installed
 ruff runs with --no-cache, and complexipy (which always leaves a cache and a results file in its cwd) runs from a
 temporary folder.
 """
+import functools
 import json
 import re
 import shutil
@@ -46,6 +47,18 @@ def py_files() -> list[str]:
     Only these go to the tools: CI sees the same set, and nothing comes from .venv, build output or scratch files.
     """
     return [f"./{f}" for f in tracked() if f.endswith(".py") and (repo.root / f).is_file()]
+
+
+@functools.cache
+def checked_files() -> list[str]:
+    """`py_files` minus what ruff's own `exclude`/`extend-exclude` leaves out, so radon, complexipy and vulture
+    skip the same generated code and throwaway scripts the project already keeps out of its linter."""
+    files = py_files()
+    if not files:
+        return []
+    kept = {Path(p).resolve() for p in uvx("ruff", "check", "--show-files", "--force-exclude", "--no-cache",
+                                            *files).splitlines() if p.strip()}
+    return [f for f in files if (repo.root / f).resolve() in kept]
 
 
 def setting(table: str, key: str, default: int, config: dict | None = None) -> int:
@@ -131,7 +144,7 @@ def ruff_format() -> list[str]:
        why="each branch is a path to test; past ~10 a function has more paths than anyone tests",
        procedure="python-quality.md#cyclomatic-complexity")
 def complexity_cyclomatic() -> list[str]:
-    files = py_files()
+    files = checked_files()
     if not files:
         return []
     limit = cyclomatic_limit()
@@ -149,7 +162,7 @@ def complexity_cyclomatic() -> list[str]:
        why="nesting is what makes code hard to read; cognitive complexity counts it, cyclomatic doesn't",
        procedure="python-quality.md#cognitive-complexity")
 def complexity_cognitive() -> list[str]:
-    files = py_files()
+    files = checked_files()
     if not files:
         return []
     limit = setting("complexipy", "max-complexity-allowed", COGNITIVE_MAX)
@@ -173,7 +186,7 @@ def complexity_cognitive() -> list[str]:
        why="code nobody calls still gets read, updated and kept compiling",
        procedure="python-quality.md#dead-code")
 def dead_code() -> list[str]:
-    files = py_files()
+    files = checked_files()
     if not files:
         return []
     # a [tool.vulture] table sets its own confidence, whitelist and excludes

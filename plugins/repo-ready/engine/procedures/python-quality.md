@@ -2,7 +2,8 @@
 
 The tools run through `uvx`, so nothing is added to the project to audit it. To keep the result, add them to the
 dev dependencies (`uv add --dev ruff`) and to CI ("CI wiring" below). Thresholds are the tools' defaults; a project
-sets its own in `pyproject.toml`, and the preflight reads it.
+sets its own in `pyproject.toml`, and the preflight reads it. Files ruff excludes (`exclude`, `extend-exclude`)
+are skipped by radon, complexipy and vulture too: keep generated code and throwaway scripts out there, once.
 
 Work in this order: format, lint, dead code, complexity. Formatting first keeps the later diffs readable, and
 deleting dead code first means nobody refactors a function that should have been removed.
