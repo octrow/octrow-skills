@@ -1,0 +1,6 @@
+{
+  "challenge_module": "Frozen",
+  "solution_module": "Spec",
+  "theorem_names": ["Feed.checkInv_sound", "Feed.fast_eq_spec", "Feed.spec_length_le"],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"]
+}

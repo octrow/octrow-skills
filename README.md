@@ -93,6 +93,17 @@ existing repo it reads the real stack and metrics first. Install it with
 `claude plugin install system-design@octrow-skills` or `npx skills add octrow/octrow-skills --skill system-design -g`,
 then ask "will this FastAPI app hold 2M DAU on one VPS?" or "design a photo sharing backend for 20M DAU".
 
+And lean-spec, a skill that checks one piece of logic against a short Lean 4 model, or makes it faster with a
+proof that the result does not change. The theorem statements are approved and frozen, the proofs are checked by
+Lean's kernel, and the production code (Python first) is tested against the model as an oracle with Hypothesis. A
+fast path gets a theorem "fast = spec under an invariant", a runtime check and a fallback, as in lean-derive-hargup
+(280k users on a $12 VPS). The rules can come from a step of the logic map: each theorem quotes its line, and
+whatever the map leaves vague becomes a finding. Done means one gate: `lake build`, a grep for cheats the kernel
+cannot see, `lake comparator` against the frozen statements, and the tests. Needs Lean 4.35 (elan) and bubblewrap.
+Install it with `claude plugin install lean-spec@octrow-skills` or
+`npx skills add octrow/octrow-skills --skill lean-spec -g`, then ask "verify feed_fast with Lean" or
+"check step 18 of the logic map with Lean".
+
 Claude Tag: an admin registers this repository under Organization settings → Plugins & skills → Sync from GitHub,
 then adds the plugin to a bundle.
 
@@ -205,7 +216,7 @@ user B's record and gets 404). The rest of OWASP goes to `security-review`.
 
 ## Repository layout
 
-This repo is a plugin marketplace. repo-ready with its four skills, python-logging, llm-call-audit, logic-map, qt-ui, qt-app and system-design live here; repo-scout lives in its own repo, and
+This repo is a plugin marketplace. repo-ready with its four skills, python-logging, llm-call-audit, logic-map, qt-ui, qt-app, system-design and lean-spec live here; repo-scout lives in its own repo, and
 the marketplace entry points there.
 
 ```

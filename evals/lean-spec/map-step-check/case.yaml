@@ -1,0 +1,12 @@
+schema_version: "1.1"
+name: map-step-check
+expected_outcome: |
+  lean-spec runs in map mode on step 3 of docs/logic-map.md (price the delivery, module quote/price). Each theorem
+  quotes the map line it encodes: free from 20 000, standard 1 000 + 200 per kg above 5 kg, express twice standard.
+  Differential tests find that an order of exactly 20 000 is charged (the code uses > instead of >=); quote/price.py
+  is not changed. Findings go to docs/PLAN.md as #4 onward with counterexamples and verdicts, including that the
+  map does not say whether a started kg counts and whether express is free on a free order. Step 3 gets a Proved:
+  line, tests/test_logic_map.py checks Proved: paths, pinned counterexamples keep lean/gate.sh green, and the answer
+  notes that docs/logic-map.ru.md needs the same line. Nothing is committed.
+context:
+  scaffold_script: place-files.sh

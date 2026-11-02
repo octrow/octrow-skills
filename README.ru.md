@@ -94,6 +94,17 @@ CLI repo-scout, поэтому сначала поставьте его (одн�
 `claude plugin install system-design@octrow-skills` или `npx skills add octrow/octrow-skills --skill system-design -g`.
 Потом спросите: «выдержит ли этот FastAPI 2 млн DAU на одной VPS?» или «спроектируй бэкенд фотохостинга на 20 млн DAU».
 
+И lean-spec, скилл, который проверяет кусок логики по короткой модели на Lean 4 или ускоряет его с доказательством,
+что результат не меняется. Формулировки теорем утверждаются и замораживаются, доказательства проверяет ядро Lean,
+а прод-код (сначала Python) сверяется с моделью как с оракулом через Hypothesis. Быстрый путь получает теорему
+«быстро = эталон при инварианте», проверку во время работы и откат, как в lean-derive-hargup (280 тыс.
+пользователей на VPS за $12). Правила можно брать из шага карты логики: каждая теорема цитирует свою строку, а всё,
+что карта оставляет размытым, становится находкой. Готово, когда проходит один гейт: `lake build`, grep на обходы,
+которые ядро не видит, `lake comparator` против замороженных формулировок и тесты. Нужны Lean 4.35 (elan) и
+bubblewrap. Установка: `claude plugin install lean-spec@octrow-skills` или
+`npx skills add octrow/octrow-skills --skill lean-spec -g`. Потом спросите: «проверь через lean, что feed_fast
+правильный» или «проверь через lean шаг 18 карты логики».
+
 Claude Tag: администратор подключает этот репозиторий в Organization settings → Plugins & skills → Sync from GitHub
 и добавляет плагин в bundle.
 
@@ -208,7 +219,7 @@ complexipy (когнитивная сложность) и vulture (мёртвы�
 
 ## Структура репозитория
 
-Этот репозиторий является маркетплейсом плагинов. repo-ready с четырьмя скиллами, python-logging, llm-call-audit, logic-map, qt-ui, qt-app и system-design лежат здесь, а repo-scout живёт в
+Этот репозиторий является маркетплейсом плагинов. repo-ready с четырьмя скиллами, python-logging, llm-call-audit, logic-map, qt-ui, qt-app, system-design и lean-spec лежат здесь, а repo-scout живёт в
 своём репозитории, и на него ссылается запись маркетплейса.
 
 ```

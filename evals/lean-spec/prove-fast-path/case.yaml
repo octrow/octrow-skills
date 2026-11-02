@@ -1,0 +1,12 @@
+schema_version: "1.1"
+name: prove-fast-path
+expected_outcome: |
+  normalize_fast in tags.py is checked against a Lean model with the lean-spec skill: preflight first, a lean/
+  project copied from the skill's example with the feed example removed, a model of normalize (sort, each id once)
+  and of normalize_fast (drop adjacent repeats), a theorem that they are equal when the input is non-decreasing and
+  a soundness theorem for a runtime check, a self-contained Frozen.lean and comparator.json. The agent finds that
+  normalize_fast is wrong on unsorted input, adds the non-decreasing check with a fallback to normalize, writes
+  Hypothesis differential tests against the oracle, runs the mutation check, and lean/gate.sh ends with
+  "gate: ok". The answer lists what is proved and what is only tested. Nothing is committed.
+context:
+  scaffold_script: place-files.sh

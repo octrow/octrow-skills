@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: authz-rule-bug
+expected_outcome: |
+  can_edit in access.py is checked against a Lean model of the three rules in its docstring with the lean-spec
+  skill. Theorems include that nobody edits an archived document. Hypothesis differential tests against the oracle
+  find that an admin can edit an archived document; the counterexample is shown before the code changes; the code
+  is fixed so rule 1 holds for admins; lean/gate.sh ends with "gate: ok"; the answer lists what is proved and what
+  is only tested. Nothing is committed.
+context:
+  scaffold_script: place-files.sh

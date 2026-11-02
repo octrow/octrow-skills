@@ -5,6 +5,16 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ## [Unreleased]
 
 ### Added
+- Marketplace: `lean-spec` plugin 0.1.0 with the `lean-spec` skill. It checks one piece of logic against a Lean 4
+  model, or proves a fast path equal to it: approved and frozen statements (`Frozen.lean`, `lake comparator`),
+  proofs in Lean core without Mathlib, the model as a long-lived oracle for Hypothesis differential tests that
+  compare whole values, a required mutation check, and for a fast path `fast_eq_spec` under an invariant with a
+  runtime check and fallback. Map mode takes the rules of a `docs/logic-map.md` step: theorems quote their map
+  lines, findings go where "Known gaps" points, pinned counterexamples with strict xfail keep the gate green, and
+  the step gets a `Proved:` line. One gate: `lake build`, a grep for what the kernel cannot see (`implemented_by`
+  passes the comparator), `lake comparator`, tests. A worked example in `example/` doubles as the template;
+  `scripts/preflight.py`; references on patterns, the proof loop, cheats, setup, map mode and known findings; a
+  test in `tests/test_lean_spec.py`; evals in `evals/lean-spec/`.
 - `repo-secure` skill and the `secure` Scenario: an application security audit in the order breaches happen.
   A new `catalog/appsec.py` pack adds mechanical Checks (`client_bundle_secrets` for secrets in
   `NEXT_PUBLIC_`/`VITE_`/`REACT_APP_` variables, `lockfile_committed`, `dependency_updates`, `vuln_audit_ci`) and

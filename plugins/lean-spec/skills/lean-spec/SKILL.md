@@ -1,0 +1,183 @@
+---
+name: lean-spec
+description: "Check or speed up one piece of logic against a Lean 4 model: write the simplest executable model of it in Lean, have the user approve the theorem statements, prove them, freeze them, then test the production code (Python first) against the model as an oracle with Hypothesis, and for a fast path prove fast = spec under an invariant that the code checks at runtime with a fallback. Done means one gate passes: lake build, a grep for cheats the kernel cannot see, lake comparator against the frozen statements, and the differential tests. Use whenever the user says «проверь через lean», «докажи на lean», «формально проверь эту функцию», «ускорь, но докажи», «докажи, что оптимизация правильная», «модель на lean», «оракул», \"verify with Lean\", \"prove this optimization\", \"Lean spec\", \"Lean model as an oracle\", \"differential test against a model\", or wants an LLM-written fast path checked against a proved reference; also «проверь шаг карты логики через lean», «докажи правила из logic-map», \"check a logic-map step with Lean\", where the rules come from docs/logic-map.md. Use it even if they name only one of these pieces. Not for pure math formalization (use lean4-skills) or for code that is mostly IO."
+---
+
+# lean-spec
+
+The production code stays where it is. Lean holds a short executable model of one piece of logic, the theorems
+about it, and an oracle the production code is tested against. Proofs cover the model; tests tie the code to it.
+The pattern comes from lean-derive-hargup (280k users on a $12 VPS), where Lean proved one query shortcut equal
+to the spec under an invariant, and the server checked the invariant at startup and fell back to plain SQL.
+
+`example/` is a complete project in the layout a repo gets (`lean/`, `tests/`). Copy from it; don't write the
+lakefile, gate, oracle loop or test fixture from scratch. Its gate passes on Lean 4.35.0.
+
+## 0. Preflight
+
+```bash
+python3 scripts/preflight.py [repo-root]
+```
+
+Path is relative to this skill's folder. Lake and bwrap are hard requirements (exit 1); show the install lines
+and stop if they are missing. If `lake` was found under `~/.elan/bin` but is not on PATH, start every later shell
+command with `export PATH="$HOME/.elan/bin:$PATH"`. Without lean-lsp-mcp you are proving blind: offer its install line before step 3.
+lean4-skills is optional.
+
+## 1. Pick the target
+
+One pure function or rule: authorization, pricing, a parser, a state machine, a query plan, a fast path next to
+a slow one. Not IO, not the network, not the database driver. Read the code and its callers first.
+
+**Map mode.** If the repo has `docs/logic-map.md` and the user names a step (or asks to check the map), the
+requirement is that step's lines and the code is its `Module:`. Read `references/map-mode.md` now; it adds to
+steps 2, 5, 8 and 9 below. Pick only steps that decide something purely (filters, priorities, roles, dedupe), not
+collection, IO or the browser.
+
+Refuse or split a target whose model would pass ~200 lines. Say which pattern applies
+(`references/patterns.md`): a model checked by differential tests (A), or a proved fast path with a runtime guard
+(E). Pick A unless there is a fast path to justify.
+
+## 2. Model and statements (stop for approval)
+
+Copy `example/lean/` to `<repo>/lean/` (without `.lake`), and `example/tests/test_spec_oracle.py` to
+`<repo>/tests/`. If the repo's tests can't import its modules from the root, copy `example/tests/conftest.py` too.
+Add `lean/.lake/` and `.hypothesis/` to the repo's `.gitignore`. Delete the example's `Spec/Feed/` and reset
+`Frozen.lean` to its two-line header comment, then write `lean/Spec/<Target>/Model.lean`: the most obvious executable version, on
+`List` and `Nat`, no optimisation. Name the reference after the production function (`canEdit` for `can_edit`);
+for a fast path name the pair `spec` and `fast`. Add the target to `lean/Spec.lean`.
+
+Write the model from the requirement (the map step, docstring, ticket or the user's words), not by transcribing
+the code's body: a model copied from the code proves the code's bugs. Where the requirement is silent (what is
+maximised, ties, rounding), take the choice from the code, mark it `-- silent:` in `Model.lean` and list it as a
+finding about the requirement.
+
+Write `lean/Spec/<Target>/Props.lean` with every statement and `sorry` proofs. Typical statements:
+- `fast_eq_spec : Inv xs → fast xs = spec xs` for a fast path; `checkInv_sound : checkInv xs = true → Inv xs` for
+  its runtime check;
+- the rule's properties in words the user uses ("a non-owner never gets access to an archived doc").
+
+Requirements are often constraints ("budget is cheaper than best"), not the rule that picks. Then the theorems are
+weaker than the oracle comparison, and "proved" in the report covers only the constraints.
+
+`lake build` must pass with only `sorry` warnings. **Show the user the model and each statement in plain words and
+wait for approval.** The kernel cannot catch a statement that says the wrong thing; this is the step that does.
+If the user approved in advance ("формулировки утверждаю заранее"), freeze right away and list the statements in
+plain words in the report instead.
+
+Then freeze, now, while every proof is still `sorry`: `lean/Frozen.lean` is the model and the props with their
+imports dropped, one block per target, and `lean/comparator.json` lists the theorem names:
+
+```bash
+{ sed '/^import /d' lean/Spec/<Target>/Model.lean; sed '/^import /d' lean/Spec/<Target>/Props.lean; } >> lean/Frozen.lean
+```
+
+Helper lemmas you add later while proving stay out of `Frozen.lean`; the comparator checks only the named theorems. A Frozen file that imports
+the model lets a model change slip past the comparator.
+
+## 3. Proofs
+
+One `sorry` at a time; statements never change. If lean4-skills is installed, hand each to `/lean4:prove`.
+Otherwise follow `references/proof-loop.md`: read the goal before each edit, try automation first, search and
+`#check` a lemma name before using it. Lean core already has the list, sort and permutation lemmas most models
+need (`mergeSort_of_pairwise`, `pairwise_mergeSort`, `Perm.eq_of_pairwise`, `pairwise_iff_getElem`). When core lacks
+a basic lemma (there is no `nodup_eraseDups`), prove it as a helper, copying the proof pattern of a neighbouring
+core lemma from the toolchain source. Add Mathlib only when a proof truly needs it: the first build then takes
+minutes and gigabytes.
+
+If a proof stalls because the statement is false (a counterexample appears), stop and show it to the user; that
+is a finding about the requirement, not a proof problem. A bug where the code disagrees with the requirement does
+not show up here: the model follows the requirement, so its proofs go through. Step 5 finds those.
+
+## 4. Oracle
+
+`lean/Oracle.lean` is a long-lived process: one request per line, whitespace-separated naturals in, the answer out.
+Change only the parsing (`parsePosts`, or nothing for a plain list of numbers) and `answer`; keep `loop` and
+`main`. Encode booleans as 0/1. Lean keywords (`show`, `from`, `at`, `fun`) can't be helper names. The oracle
+calls the frozen reference (`spec`, `canEdit`), never `fast` or a helper. It prints the whole result in the same
+shape the theorems compare (whole records, not ids).
+
+## 5. Differential tests
+
+In `tests/test_spec_oracle.py` keep the fixture and `ask`; write Hypothesis strategies for the inputs:
+- small ranges so equal keys and duplicates are common (that is where sort and dedup bugs live);
+- for a fast path, one strategy for any input (must take the fallback and still match) and one that satisfies
+  the invariant (takes the fast path);
+- the production numeric domain: the model is in `Nat`, the adapter scales to what the code really holds (scores
+  rounded to hundredths → the model in hundredths); generate at several scales (whole numbers where floats are
+  exact, and fractions), plus a strategy aimed at ties, since requirements rarely say how ties break;
+- when the model folds several code conditions into one flag (`barred` for five reasons), the adapter draws which
+  condition fired, so each code path is exercised.
+
+Keep the adapter (model value ↔ production objects) in the test file. In a uv project (a `uv.lock` exists) add
+hypothesis as a dev dependency (`uv add --dev hypothesis`; `uv run --with` does not reach the venv's pytest);
+without a lock keep the example's `uv run --no-project --with hypothesis` and leave `pyproject.toml` alone. No `importorskip`: skip
+the oracle module only when lake is missing, and then CI needs the lean job from `references/setup.md`.
+
+Compare whole values, exactly what the theorem compares. Run the plain tests, with no masks, before touching the
+production code or writing any known-finding mask: Hypothesis finds the disagreement, not your reading of the code. When
+one fails, report the shrunk counterexample (input, what the code returns, what the model returns) before changing
+code; wait for the user only if they have not already said to fix it. When the code must not be changed now
+(map mode, or the user decides later), keep the gate green with pinned counterexamples:
+`references/known-findings.md`.
+
+**Mutation check (required).** Break the production code at least three ways and confirm each fails a test, then
+restore (`cp` a backup, `cmp` after):
+- pattern A: drop one condition or branch, flip one comparison (`==` to `!=`, `<` to `<=`), reorder two checks;
+- pattern E: drop the guard, weaken the key or comparison, weaken the invariant check (`<` to `<=`).
+
+A mutation that survives means the test compares less than the theorem; fix the test. The exception is an
+equivalent mutant: one that changes only which branch runs, not the result (`<=` to `<` in a non-strict check
+sends sorted input with repeats to the fallback). Name it as such in the report instead of chasing it. Rerun the
+mutation check after adding any known-finding mask: a mask wider than its finding hides mutants.
+
+## 6. Fast path in the production code (pattern E only)
+
+The code mirrors the model: `is_ordered` (or the target's check) mirrors `checkInv`, the fast branch mirrors
+`fast`, the fallback calls the reference. Docstrings name the theorem each piece relies on. The check runs where
+the invariant could break (on each call, at startup plus on each write, or when another writer is detected).
+
+## 7. Gate
+
+```bash
+lean/gate.sh
+```
+
+Edit `TEST_CMD` at its top to the test command the repo's CI runs, or the whole `tests/` directory when there is
+no CI, so the old tests stay part of "done". If something has to be left out (a GUI extra not installed), say what and why in a comment there. It runs `lake build`, a grep for what the kernel cannot see (`sorry`, `native_decide`, `axiom`,
+`implemented_by`, `@[extern`, `unsafe`, `skipKernelTC`, `debug.`), `lake comparator` (statements and model
+definitions equal `Frozen.lean`, standard axioms only, kernel accepts), then the tests. The comparator's `sorry`
+warnings from `Frozen.lean` and its long "Exporting" lines are expected; the verdict is the last line. Never weaken the gate or `Frozen.lean` to get green; see `references/cheating.md`.
+Wire it into CI and the Stop hook (`references/setup.md`) if the user wants it to stay true.
+
+## 8. Report
+
+End with two lists, always:
+- **Proved:** each theorem in one plain sentence.
+- **Only tested:** the production code's agreement with the model (N examples per test, the mutations caught),
+  and everything outside the model (IO, parsing, the DB, concurrency).
+
+Plus where the runtime check sits and what happens when it fails, and in map mode the findings with their
+numbers. Without this section the task is not done.
+
+## 9. Map mode: write back to the map
+
+Only in map mode, see `references/map-mode.md`: a `Proved:` line in the step, a check in the map's test that the
+path exists, findings where the map's "Known gaps" points, and a note that the mirror (`logic-map.ru.md`) needs
+the same line.
+
+## Rules
+
+- One target per run. A second target gets its own folder under `lean/Spec/` and its own approval.
+- Statements and `Frozen.lean` change only with the user's explicit consent, and then both together.
+- No `sorry`, `native_decide`, `axiom`, `implemented_by`, `@[extern]` or `unsafe` outside `Frozen.lean`.
+- Lean 4 syntax only (`fun x =>`, `by`, no `begin ... end`, no `λ x,`). APIs drift between releases: when a name
+  fails, search the toolchain source (`~/.elan/toolchains/*/src/lean/Init`) rather than guessing.
+- Don't promise more than was proved: "proved" applies to the Lean model; the production code is "tested
+  against the proved model".
+
+## Sources
+
+The pattern follows lean-derive-hargup
+(github.com/arjaythedev/twelve-dollar-server-challenge, submissions/lean-derive-hargup) and AWS Cedar's
+Lean model with differential testing (arXiv:2407.01688).
