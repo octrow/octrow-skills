@@ -60,6 +60,9 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
   paths, so evals and docs that use it aren't reported.
 
 ### Fixed
+- `repo-code-health`: the list of files ruff checks was cached for the whole process, so a second audit in one
+  process (the test suite) ran radon, complexipy and vulture on the first repo's files and found nothing. The
+  cache is now keyed by the project root.
 - `preflight.py --help` and `log_audit.py --help` print the usage instead of auditing a folder named `--help`;
   `log_audit.py` stops on a path that is not a directory instead of reporting an empty audit.
 

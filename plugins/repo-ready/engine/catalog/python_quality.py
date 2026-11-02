@@ -49,16 +49,20 @@ def py_files() -> list[str]:
     return [f"./{f}" for f in tracked() if f.endswith(".py") and (repo.root / f).is_file()]
 
 
-@functools.cache
 def checked_files() -> list[str]:
     """`py_files` minus what ruff's own `exclude`/`extend-exclude` leaves out, so radon, complexipy and vulture
     skip the same generated code and throwaway scripts the project already keeps out of its linter."""
+    return _checked_files(repo.root)
+
+
+@functools.cache  # keyed by root, so a second run in one process (tests) never sees the first repo's files
+def _checked_files(root: Path) -> list[str]:
     files = py_files()
     if not files:
         return []
     kept = {Path(p).resolve() for p in uvx("ruff", "check", "--show-files", "--force-exclude", "--no-cache",
                                             *files).splitlines() if p.strip()}
-    return [f for f in files if (repo.root / f).resolve() in kept]
+    return [f for f in files if (root / f).resolve() in kept]
 
 
 def setting(table: str, key: str, default: int, config: dict | None = None) -> int:
