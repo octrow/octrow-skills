@@ -5,6 +5,9 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ## [Unreleased]
 
 ### Fixed
+- `lean-spec` 0.3.2: the template copy now builds right away: `Spec.lean` and `Oracle.lean` drop the Feed imports,
+  the oracle's `answer` is a stub until the oracle step, and `comparator.json` starts empty (finding #9). Freezing
+  keeps library imports (Mathlib, Std) at the top of `Frozen.lean` instead of dropping them (finding #13).
 - `lean-spec` 0.3.1: a second target no longer unfreezes the first. With `lean/` already in the repo the skill adds
   the target next to it (own `Spec/<Target>/`, appended Frozen block and names, a tagged oracle branch) instead of
   copying the template, and preflight says so. The gate now fails when `comparator.json` and `Frozen.lean` name

@@ -106,8 +106,8 @@ Module: `SKILL`, `references/patterns`, `references/map-mode`
 Decides: the layout of `lean/` and the test file in the user's repo.
 Out: `lean/` (lakefile, toolchain v4.35.0, gate, oracle, comparator.json), `tests/test_spec_oracle.py`, maybe
 `tests/conftest.py`; `.gitignore` gains `lean/.lake/` and `.hypothesis/`; `Spec/Feed/` deleted; `Frozen.lean`
-reset to its header; `lean/Spec.lean` gets the target. `Oracle.lean` still imports `Spec.Feed.Model` and
-`comparator.json` still lists the Feed theorems until steps 8 and 6 rewrite them (#9).
+reset to its header; `lean/Spec.lean` imports the target instead of Feed; `Oracle.lean` imports the target's model
+with `answer` stubbed to `error: no oracle yet` until step 8; `comparator.json` has no theorem names.
 Branches:
 - `lean/` already there → no copy, `Frozen.lean` never reset: a new `lean/Spec/<Target>/`, an import in `Spec.lean`,
   a tagged oracle branch, the test file added to `TEST_CMD`, the `comparator.json` check copied into an older `gate.sh`;
@@ -128,8 +128,7 @@ Module: `SKILL`, `references/patterns`
 ### 4. Statements (§2)
 
 Decides: what will be proved.
-Out: `Props.lean` with every theorem and `sorry`; the skill asks for `lake build` green with only `sorry` warnings,
-which the default `oracle` target blocks until step 8 (#9).
+Out: `Props.lean` with every theorem and `sorry`; `lake build` green with only `sorry` warnings.
 Branches:
 - E: `fast_eq_spec` (with `Inv`, a predicate hypothesis, or none) and `checkInv_sound` when there is a guard;
 - map mode: one theorem per rule line with a `-- map: "…"` quote; `Decides:` gets none;
@@ -148,7 +147,8 @@ Module: `SKILL`
 ### 6. Freeze (§2)
 
 Decides: what the comparator holds the proofs to.
-Out: `Frozen.lean` += model + props without imports (one block per target); `comparator.json` lists the theorem
+Out: `Frozen.lean` += model + props without `Spec` imports (one block per target), library imports (Mathlib,
+Std) lifted to the top; `comparator.json` lists the theorem
 names; standard axioms only.
 Branches:
 - a second target → its block appended, its names added; the first target's block untouched;
@@ -280,7 +280,6 @@ Module: `references/cheating`
 Details and fixes are in `docs/logic-map-fixes.md`.
 - Step 1 says "not IO, not the network" while pattern S targets retry loops and connections (#2).
 - The oracle test imports hypothesis at the top: a repo whose CI has no hypothesis fails at collection (#8).
-- Step 4's "lake build green" fails until step 8 rewrites the oracle (#9).
 - Pattern S: a false claim found while proving needs a frozen statement changed, and the step says stop (#10).
 - The optional Stop hook can block stopping forever when the gate can never pass (#11).
 - Pattern E: tests and mutants of the fast path come before step 12 writes it (#12).

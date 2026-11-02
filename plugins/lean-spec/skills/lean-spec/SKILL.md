@@ -52,7 +52,10 @@ Otherwise copy `example/lean/` to `<repo>/lean/` (without `.lake`), and `example
 Add `lean/.lake/` and `.hypothesis/` to the repo's `.gitignore`. Delete the example's `Spec/Feed/` and reset
 `Frozen.lean` to its two-line header comment, then write `lean/Spec/<Target>/Model.lean`: the most obvious executable version, on
 `List` and `Nat`, no optimisation. Name the reference after the production function (`canEdit` for `can_edit`);
-for a fast path name the pair `spec` and `fast`. Add the target to `lean/Spec.lean`.
+for a fast path name the pair `spec` and `fast`. Replace the Feed imports in `lean/Spec.lean` with the target's,
+and in `lean/Oracle.lean` import the target's model, drop `open Feed` and `parsePosts`, and stub
+`def answer (_ : String) : String := "error: no oracle yet"` until step 4; empty `theorem_names` in
+`lean/comparator.json`. Without this the build below fails on the deleted Feed.
 
 Write the model from the requirement (the map step, docstring, ticket or the user's words), not by transcribing
 the code's body: a model copied from the code proves the code's bugs. Where the requirement is silent (what is
@@ -81,10 +84,13 @@ If the user approved in advance ("формулировки утверждаю з
 plain words in the report instead.
 
 Then freeze, now, while every proof is still `sorry`: `lean/Frozen.lean` is the model and the props with their
-imports dropped, one block per target, and `lean/comparator.json` lists the theorem names:
+`Spec` imports dropped and library imports at the top, one block per target, and `lean/comparator.json` lists the theorem names:
 
 ```bash
-{ sed '/^import /d' lean/Spec/<Target>/Model.lean; sed '/^import /d' lean/Spec/<Target>/Props.lean; } >> lean/Frozen.lean
+T=lean/Spec/<Target>
+{ sed '/^import /d' $T/Model.lean; sed '/^import /d' $T/Props.lean; } >> lean/Frozen.lean
+# Lean wants every import first: lift library imports (Mathlib, Std) to the top; Spec imports stay dropped.
+{ grep -h '^import ' lean/Frozen.lean $T/*.lean | grep -v '^import Spec\.' | sort -u; grep -v '^import ' lean/Frozen.lean; } > lean/Frozen.new && mv lean/Frozen.new lean/Frozen.lean
 ```
 
 Helper lemmas you add later while proving stay out of `Frozen.lean`; the comparator checks only the named theorems.

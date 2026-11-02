@@ -1,7 +1,7 @@
 {
   "name": "lean-spec",
   "description": "Check or speed up one piece of logic against a Lean 4 model: approved and frozen theorem statements, proofs, the model as an oracle for Hypothesis differential tests, a proved fast path with a runtime guard and fallback, a state machine proved safe under a fault model, and one gate (lake build, cheat grep, lake comparator, tests).",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": {
     "name": "Daniil Petrov"
   },
