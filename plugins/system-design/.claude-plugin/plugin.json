@@ -1,0 +1,18 @@
+{
+  "name": "system-design",
+  "description": "Design or review a backend's architecture from numbers, not vibes: requirements first, napkin math (DAU to RPS, servers, cache, DB nodes, storage, egress) from a script, then the smallest rung of the scaling ladder that holds, the storage engine and cache pattern that fit the access pattern, and the trade-offs said out loud.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Daniil Petrov"
+  },
+  "license": "MIT",
+  "keywords": [
+    "system-design",
+    "architecture",
+    "capacity-planning",
+    "scaling",
+    "databases",
+    "caching",
+    "skills"
+  ]
+}

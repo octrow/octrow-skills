@@ -1,0 +1,14 @@
+[
+  {"query": "спроектируй бэкенд для сервиса бронирования переговорок, 50k DAU, нужна схема и что за БД", "should_trigger": true},
+  {"query": "выдержит ли наш FastAPI на одной VPS, если маркетинг обещает 2 млн DAU после запуска? посчитай", "should_trigger": true},
+  {"query": "нужен ли нам Redis или очередь, или пока рано? вот репо", "should_trigger": true},
+  {"query": "какую БД взять под ленту событий IoT-датчиков, пишем 30k событий в секунду", "should_trigger": true},
+  {"query": "back-of-the-envelope: how many app servers and how much storage for a photo sharing app with 10M DAU", "should_trigger": true},
+  {"query": "prep me for a system design interview: design a URL shortener", "should_trigger": true},
+  {"query": "что у нас сломается первым при росте нагрузки в 10 раз?", "should_trigger": true},
+  {"query": "добавь индекс на orders.created_at и миграцию alembic", "should_trigger": false},
+  {"query": "заверни сервис в Docker и сделай helm chart", "should_trigger": false},
+  {"query": "логи забили диск, ограничь их гигабайтом", "should_trigger": false},
+  {"query": "draw a mermaid diagram of our current CI pipeline for the README", "should_trigger": false},
+  {"query": "почему этот SQL-запрос медленный? вот EXPLAIN ANALYZE", "should_trigger": false}
+]

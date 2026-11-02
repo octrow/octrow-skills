@@ -1,0 +1,32 @@
+{
+  "skill_name": "system-design",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "спроектируй бэкенд для приложения-трекера привычек: 200k DAU, каждый открывает раз-два в день, отмечает привычки и смотрит статистику за месяц. стек python/fastapi",
+      "expected_output": "Requirements first with listed assumptions, napkin.py output showing a few req/s, a verdict of one VPS / DB split off, Postgres with tables and indexes for the monthly stats query, no Kafka, no microservices, failure and backup plan, the next rung with its trigger metric.",
+      "files": [],
+      "assertions": [
+        "Functional and non-functional requirements appear before any architecture, with assumed numbers labelled as assumptions",
+        "The answer shows output of scripts/napkin.py (or its exact numbers) rather than hand arithmetic",
+        "The proposed architecture is a single app server or a small pair with Postgres, with no Kafka, no sharding and no microservices",
+        "Tables with keys and at least one index tied to the monthly statistics query are given",
+        "Backups with a restore check and the next scaling step with a concrete trigger metric are named"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "photo sharing app, 20M DAU, users scroll a feed of ~60 photos a day and post 1 photo a week. design it and tell me what the storage bill looks like after 3 years",
+      "expected_output": "Napkin run with media-sized objects and response sizes, storage in object storage with a CDN in front because egress is far past 1 Gbit/s, metadata in Postgres, cache with a named pattern and invalidation, a queue for upload processing, consistency trade-off for feed vs posting, storage after 3 years with replication.",
+      "files": [],
+      "assertions": [
+        "napkin.py is run with object/response sizes in the hundreds of KB, not the 2 KB defaults",
+        "Photo bytes go to object storage (S3, R2 or similar), not into the database",
+        "A CDN is required and justified by the egress number",
+        "Upload processing (resize, thumbnails) runs off the request path via a queue and workers",
+        "The answer states the feed is eventually consistent and names at least one data type that must stay strongly consistent or durable",
+        "A storage figure after 3 years with the replication factor is given"
+      ]
+    }
+  ]
+}
