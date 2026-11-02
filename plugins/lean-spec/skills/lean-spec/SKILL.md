@@ -1,6 +1,6 @@
 ---
 name: lean-spec
-description: "Check or speed up one piece of logic against a Lean 4 model: write the simplest executable model of it in Lean, have the user approve the theorem statements, prove them, freeze them, then test the production code (Python first) against the model as an oracle with Hypothesis, and for a fast path prove fast = spec under an invariant that the code checks at runtime with a fallback; for a retry loop or state machine, prove its safety claims under any sequence of failures. Done means one gate passes: lake build, a grep for cheats the kernel cannot see, lake comparator against the frozen statements, and the differential tests. Use whenever the user says «проверь через lean», «докажи на lean», «формально проверь эту функцию», «ускорь, но докажи», «докажи, что оптимизация правильная», «модель на lean», «оракул», \"verify with Lean\", \"prove this optimization\", \"Lean spec\", \"Lean model as an oracle\", \"differential test against a model\", or wants an LLM-written fast path checked against a proved reference; also «докажи цикл повторов», «проверь автомат состояний через lean», "prove the retry/fallback logic", "verify a state machine with Lean"; also «проверь шаг карты логики через lean», «докажи правила из logic-map», \"check a logic-map step with Lean\", where the rules come from docs/logic-map.md. Use it even if they name only one of these pieces. Not for pure math formalization (use lean4-skills) or for code that is mostly IO."
+description: "Check or speed up one piece of logic against a Lean 4 model: write the simplest executable model of it in Lean, have the user approve the theorem statements, prove them, freeze them, then test the production code (Python first) against the model as an oracle with Hypothesis, and for a fast path prove fast = spec under an invariant that the code checks at runtime with a fallback; for a retry loop or state machine, prove its safety claims under any sequence of failures. Done means one gate passes: lake build, a grep for cheats the kernel cannot see, lake comparator against the frozen statements, and the differential tests. Use whenever the user says «проверь через lean», «докажи на lean», «формально проверь эту функцию», «ускорь, но докажи», «докажи, что оптимизация правильная», «модель на lean», «оракул», \"verify with Lean\", \"prove this optimization\", \"Lean spec\", \"Lean model as an oracle\", \"differential test against a model\", or wants an LLM-written fast path checked against a proved reference; also «докажи цикл повторов», «проверь автомат состояний через lean», "prove the retry/fallback logic", "verify a state machine with Lean"; also «проверь шаг карты логики через lean», «докажи правила из logic-map», \"check a logic-map step with Lean\", where the rules come from docs/logic-map.md. Use it even if they name only one of these pieces. Not for pure math formalization (use lean4-skills) or for IO itself; logic that reacts to IO failures is pattern S."
 ---
 
 # lean-spec
@@ -27,7 +27,8 @@ lean4-skills is optional.
 ## 1. Pick the target
 
 One pure function or rule: authorization, pricing, a parser, a state machine, a query plan, a fast path next to
-a slow one. Not IO, not the network, not the database driver. Read the code and its callers first.
+a slow one. Not IO itself (the network, the database driver); logic that reacts to IO (retries, fallbacks,
+reconnects) is pattern S with the IO faked. Read the code and its callers first.
 
 **Map mode.** If the repo has `docs/logic-map.md` and the user names a step (or asks to check the map), the
 requirement is that step's lines and the code is its `Module:`. Read `references/map-mode.md` now; it adds to
@@ -38,6 +39,10 @@ Refuse or split a target whose model would pass ~200 lines. Say which pattern ap
 (`references/patterns.md`): a model checked by differential tests (A), a proved fast path with a runtime guard
 (E), or a state machine under a fault model (S: retries, fallbacks, connections, a protocol loop). Pick A unless
 there is a fast path to justify or the logic is a loop that reacts to failures.
+
+**Pattern E: measure first.** Before choosing an E target, time one real request end to end and see where the
+time goes; a 500x faster step that is 0.1% of a network-bound request is a correct result, but say so. Then
+take the "before" numbers of the target itself (step 6 says how), while the old code is still the only code.
 
 ## 2. Model and statements (stop for approval)
 
@@ -137,6 +142,9 @@ the records; memoise the pure dependencies the adapter calls n² times.
 
 ## 5. Differential tests
 
+**Pattern E when the code has no fast path yet** ("make it faster"): write it now, before these tests, by step 6
+(the fast branch, its guard, the old code kept as `_x_reference`). The tests and the mutants below need it.
+
 In `tests/test_spec_oracle.py` keep the fixture and `ask`; write Hypothesis strategies for the inputs:
 - small ranges so equal keys and duplicates are common (that is where sort and dedup bugs live);
 - for a fast path, one strategy for any input (must take the fallback and still match) and one that satisfies
@@ -162,8 +170,8 @@ hypothesis` in `gate.sh` is for the standalone example only; set `TEST_CMD` to t
 `importorskip`: a missing hypothesis must fail, not skip. Skip the oracle module only when lake is missing, and
 then CI needs the lean job from `references/setup.md`.
 
-Compare whole values, exactly what the theorem compares. Run the plain tests, with no masks, before touching the
-production code or writing any known-finding mask: Hypothesis finds the disagreement, not your reading of the code. When
+Compare whole values, exactly what the theorem compares. Run the plain tests, with no masks, before any other change
+to the production code (a new fast path is the only one allowed first) or writing any known-finding mask: Hypothesis finds the disagreement, not your reading of the code. When
 one fails, report the shrunk counterexample (input, what the code returns, what the model returns) before changing
 code; wait for the user only if they have not already said to fix it. When the code must not be changed now
 (map mode, or the user decides later), keep the gate green with pinned counterexamples:
@@ -204,8 +212,8 @@ implementation next to the new one (`_x_reference`) for the tests.
 **Measure before and after.** A speed-up is claimed only with numbers: median and p95 per call, warm-up, GC off,
 same inputs, at the sizes production really sees and at least one larger size. Measure the small size too:
 precomputing features or building an index can cost more than it saves on small inputs (bucketed dedupe was 2x
-slower at 50 items until the model book was compiled once). Ask where the time goes in a real request before
-choosing the target: a 500x faster step that is 0.1% of a network-bound request is a correct result, but say so.
+slower at 50 items until the model book was compiled once). The "before" numbers come from step 1; the "after"
+numbers are taken here, on the same inputs.
 
 ## 7. Gate
 

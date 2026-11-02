@@ -10,7 +10,7 @@ project's full suite.
 ## Picking steps
 
 Good: steps that decide purely from data in memory (priorities, filters, dedupe, ranking, roles, city order).
-Skip: collection, the browser, the network, persistence. One step per run; a step whose model passes ~200 lines is
+Skip: collection, the browser, the network, persistence (a retry or fallback loop around them is pattern S, not a skip). One step per run; a step whose model passes ~200 lines is
 split by rule.
 
 ## Statements

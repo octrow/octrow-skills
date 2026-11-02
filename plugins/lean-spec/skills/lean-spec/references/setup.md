@@ -39,12 +39,24 @@ run the gate.
 
 ## Stop hook (optional)
 
-Blocks "done" while the gate fails. In `.claude/settings.json`:
+Blocks "done" while the gate fails, and shows the last 20 lines of its output. It runs the whole gate, tests
+included, on every stop: use it where the gate takes seconds, not minutes. When the agent is already continuing
+because of this hook (`stop_hook_active`), it lets the stop through, so a gate that can never pass here (no bwrap,
+a broken toolchain) can't keep Claude from stopping. In `.claude/settings.json`:
 
 ```json
 {
   "hooks": {
-    "Stop": [{ "hooks": [{ "type": "command", "command": "test ! -d lean || lean/gate.sh >/dev/null 2>&1 || { echo 'lean/gate.sh fails' >&2; exit 2; }" }] }]
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test ! -d lean || grep -q \"\\\"stop_hook_active\\\": *true\" || { out=$(lean/gate.sh 2>&1) || { printf \"%s\\n\" \"$out\" | tail -20 >&2; echo \"lean/gate.sh fails\" >&2; exit 2; }; }"
+          }
+        ]
+      }
+    ]
   }
 }
 ```

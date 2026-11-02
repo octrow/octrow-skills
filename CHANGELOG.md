@@ -5,6 +5,11 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ## [Unreleased]
 
 ### Fixed
+- `lean-spec` 0.3.4: pattern E measures first (one real request end to end, then the target's "before" numbers)
+  and writes a missing fast path before the differential tests and mutants that need it (finding #12). The target
+  rule refuses IO itself but sends logic that reacts to IO to pattern S, in the step, the description and map mode
+  (finding #2). The optional Stop hook lets a repeated stop through (`stop_hook_active`) and shows the gate's last
+  20 lines, so a gate that can never pass can't trap Claude (finding #11).
 - `lean-spec` 0.3.3: hypothesis goes into the repo's own test dependencies whatever the tooling, so the repo's CI
   no longer fails collecting the oracle test; the `--no-project` command is for the standalone example only
   (finding #8). Pattern S: a claim found false while proving flips to `¬ Claim` in Props and Frozen together,

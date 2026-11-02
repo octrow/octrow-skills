@@ -96,9 +96,9 @@ Branches:
 - `docs/logic-map.md` exists and the user names a step → map mode; target = the step's `Module:`; only steps that
   decide from data in memory;
 - a model that would pass ~200 lines → refuse or split;
-- the step's text refuses "IO, the network, the database driver"; the pattern line of the same step offers S for
-  "retries, fallbacks, connections, a protocol loop" with the IO faked (#2);
-- E: the skill asks where a real request's time goes "before choosing the target", but writes it in §6 (#12).
+- IO itself (network, DB driver) → refused; logic that reacts to IO (retries, fallbacks, reconnects) → S with the
+  IO faked;
+- E → one real request timed end to end first (where the time goes), then the target's "before" numbers.
 Module: `SKILL`, `references/patterns`, `references/map-mode`
 
 ### 2. Template copy (§2)
@@ -184,6 +184,7 @@ Module: `SKILL`, `example/lean/Oracle`
 Decides: whether the production code agrees with the model.
 In: Hypothesis inputs. Out: pass, or a shrunk counterexample (input, code, model).
 Branches:
+- E with no fast path in the code yet → step 12 writes it first (fast branch, guard, `_x_reference`);
 - E: one strategy for any input (fallback) and one for invariant inputs (fast path);
 - S: event sequences, collaborators faked inside `MonkeyPatch.context()`, `BaseException` when events run out,
   weighted branches, run lengths via `hypothesis.event`;
@@ -213,7 +214,6 @@ Branches:
 - an index or cache in the fast path → near-copy inputs and an `@example` per killed mutant;
 - an equivalent mutant (changes only the branch, not the result) → named in the report.
 After any mask change the check runs again; each mutant is restored with `cp` + `cmp`.
-Fails: a pattern E mutant needs the fast path, which step 12 writes later (#12).
 Module: `SKILL`
 
 ### 12. Fast path and timing (§6, E only)
@@ -223,7 +223,8 @@ Branches:
 - data invariant → the check runs where the invariant can break (per call, startup + writes); fallback = reference;
 - predicate property → no guard, property test; no hypothesis → nothing to check;
 - the old code stays as `_x_reference` for the tests.
-Timing: median and p95, warm-up, GC off, same inputs, real sizes + one larger + the small size.
+Timing: median and p95, warm-up, GC off, same inputs, real sizes + one larger + the small size; "before" from
+step 1, "after" here.
 Module: `SKILL`, `references/patterns`
 
 ### 13. Gate (§7)
@@ -265,7 +266,8 @@ changed production module with `_x_reference`; the report; in map mode a changed
 
 ### Setup for a repo that keeps the gate
 
-CLAUDE.md lines, an optional Stop hook running `lean/gate.sh`, a CI job (bubblewrap, elan, uv, gate). Started when
+CLAUDE.md lines, an optional Stop hook running `lean/gate.sh` (blocks a stop once and shows the gate's tail; a
+repeated stop goes through), a CI job (bubblewrap, elan, uv, gate). Started when
 the user wants the result to stay true.
 Feeds: step 13.
 Module: `references/setup`
@@ -280,6 +282,4 @@ Module: `references/cheating`
 ## Known gaps
 
 Details and fixes are in `docs/logic-map-fixes.md`.
-- Step 1 says "not IO, not the network" while pattern S targets retry loops and connections (#2).
-- The optional Stop hook can block stopping forever when the gate can never pass (#11).
-- Pattern E: tests and mutants of the fast path come before step 12 writes it (#12).
+No open HIGH or MEDIUM findings; open LOW ones (#3, #5, #14, #15), the macOS question (#4) and the CI run (#6) are in the plan.
