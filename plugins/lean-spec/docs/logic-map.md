@@ -114,8 +114,10 @@ Out: `lean/` (lakefile, toolchain v4.35.0, gate, oracle, comparator.json), `test
 reset to its header; `lean/Spec.lean` imports the target instead of Feed; `Oracle.lean` imports the target's model
 with `answer` stubbed to `error: no oracle yet` until step 8; `comparator.json` has no theorem names.
 Branches:
-- `lean/` already there → no copy, `Frozen.lean` never reset: a new `lean/Spec/<Target>/`, an import in `Spec.lean`,
-  a tagged oracle branch, the test file added to `TEST_CMD`, the `comparator.json` check copied into an older `gate.sh`;
+- `lean/` already there → the existing gate run first and green; no copy, `Frozen.lean` never reset: a new
+  `lean/Spec/<Target>/`, an import in `Spec.lean`, a tagged oracle branch (tag matched before the old parsing), the
+  test file added to a `TEST_CMD` that lists files, every example check taken into an older `gate.sh` (its
+  `TEST_CMD` kept), the earlier Frozen block diffed unchanged after the freeze;
 - repo tests can't import modules from the root → `conftest.py` copied too.
 Module: `SKILL`, `example/lean`, `example/tests`
 
@@ -127,6 +129,8 @@ Branches:
 - A, E: written from the requirement (map lines, docstring, ticket), not from the code body;
 - the requirement is silent (ties, rounding, what is maximised) → the code's choice, a `-- silent:` line comment of its
   own (inside `/-- -/` it breaks the lexer), a finding;
+- the code is SQL → NULL as `Option` with the engine's sort position; equal keys modelled as a stable sort on input
+  order; a missing last key is a finding when `LIMIT` decides who is picked;
 - the code reads an outside format (git diff, CSV, a protocol frame) → the input is modelled as that format's grammar
   allows, not as the code expects (greenkeep: four bugs);
 - E with a predicate property: `spec` is the existing algorithm, most of the model is `-- silent:`;

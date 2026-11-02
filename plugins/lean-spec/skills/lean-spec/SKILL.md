@@ -54,10 +54,14 @@ take the "before" numbers of the target itself (step 6 says how), while the old 
 ## 2. Model and statements (stop for approval)
 
 **If `lean/` already exists** (preflight says `lean_project: lean/`), another target is frozen there: do not copy
-the template and never reset `Frozen.lean`. Add `lean/Spec/<Target>/`, import it in `lean/Spec.lean`, later append
-its block to `Frozen.lean` and its names to `comparator.json` (step "freeze"), give the oracle a tag for the new
-target while untagged lines keep their meaning, and add the new test file to `TEST_CMD`. If the repo's `gate.sh`
-lacks the `comparator.json` check, copy that block from `example/lean/gate.sh`. Then continue from the model below.
+the template and never reset `Frozen.lean`. First run `lean/gate.sh` as it is: it must be green before you add
+anything (a red baseline is usually setup, e.g. a uv workspace that needs `uv sync --all-packages`; the repo's
+CLAUDE.md or CI says how). Then diff `lean/gate.sh` against `example/lean/gate.sh` and take every check the example
+has (an older gate lacks some), keeping the repo's `TEST_CMD` and its `cd` line. Add `lean/Spec/<Target>/`, import
+it in `lean/Spec.lean`, later append its block to `Frozen.lean` and its names to `comparator.json` (step "freeze")
+and `diff` the earlier block afterwards to confirm it is byte-identical. Give the oracle a tag for the new target
+while untagged lines keep their meaning (§4), and add the new test file to `TEST_CMD` when it lists files (a
+`TEST_CMD` that runs the whole suite already has it). Then continue from the model below.
 
 Otherwise copy `example/lean/` to `<repo>/lean/` (without `.lake`), and `example/tests/test_spec_oracle.py` to
 `<repo>/tests/`. If the repo's tests can't import its modules from the root, copy `example/tests/conftest.py` too.
@@ -74,6 +78,12 @@ the code's body: a model copied from the code proves the code's bugs. Where the 
 maximised, ties, rounding), take the choice from the code, mark it with a `-- silent:` line comment of its own in
 `Model.lean` (never inside a `/-- -/` doc comment: the lexer then reports an unterminated comment at the end of the
 file) and list it as a finding about the requirement.
+
+**Code that is SQL** (`ORDER BY`, `WHERE`, `CASE`): model a nullable column as `Option` and state where NULL sorts,
+which differs by engine (SQLite: smallest, so last under `DESC`; PostgreSQL: largest, so first under `DESC` unless
+`NULLS LAST`). Rows equal on every `ORDER BY` key come back in an order SQL does not define: model a stable sort on
+input order, insert test rows in that order, and record the missing last key as a finding when `LIMIT` or a
+budget makes the order decide who gets picked.
 
 **Outside formats are requirements too.** When the code reads a format it does not own (git's diff, an HTTP
 header, CSV, a log line, a protocol frame), model the input as the format's own grammar says it can look, not as
@@ -158,13 +168,23 @@ checks, and the gate's list check still holds both files to the same names.
 
 `lean/Oracle.lean` is a long-lived process: one request per line, whitespace-separated naturals in, the answer out.
 Change only the parsing (`parsePosts`, or nothing for a plain list of numbers) and `answer`; keep `loop` and
-`main`. Encode booleans as 0/1. Lean keywords (`show`, `from`, `at`, `fun`, `matches`) can't be helper names. The oracle
+`main`. Encode booleans as 0/1. Lean keywords (`show`, `from`, `at`, `fun`, `matches`, `export`, `open`, `end`,
+`section`, `namespace`) can't be helper names or structure fields; rename (`exported`). The oracle
 calls the frozen reference (`spec`, `canEdit`), never `fast` or a helper. It prints the whole result in the same
 shape the theorems compare (whole records, not ids).
 
 **Text inputs** (diffs, paths, names): model them as `List Char` and send each string as its length followed by
 its character codes (`ord`), so spaces, tabs and newlines survive the line protocol; answers that are strings come
 back the same way. Several functions of one target get a tag each (`S ...`, `C ...`), as a second target does.
+
+Untagged lines keep their old meaning when `answer` matches the tag before the old parsing, which moves into a
+helper unchanged:
+```lean
+def answer (line : String) : String :=
+  match line.splitOn " " with
+  | "D" :: rest => answerDraft rest     -- the new target
+  | _ => answerOld line                 -- the earlier target's body, untouched
+```
 
 A second target shares the same oracle: start each request line with a target tag (`D ...` for dedupe) and
 dispatch on it in `answer`. When the model is generic over a predicate the production code computes (same
@@ -183,13 +203,18 @@ In `tests/test_spec_oracle.py` keep the fixture and `ask`; write Hypothesis stra
 - the production numeric domain: the model is in `Nat`, the adapter scales to what the code really holds (scores
   rounded to hundredths → the model in hundredths); generate at several scales (whole numbers where floats are
   exact, and fractions), plus a strategy aimed at ties, since requirements rarely say how ties break;
+- several independent filters (status, age, flags, counters) multiply: with uniform draws most examples pass none
+  (76% walked zero rows in the jobs pilot). Bias each draw toward passing, check the share with `hypothesis.event`,
+  and keep a strategy that forces ties on every sort key: two mutants survived until it existed;
 - when the model folds several code conditions into one flag (`barred` for five reasons), the adapter draws which
   condition fired, so each code path is exercised;
 - when the code compares values looked up through a map (account → bank), generate maps where different keys share
   a value (two banks share an account); otherwise a mutant that compares the keys instead survives;
 - pattern S: generate event sequences and drive the real loop with every collaborator monkeypatched to a scripted
   fake that records the trace (`pytest.MonkeyPatch.context()` inside the `@given` test; a function-scoped fixture
-  trips Hypothesis's health check). Signal "events ran out" with a `BaseException` so no `except Exception`
+  trips Hypothesis's health check; in pattern A with the repo's function-scoped DB fixture, use
+  `@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])` and clear the tables at the start of each
+  example). Signal "events ran out" with a `BaseException` so no `except Exception`
   swallows it, and fake every helper that calls the environment again. `st.one_of` favours its simplest branches
   (80% of runs had one attempt): weight the branches and report the run lengths with `hypothesis.event`;
 - pattern C: control the fake's clock (fakeredis: patch its module-level `time`, add 1 µs per command so expiry

@@ -37,7 +37,8 @@ internals of the algorithm.
 
 ## Where results go
 
-1. **`Proved:` line** at the end of the step, in the map's style:
+1. **`Proved:` line** at the end of the step, in the map's style. If the map already has `Proved:` lines, copy
+   their exact format (backticks or not): the repo's map test parses them. For a new one:
    ``Proved: `lean/Spec/<Target>` (N theorems), checked against `<module>` by `tests/test_spec_oracle.py`.``
 2. **Map test.** Extend the map's existing test (the one that checks `Module:` lines) so every `Proved:` path must
    exist; make sure it fails on a wrong path, then revert:
@@ -51,7 +52,9 @@ internals of the algorithm.
    ```
 3. **Findings.** Follow the map: "Known gaps" links to a plan. Add the findings there in the project's own
    numbering, each with the shrunk counterexample (code says / model says) and a verdict: the code looks wrong, the
-   map looks wrong, or the author decides. Numbering may collide with another series in the project (CHANGELOG);
+   map looks wrong, or the author decides. A silent-choice finding has no disagreement (the model took the code's
+   choice where the map says nothing): write "the map is silent; the code does X" with one concrete input and what
+   it yields, confirmed by running the code. Numbering may collide with another series in the project (CHANGELOG);
    check before picking numbers. Write them in the plan's language. If "Known gaps" says there are none, replace
    that sentence with the pointer rather than adding a second one.
 4. **Mirror.** If the map has a translated mirror (`logic-map.ru.md`), say it needs the same `Proved:` line (and

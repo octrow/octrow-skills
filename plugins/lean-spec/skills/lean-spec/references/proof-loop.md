@@ -49,7 +49,7 @@
 | `Unknown constant List.Chain'` / `IsChain` | not in core; write the recursive checker and prove soundness by `fun_induction` |
 | `String.trimRight` / `List.allSome` unknown | `String.replace`, `List.mapM` |
 | `List.mem_of_mem_filter` unknown | `(List.mem_filter.mp h).1` |
-| `unexpected token 'show'; expected identifier` | a keyword used as a name (`show`, `from`, `at`, `matches`); rename the helper |
+| `unexpected token 'show'; expected identifier` | a keyword used as a name (`show`, `from`, `at`, `matches`, `export`, `open`); rename the helper |
 | `simp` leaves `if false = true then … else …` | `simp only [h, Bool.false_eq_true, ↓reduceIte]` |
 | `bne_comm a b` : function expected | its arguments are implicit; `exact bne_comm` |
 | `lake comparator`: statement do not match, though the text is the same | a helper above the theorem has a `match` of the same shape, and the theorem reuses its auxiliary matcher; state helpers without `match` |
@@ -63,4 +63,7 @@
 | `rfl` or `decide` can't evaluate a string literal (`"noqa".toList`) | `simp` evaluates it; or state the model on `List Char` literals `['n','o','q','a']` |
 | `rw [my_lemma]` fails after `simp` already rewrote (`filter_append`) | `unfold` the definition first, then `rw` your lemma, then `simp` |
 | Lexer: unterminated comment at end of file | inside a `/- -/` or `/-- -/` comment, `--` hides the closing `-/` on its line and `/-` (as in `a/-b`) opens a nested comment; put `-- silent:` notes on their own lines outside it |
+| `unknown tactic` for `tauto` | Mathlib only; split with `constructor`/`cases`, then `simp` and `omega` |
+| `decide_eq_true_eq` unused, `decide (x < 3)` stays after unfolding a config structure literal | `cases` each `Bool` field of the record first, then `simp [defs] at * <;> omega` |
+| `unexpected token ':'` in a `structure` | a field named after a keyword (`export`, `open`, `end`); rename it |
 | `Too many variable names provided at alternative case1` | an `if a = b` in the function substitutes `a`, so that case binds fewer names; drop the substituted one |
