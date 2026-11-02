@@ -31,7 +31,7 @@ class PreflightTest(unittest.TestCase):
             (Path(tmp) / "lean").mkdir()
             (Path(tmp) / "lean/lakefile.toml").write_text('name = "spec"\n')
             found, _ = preflight.facts(Path(tmp))
-        self.assertEqual(found["lean_project"], "lean/")
+        self.assertEqual(found["lean_project"], preflight.EXISTING_LEAN)
 
     def test_every_missing_fact_has_an_install_command(self):
         _, missing = preflight.facts(Path.cwd())

@@ -13,6 +13,7 @@
 | A new `axiom` | gate grep; `lake comparator` axiom list | no |
 | `set_option debug.skipKernelTC` | gate grep | no |
 | `Frozen.lean` edited to match the weakened statement | git diff of `Frozen.lean`; the rule that it changes only with consent | n/a |
+| A frozen theorem left out of `comparator.json`, or a listed one missing from `Frozen.lean`: not checked, yet reported as proved | gate: the two lists must be equal | yes |
 | `Frozen.lean` imports the model, so model edits move both | rule: Frozen is a self-contained copy | yes, by construction |
 | Oracle calls `fast` or a helper instead of `spec` | review of `Oracle.lean`; the any-input test fails when `fast` is wrong off the invariant | no |
 | Test compares less than the theorem (ids instead of records) | mutation check | yes: `<=` in the guard survived an id-only test |

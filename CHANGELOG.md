@@ -4,6 +4,13 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 
 ## [Unreleased]
 
+### Fixed
+- `lean-spec` 0.3.1: a second target no longer unfreezes the first. With `lean/` already in the repo the skill adds
+  the target next to it (own `Spec/<Target>/`, appended Frozen block and names, a tagged oracle branch) instead of
+  copying the template, and preflight says so. The gate now fails when `comparator.json` and `Frozen.lean` name
+  different theorems, the report counts only listed theorems as proved, and the function the oracle calls must
+  appear in a listed theorem. Findings #7 and #1 of the skill's new logic map (`plugins/lean-spec/docs/`).
+
 ### Added
 - `lean-spec` 0.3.0: pattern S, a state machine under a fault model. The environment is one finite list of events,
   the model is the code's transition function, and the requirements are safety claims and the promises in

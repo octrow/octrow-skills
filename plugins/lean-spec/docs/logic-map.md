@@ -85,7 +85,7 @@ Branches:
 - lake only under `~/.elan/bin` → every later shell command starts with `export PATH="$HOME/.elan/bin:$PATH"`;
 - Lean version ≠ 4.35.0 → warning "API drift is likely", the run continues;
 - lean-lsp-mcp missing → offered before proofs (step 7); lean4-skills missing → optional;
-- `lean_project: lean/` (a lean/ already there) → no branch in the skill; step 2 copies the template anyway (#7).
+- `lean_project: lean/ (exists …)` → step 2 adds a target next to the frozen one instead of copying the template.
 Fails: a crash of `lean --version` → `unknown (…)`, the run continues.
 Module: `scripts/preflight`, `SKILL`, `references/setup`
 
@@ -108,7 +108,10 @@ Out: `lean/` (lakefile, toolchain v4.35.0, gate, oracle, comparator.json), `test
 `tests/conftest.py`; `.gitignore` gains `lean/.lake/` and `.hypothesis/`; `Spec/Feed/` deleted; `Frozen.lean`
 reset to its header; `lean/Spec.lean` gets the target. `Oracle.lean` still imports `Spec.Feed.Model` and
 `comparator.json` still lists the Feed theorems until steps 8 and 6 rewrite them (#9).
-Branches: repo tests can't import modules from the root → `conftest.py` copied too; an existing `lean/` → no branch (#7).
+Branches:
+- `lean/` already there → no copy, `Frozen.lean` never reset: a new `lean/Spec/<Target>/`, an import in `Spec.lean`,
+  a tagged oracle branch, the test file added to `TEST_CMD`, the `comparator.json` check copied into an older `gate.sh`;
+- repo tests can't import modules from the root → `conftest.py` copied too.
 Module: `SKILL`, `example/lean`, `example/tests`
 
 ### 3. Model (§2)
@@ -147,7 +150,10 @@ Module: `SKILL`
 Decides: what the comparator holds the proofs to.
 Out: `Frozen.lean` += model + props without imports (one block per target); `comparator.json` lists the theorem
 names; standard axioms only.
-Branches: helper lemmas added later stay out of Frozen; statements or Frozen change only with consent, together.
+Branches:
+- a second target → its block appended, its names added; the first target's block untouched;
+- the function the oracle calls is in no listed theorem → a theorem that mentions it is added before freezing;
+- helper lemmas added later stay out of Frozen and are never claims; statements or Frozen change only with consent, together.
 Module: `SKILL`, `example/lean/Frozen`, `example/lean/comparator`
 
 ### 7. Proofs (§3)
@@ -222,7 +228,8 @@ Module: `SKILL`, `references/patterns`
 
 Decides: done or not.
 Order: `lake build` → grep (`sorry`, `native_decide`, `axiom`, `implemented_by`, `@[extern`, `unsafe`,
-`skipKernelTC`, `debug.`; Frozen.lean and `.lake` excluded) → `lake comparator` → `TEST_CMD` from the repo root.
+`skipKernelTC`, `debug.`; Frozen.lean and `.lake` excluded) → `comparator.json` names exactly the theorems of
+`Frozen.lean` → `lake comparator` → `TEST_CMD` from the repo root.
 Branches: `TEST_CMD` = the repo's CI test command, or all of `tests/`; exclusions commented in the script.
 Grep details: `axiom` only at line start; `Frozen.lean` excluded by file name in any folder (#14).
 Fails: any stage → non-zero exit, no `gate: ok`; never weaken the gate, Frozen or comparator.json to get green.
@@ -231,7 +238,7 @@ Module: `SKILL`, `example/lean/gate`, `references/cheating`
 ### 14. Report (§8)
 
 Decides: what is claimed.
-Out: **Proved:** each theorem in one sentence; **Only tested:** agreement with the model (examples, mutants
+Out: **Proved:** each theorem named in `comparator.json`, in one sentence; **Only tested:** agreement with the model (examples, mutants
 caught) and everything outside the model; the runtime check and its failure path; findings with numbers; for S the
 fault model (what is in, what is not).
 Fails: without the two lists the task is not done.
@@ -271,8 +278,6 @@ Module: `references/cheating`
 ## Known gaps
 
 Details and fixes are in `docs/logic-map-fixes.md`.
-- Nothing ties `comparator.json` to the frozen statements; an unlisted theorem or an unreferenced reference is not frozen, yet reported as proved (#1).
-- A second target or an existing `lean/` gets the template copied over it, which resets `Frozen.lean` and unfreezes the first target (#7).
 - Step 1 says "not IO, not the network" while pattern S targets retry loops and connections (#2).
 - The oracle test imports hypothesis at the top: a repo whose CI has no hypothesis fails at collection (#8).
 - Step 4's "lake build green" fails until step 8 rewrites the oracle (#9).

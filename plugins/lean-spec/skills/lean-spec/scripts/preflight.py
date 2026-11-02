@@ -12,6 +12,8 @@ from pathlib import Path
 
 PINNED_LEAN = "4.35.0"  # the example and its proofs are checked on this version
 HOME = Path.home()
+# Another target is frozen there: copying the template over it would reset Frozen.lean.
+EXISTING_LEAN = "lean/ (exists: add a target next to it, never copy the template over it)"
 INSTALL = {
     "lake": "curl -sSfL https://elan.lean-lang.org/elan-init.sh | sh -s -- -y "
     f"--default-toolchain leanprover/lean4:v{PINNED_LEAN}  # then add ~/.elan/bin to PATH",
@@ -91,7 +93,7 @@ def project_facts(root: Path) -> dict[str, str]:
     langs = [lang for lang, files in LANG_MARKERS.items() if any((root / f).exists() for f in files)]
     return {
         "project_language": ", ".join(langs) or "unknown",
-        "lean_project": "lean/" if (root / "lean" / "lakefile.toml").exists() else "none yet",
+        "lean_project": EXISTING_LEAN if (root / "lean" / "lakefile.toml").exists() else "none yet",
     }
 
 

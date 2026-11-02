@@ -41,7 +41,13 @@ there is a fast path to justify or the logic is a loop that reacts to failures.
 
 ## 2. Model and statements (stop for approval)
 
-Copy `example/lean/` to `<repo>/lean/` (without `.lake`), and `example/tests/test_spec_oracle.py` to
+**If `lean/` already exists** (preflight says `lean_project: lean/`), another target is frozen there: do not copy
+the template and never reset `Frozen.lean`. Add `lean/Spec/<Target>/`, import it in `lean/Spec.lean`, later append
+its block to `Frozen.lean` and its names to `comparator.json` (step "freeze"), give the oracle a tag for the new
+target while untagged lines keep their meaning, and add the new test file to `TEST_CMD`. If the repo's `gate.sh`
+lacks the `comparator.json` check, copy that block from `example/lean/gate.sh`. Then continue from the model below.
+
+Otherwise copy `example/lean/` to `<repo>/lean/` (without `.lake`), and `example/tests/test_spec_oracle.py` to
 `<repo>/tests/`. If the repo's tests can't import its modules from the root, copy `example/tests/conftest.py` too.
 Add `lean/.lake/` and `.hypothesis/` to the repo's `.gitignore`. Delete the example's `Spec/Feed/` and reset
 `Frozen.lean` to its two-line header comment, then write `lean/Spec/<Target>/Model.lean`: the most obvious executable version, on
@@ -81,7 +87,11 @@ imports dropped, one block per target, and `lean/comparator.json` lists the theo
 { sed '/^import /d' lean/Spec/<Target>/Model.lean; sed '/^import /d' lean/Spec/<Target>/Props.lean; } >> lean/Frozen.lean
 ```
 
-Helper lemmas you add later while proving stay out of `Frozen.lean`; the comparator checks only the named theorems. A Frozen file that imports
+Helper lemmas you add later while proving stay out of `Frozen.lean`; the comparator checks only the named theorems.
+So `comparator.json` lists exactly the theorems in `Frozen.lean`, no more and no fewer (the gate checks this), and a
+theorem added to `Props.lean` after the freeze is a helper, never a claim. The comparator holds the model to Frozen
+through the definitions the listed theorems use: the function the oracle calls must appear in a listed theorem;
+if none mentions it, add one that does (its key property) before freezing. A Frozen file that imports
 the model lets a model change slip past the comparator.
 
 ## 3. Proofs
@@ -188,7 +198,8 @@ lean/gate.sh
 
 Edit `TEST_CMD` at its top to the test command the repo's CI runs, or the whole `tests/` directory when there is
 no CI, so the old tests stay part of "done". If something has to be left out (a GUI extra not installed), say what and why in a comment there. It runs `lake build`, a grep for what the kernel cannot see (`sorry`, `native_decide`, `axiom`,
-`implemented_by`, `@[extern`, `unsafe`, `skipKernelTC`, `debug.`), `lake comparator` (statements and model
+`implemented_by`, `@[extern`, `unsafe`, `skipKernelTC`, `debug.`), a check that `comparator.json` names exactly the
+theorems in `Frozen.lean`, `lake comparator` (statements and model
 definitions equal `Frozen.lean`, standard axioms only, kernel accepts), then the tests. The comparator's `sorry`
 warnings from `Frozen.lean` and its long "Exporting" lines are expected; the verdict is the last line. Never weaken the gate or `Frozen.lean` to get green; see `references/cheating.md`.
 Wire it into CI and the Stop hook (`references/setup.md`) if the user wants it to stay true.
@@ -196,7 +207,7 @@ Wire it into CI and the Stop hook (`references/setup.md`) if the user wants it t
 ## 8. Report
 
 End with two lists, always:
-- **Proved:** each theorem in one plain sentence.
+- **Proved:** each theorem named in `comparator.json`, in one plain sentence; helper lemmas are not claims.
 - **Only tested:** the production code's agreement with the model (N examples per test, the mutations caught),
   and everything outside the model (IO, parsing, the DB, concurrency).
 
@@ -211,7 +222,8 @@ the same line.
 
 ## Rules
 
-- One target per run. A second target gets its own folder under `lean/Spec/` and its own approval.
+- One target per run. A second target gets its own folder under `lean/Spec/` and its own approval, next to the
+  first one (§2, "If `lean/` already exists").
 - Absolute paths in every shell command and file write: the shell's working directory can reset between calls,
   and a relative path then lands in another repo.
 - Statements and `Frozen.lean` change only with the user's explicit consent, and then both together.
