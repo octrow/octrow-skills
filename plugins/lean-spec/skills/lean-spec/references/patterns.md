@@ -31,6 +31,14 @@ Here `spec` is the existing algorithm, not a requirement written elsewhere, so m
 `-- silent:` choices read from the code (first match wins, comparison against the survivor, tie rules). That is
 expected: what is claimed is equality of the two algorithms.
 
+## E with no hypothesis
+
+When the bucket key is part of the match condition itself, nothing outside the condition can put a match in
+another bucket, so `fast w xs = spec w xs` holds for every input. Piloted on finance-insights' cross-bank transfer
+pairs (different account, opposite sign, equal `abs(amount)`, dates within ±3 days): sort by (amount, date), scan
+forward inside the bucket while the date is in the window, then sort the pairs back into the loop's (i, j) order.
+78x at 1,000 rows, 615x at 6,200, 965x at 12,000, list equality with order. No guard and no property test.
+
 ## Choosing the invariant (E)
 
 - Make it the weakest fact the shortcut needs. Strict or non-strict depends on the data: for records with equal

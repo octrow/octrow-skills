@@ -16,6 +16,7 @@ LEAN = Path(__file__).parent.parent / "lean"
 ORACLE = LEAN / ".lake/build/bin/oracle"
 # lake may live only in ~/.elan/bin, off PATH in a plain test run.
 LAKE = shutil.which("lake") or str(Path.home() / ".elan/bin/lake")
+pytestmark = pytest.mark.skipif(not Path(LAKE).exists(), reason="Lean (lake) is not installed")
 
 # Small ranges force ties on created_at, which is where sort bugs hide.
 post = st.builds(Post, st.integers(0, 50), st.integers(0, 5), st.integers(0, 3))

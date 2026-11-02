@@ -93,7 +93,7 @@ not show up here: the model follows the requirement, so its proofs go through. S
 
 `lean/Oracle.lean` is a long-lived process: one request per line, whitespace-separated naturals in, the answer out.
 Change only the parsing (`parsePosts`, or nothing for a plain list of numbers) and `answer`; keep `loop` and
-`main`. Encode booleans as 0/1. Lean keywords (`show`, `from`, `at`, `fun`) can't be helper names. The oracle
+`main`. Encode booleans as 0/1. Lean keywords (`show`, `from`, `at`, `fun`, `matches`) can't be helper names. The oracle
 calls the frozen reference (`spec`, `canEdit`), never `fast` or a helper. It prints the whole result in the same
 shape the theorems compare (whole records, not ids).
 
@@ -112,7 +112,9 @@ In `tests/test_spec_oracle.py` keep the fixture and `ask`; write Hypothesis stra
   rounded to hundredths → the model in hundredths); generate at several scales (whole numbers where floats are
   exact, and fractions), plus a strategy aimed at ties, since requirements rarely say how ties break;
 - when the model folds several code conditions into one flag (`barred` for five reasons), the adapter draws which
-  condition fired, so each code path is exercised.
+  condition fired, so each code path is exercised;
+- when the code compares values looked up through a map (account → bank), generate maps where different keys share
+  a value (two banks share an account); otherwise a mutant that compares the keys instead survives.
 
 Keep the adapter (model value ↔ production objects) in the test file. In a uv project (a `uv.lock` exists) add
 hypothesis as a dev dependency (`uv add --dev hypothesis`; `uv run --with` does not reach the venv's pytest);
@@ -152,7 +154,9 @@ the invariant could break (on each call, at startup plus on each write, or when 
 When the condition is a property of a predicate ("every pair the same-product test matches shares a brand or
 model key") rather than of the data, a runtime check would cost what the fast path saves. Then there is no guard:
 a property test checks the condition on real and generated inputs, and the report says the theorem's hypothesis is
-only tested. Keep the old implementation next to the new one (`_x_reference`) for the tests.
+only tested. When the bucket key is part of the condition itself (equal amounts, dates within a window), the
+theorem needs no hypothesis at all: no guard, no property test, nothing to check at runtime. Keep the old
+implementation next to the new one (`_x_reference`) for the tests.
 
 **Measure before and after.** A speed-up is claimed only with numbers: median and p95 per call, warm-up, GC off,
 same inputs, at the sizes production really sees and at least one larger size. Measure the small size too:
@@ -192,6 +196,8 @@ the same line.
 ## Rules
 
 - One target per run. A second target gets its own folder under `lean/Spec/` and its own approval.
+- Absolute paths in every shell command and file write: the shell's working directory can reset between calls,
+  and a relative path then lands in another repo.
 - Statements and `Frozen.lean` change only with the user's explicit consent, and then both together.
 - No `sorry`, `native_decide`, `axiom`, `implemented_by`, `@[extern]` or `unsafe` outside `Frozen.lean`.
 - Lean 4 syntax only (`fun x =>`, `by`, no `begin ... end`, no `λ x,`). APIs drift between releases: when a name

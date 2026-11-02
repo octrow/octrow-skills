@@ -22,6 +22,10 @@
      over the state: `∀ st st', R st st' → run (fold … st) = run (fold … st')`, where `R` says the index is
      consistent with the plain state; then induction on the list. `List.find?_filter` and a small
      `find?_congr` helper (equal `find?` when the predicates agree on members) close the step case.
+   - a fast path that visits pairs in another order (buckets, a sorted scan) vs a nested loop: emit the pairs,
+     then sort them by (i, j). Prove the generator yields the same pairs for any order of the rows (`List.Perm`
+     of the input gives a `Perm` of the output; a symmetric match makes `(i, j)` and `(j, i)` one pair, keep it
+     as `(min, max)`), that the loop's output is already sorted, then `Perm.eq_of_pairwise`.
 7. **Explore tactics one at a time.** `first | a | b | skip` and `all_goals sorry` hide real errors (an unknown
    constant looked like an unsolved goal in the pilot).
 8. **Stuck after ~5 attempts on one goal:** split it into a helper lemma, or recheck the definition. A goal that
@@ -36,7 +40,9 @@
 | `Unknown constant List.Chain'` / `IsChain` | not in core; write the recursive checker and prove soundness by `fun_induction` |
 | `String.trimRight` / `List.allSome` unknown | `String.replace`, `List.mapM` |
 | `List.mem_of_mem_filter` unknown | `(List.mem_filter.mp h).1` |
-| `unexpected token 'show'; expected identifier` | a keyword used as a name; rename the helper |
+| `unexpected token 'show'; expected identifier` | a keyword used as a name (`show`, `from`, `at`, `matches`); rename the helper |
+| `simp` leaves `if false = true then … else …` | `simp only [h, Bool.false_eq_true, ↓reduceIte]` |
+| `bne_comm a b` : function expected | its arguments are implicit; `exact bne_comm` |
 | `invalid field notation` on `{ c with f := … }` inside a lambda | add a type ascription `({ c with f := … } : Cand)` |
 | `decide` gets stuck on `spec` over a concrete list | `List.mergeSort` is well-founded recursion; use `simp [spec, fast, before, lt]` on the concrete input |
 | unsolved `case2` after `fun_induction` | the catch-all case: `match` the list and close the impossible branch. The hypothesis is `¬xs = a :: b :: rest` (use `absurd rfl (h a b rest)`) or `xs = a :: b :: rest → False` (use `(h a b rest rfl).elim`); print it with `trace_state` |

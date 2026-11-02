@@ -5,6 +5,12 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ## [Unreleased]
 
 ### Added
+- `lean-spec` 0.2.1: lessons from a proved speed-up of finance-insights' cross-bank transfer pairs (78x at 1,000
+  rows, 615x at 6,200, 965x at 12,000, `fast_eq_spec` with no hypothesis, list equality with order). Pattern E
+  gains the case with no hypothesis, where the bucket key is part of the match condition. The proof loop gains the
+  "emit the pairs, then sort into the loop's order" pattern and three Lean 4.35 errors (`matches` is a keyword,
+  a leftover `if false = true`, implicit `bne_comm`). Strategies cover maps where keys share a value, the skill
+  asks for absolute paths, and the example's oracle tests skip when lake is missing.
 - `lean-spec` 0.2.0: lessons from a proved speed-up of buy-smarter's cross-source dedupe (2.2x at 50 items, 74x at
   178, 526x at 962, `fast_eq_spec` for any same-product test whose matches share a key). Pattern E gains the case
   where the condition is a property of a predicate: no runtime guard, a property test instead, said in the report.
