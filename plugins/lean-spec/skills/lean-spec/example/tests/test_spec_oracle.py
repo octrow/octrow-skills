@@ -34,6 +34,7 @@ def ordered_posts(draw):
 def oracle():
     subprocess.run([LAKE, "build", "oracle"], cwd=LEAN, check=True, capture_output=True)
     proc = subprocess.Popen([ORACLE], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+    assert proc.stdin is not None  # Popen types stdin as optional; the repo's type checker wants this
     yield proc
     proc.stdin.close()
     proc.wait()

@@ -125,7 +125,10 @@ Decides: what the reference is.
 Out: `lean/Spec/<Target>/Model.lean` on `List` and `Nat`, no optimisation; `spec`/`fast` for E.
 Branches:
 - A, E: written from the requirement (map lines, docstring, ticket), not from the code body;
-- the requirement is silent (ties, rounding, what is maximised) → the code's choice, `-- silent:`, a finding;
+- the requirement is silent (ties, rounding, what is maximised) → the code's choice, a `-- silent:` line comment of its
+  own (inside `/-- -/` it breaks the lexer), a finding;
+- the code reads an outside format (git diff, CSV, a protocol frame) → the input is modelled as that format's grammar
+  allows, not as the code expects (greenkeep: four bugs);
 - E with a predicate property: `spec` is the existing algorithm, most of the model is `-- silent:`;
 - S: the code's own transition function; the environment is one finite list of events, recursion structural;
 - C: the same, with time a number on each event and the store (keys, counters, a queue) a value; replica
@@ -160,6 +163,7 @@ Out: `Frozen.lean` += model + props without `Spec` imports (one block per target
 Std) lifted to the top; `comparator.json` lists the theorem
 names; standard axioms only.
 Branches:
+- before it: `#eval` the model on two or three hand-written inputs; the freeze snippet uses absolute paths;
 - a second target → its block appended, its names added; the first target's block untouched;
 - the function the oracle calls is in no listed theorem → a theorem that mentions it is added before freezing;
 - helper lemmas added later stay out of Frozen and are never claims; statements or Frozen change only with consent, together.
@@ -183,7 +187,8 @@ Module: `SKILL`, `references/proof-loop`
 Decides: how the tests reach the frozen reference.
 In: one line of whitespace-separated naturals. Out: the reference's whole result, or `error: …`.
 Branches:
-- several targets → a tag at the start of the line, dispatch in `answer`;
+- several targets, or several functions of one target → a tag at the start of the line, dispatch in `answer`;
+- text inputs → `List Char` in the model; each string sent as its length then its character codes;
 - a predicate the code computes → sent as data (an n×n 0/1 matrix).
 Fails: EOF → the loop ends; a malformed line → `error: …`, the test's `int()` raises.
 Module: `SKILL`, `example/lean/Oracle`
@@ -245,7 +250,8 @@ Decides: done or not.
 Order: `lake build` → grep (`sorry`, `native_decide`, `axiom`, `implemented_by`, `extern`, `unsafe`,
 `skipKernelTC`, `debug.`; the top `Frozen.lean` and `.lake` excluded) → `comparator.json` names exactly the theorems of
 `Frozen.lean`, and every frozen definition the oracle calls is reached from them → `lake comparator` → `TEST_CMD` from the repo root.
-Branches: `TEST_CMD` = the repo's CI test command, or all of `tests/`; exclusions commented in the script.
+Branches: `TEST_CMD` = the repo's CI test command, or all of `tests/`; exclusions commented in the script; a CI job
+without lake skips the oracle tests, so a green CI is the gate only with the lean job from `setup.md`.
 Grep details: whole words over raw text, so a word in a comment fails too (reword it); the theorem list reads
 attributes and modifiers (`@[simp]`, `protected`); reachability is by name, an over-approximation.
 Fails: any stage → non-zero exit, no `gate: ok`; never weaken the gate, Frozen or comparator.json to get green.

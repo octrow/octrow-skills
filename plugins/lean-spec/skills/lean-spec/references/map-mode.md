@@ -38,13 +38,22 @@ internals of the algorithm.
 ## Where results go
 
 1. **`Proved:` line** at the end of the step, in the map's style:
-   `Proved: lean/Spec/<Target> (N theorems), checked against <module> by tests/test_spec_oracle.py`.
+   ``Proved: `lean/Spec/<Target>` (N theorems), checked against `<module>` by `tests/test_spec_oracle.py`.``
 2. **Map test.** Extend the map's existing test (the one that checks `Module:` lines) so every `Proved:` path must
-   exist. About eight lines; make sure it fails on a wrong path, then revert.
+   exist; make sure it fails on a wrong path, then revert:
+   ```python
+   def test_proved_paths_exist():
+       text = (ROOT / "docs/logic-map.md").read_text(encoding="utf-8")
+       lines = [ln for ln in text.splitlines() if ln.startswith("Proved:")]
+       paths = [p for ln in lines for p in re.findall(r"`([\w./-]+/[\w./-]*)`", ln)]
+       missing = [p for p in paths if not (ROOT / p).exists()]
+       assert not missing, f"Proved: lines name missing paths: {missing}"
+   ```
 3. **Findings.** Follow the map: "Known gaps" links to a plan. Add the findings there in the project's own
    numbering, each with the shrunk counterexample (code says / model says) and a verdict: the code looks wrong, the
    map looks wrong, or the author decides. Numbering may collide with another series in the project (CHANGELOG);
-   check before picking numbers.
+   check before picking numbers. Write them in the plan's language. If "Known gaps" says there are none, replace
+   that sentence with the pointer rather than adding a second one.
 4. **Mirror.** If the map has a translated mirror (`logic-map.ru.md`), say it needs the same `Proved:` line (and
    the gaps entry, if the mirror has a gaps section); edit it only if the project's rules say the agent keeps it in sync.
 5. **Same-commit rule.** Add one line under the map's existing rule, the first time a step gets `Proved:`:

@@ -29,6 +29,12 @@ to be updated.
            assert name, f"new disagreement: code {code}, model {model}"
            hypothesis.event(name)          # counts show in `pytest --hypothesis-show-statistics`
    ```
+   When one input hits several findings at once (a third of the inputs in the greenkeep pilot), a table of
+   predicates that each name one finding no longer fits. Rewrite the input the way the code reads it instead, one
+   rewrite per finding that fires only when its trigger is present (split the line at a form feed as `splitlines`
+   does, keep the TAB in the path), then require code == model on the rewritten input and name every rewrite
+   that fired. Watch the share of rewritten inputs with `hypothesis.event`: if it grows large, the plain path is
+   barely tested; add a strategy that avoids the triggers.
    A narrow mask often needs the oracle too ("the code equals the model's price at `total - 1`"); pass it in as a
    fourth argument rather than widening the mask.
 2. **Pinned counterexamples.** One shrunk input per finding, re-minimised by hand with realistic numbers, in a

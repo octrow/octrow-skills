@@ -60,4 +60,7 @@
 | `invalid field notation` on `{ c with f := … }` inside a lambda | add a type ascription `({ c with f := … } : Cand)` |
 | `decide` gets stuck on `spec` over a concrete list | `List.mergeSort` is well-founded recursion; use `simp [spec, fast, before, lt]` on the concrete input |
 | unsolved `case2` after `fun_induction` | the catch-all case: `match` the list and close the impossible branch. The hypothesis is `¬xs = a :: b :: rest` (use `absurd rfl (h a b rest)`) or `xs = a :: b :: rest → False` (use `(h a b rest rfl).elim`); print it with `trace_state` |
+| `rfl` or `decide` can't evaluate a string literal (`"noqa".toList`) | `simp` evaluates it; or state the model on `List Char` literals `['n','o','q','a']` |
+| `rw [my_lemma]` fails after `simp` already rewrote (`filter_append`) | `unfold` the definition first, then `rw` your lemma, then `simp` |
+| Lexer: unterminated comment at end of file | inside a `/- -/` or `/-- -/` comment, `--` hides the closing `-/` on its line and `/-` (as in `a/-b`) opens a nested comment; put `-- silent:` notes on their own lines outside it |
 | `Too many variable names provided at alternative case1` | an `if a = b` in the function substitutes `a`, so that case binds fewer names; drop the substituted one |

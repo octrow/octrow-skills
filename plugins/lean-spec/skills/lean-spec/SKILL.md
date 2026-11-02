@@ -38,7 +38,8 @@ big model with a nice theorem. Say the pick in one line; the rest go to the repo
 **Map mode.** If the repo has `docs/logic-map.md` and the user names a step (or asks to check the map), the
 requirement is that step's lines and the code is its `Module:`. Read `references/map-mode.md` now; it adds to
 steps 2, 5, 8 and 9 below. Pick only steps that decide something purely (filters, priorities, roles, dedupe), not
-collection, IO or the browser.
+collection, IO or the browser. A step whose pure part is several functions of one module (a diff parser, a coverage
+rule, a path rule) is one target while the model stays under ~200 lines; the oracle gets one tag per function.
 
 Refuse or split a target whose model would pass ~200 lines. Say which pattern applies
 (`references/patterns.md`): a model checked by differential tests (A), a proved fast path with a runtime guard
@@ -70,8 +71,15 @@ and in `lean/Oracle.lean` import the target's model, drop `open Feed` and `parse
 
 Write the model from the requirement (the map step, docstring, ticket or the user's words), not by transcribing
 the code's body: a model copied from the code proves the code's bugs. Where the requirement is silent (what is
-maximised, ties, rounding), take the choice from the code, mark it `-- silent:` in `Model.lean` and list it as a
-finding about the requirement.
+maximised, ties, rounding), take the choice from the code, mark it with a `-- silent:` line comment of its own in
+`Model.lean` (never inside a `/-- -/` doc comment: the lexer then reports an unterminated comment at the end of the
+file) and list it as a finding about the requirement.
+
+**Outside formats are requirements too.** When the code reads a format it does not own (git's diff, an HTTP
+header, CSV, a log line, a protocol frame), model the input as the format's own grammar says it can look, not as
+the code expects it: lines end only at `\n`, a path may hold a space (git then appends a TAB), a deleted file is
+`+++ /dev/null`, an added line may itself start with `++`. On greenkeep's diff gate this found four bugs the map
+never mentions, two of them letting an uncovered change through. Cite the format's source next to the model.
 
 Write `lean/Spec/<Target>/Props.lean` with every statement and `sorry` proofs. Typical statements:
 - `fast_eq_spec : Inv xs → fast xs = spec xs` for a fast path; `checkInv_sound : checkInv xs = true → Inv xs` for
@@ -104,14 +112,18 @@ wait for approval.** The kernel cannot catch a statement that says the wrong thi
 If the user approved in advance ("формулировки утверждаю заранее"), freeze right away and list the statements in
 plain words in the report instead.
 
+Before freezing, `#eval` the model on two or three inputs written by hand from the requirement (in a scratch
+file that imports the model), and check the answers by eye: after the freeze a model bug needs the user's consent
+to fix.
+
 Then freeze, now, while every proof is still `sorry`: `lean/Frozen.lean` is the model and the props with their
 `Spec` imports dropped and library imports at the top, one block per target, and `lean/comparator.json` lists the theorem names:
 
 ```bash
-T=lean/Spec/<Target>
-{ sed '/^import /d' $T/Model.lean; sed '/^import /d' $T/Props.lean; } >> lean/Frozen.lean
+R=/abs/path/to/repo; T=$R/lean/Spec/<Target>; F=$R/lean/Frozen.lean   # absolute: the shell's directory can reset
+{ sed '/^import /d' $T/Model.lean; sed '/^import /d' $T/Props.lean; } >> $F
 # Lean wants every import first: lift library imports (Mathlib, Std) to the top; Spec imports stay dropped.
-{ grep -h '^import ' lean/Frozen.lean $T/*.lean | grep -v '^import Spec\.' | sort -u; grep -v '^import ' lean/Frozen.lean; } > lean/Frozen.new && mv lean/Frozen.new lean/Frozen.lean
+{ grep -h '^import ' $F $T/*.lean | grep -v '^import Spec\.' | sort -u; grep -v '^import ' $F; } > $F.new && mv $F.new $F
 ```
 
 Helper lemmas you add later while proving stay out of `Frozen.lean`; the comparator checks only the named theorems.
@@ -149,6 +161,10 @@ Change only the parsing (`parsePosts`, or nothing for a plain list of numbers) a
 `main`. Encode booleans as 0/1. Lean keywords (`show`, `from`, `at`, `fun`, `matches`) can't be helper names. The oracle
 calls the frozen reference (`spec`, `canEdit`), never `fast` or a helper. It prints the whole result in the same
 shape the theorems compare (whole records, not ids).
+
+**Text inputs** (diffs, paths, names): model them as `List Char` and send each string as its length followed by
+its character codes (`ord`), so spaces, tabs and newlines survive the line protocol; answers that are strings come
+back the same way. Several functions of one target get a tag each (`S ...`, `C ...`), as a second target does.
 
 A second target shares the same oracle: start each request line with a target tag (`D ...` for dedupe) and
 dispatch on it in `answer`. When the model is generic over a predicate the production code computes (same
@@ -189,12 +205,15 @@ hypothesis` in `gate.sh` is for the standalone example only; set `TEST_CMD` to t
 `importorskip`: a missing hypothesis must fail, not skip. Skip the oracle module only when lake is missing, and
 then CI needs the lean job from `references/setup.md`.
 
-Compare whole values, exactly what the theorem compares. Run the plain tests, with no masks, before any other change
+Compare whole values, exactly what the theorem compares. When the code and the model hold the same content in
+different containers (a set against a per-hunk list), normalise both to one form (sorted, deduplicated) and say why
+in a comment. Run the plain tests, with no masks, before any other change
 to the production code (a new fast path is the only one allowed first) or writing any known-finding mask: Hypothesis finds the disagreement, not your reading of the code. When
 one fails, report the shrunk counterexample (input, what the code returns, what the model returns) before changing
 code; wait for the user only if they have not already said to fix it. When the code must not be changed now
 (map mode, or the user decides later), keep the gate green with pinned counterexamples:
-`references/known-findings.md`.
+`references/known-findings.md`. Hypothesis shrinks and shows one failure per test per run, so several findings
+come out one round at a time; expect a few rounds of run, record, mask.
 
 **Mutation check (required).** Break the production code at least three ways and confirm each fails a test, then
 restore (`cp` a backup, `cmp` after):
@@ -249,7 +268,9 @@ a check that `comparator.json` names exactly the theorems in `Frozen.lean` and t
 calls is reached from one of them, `lake comparator` (statements and model
 definitions equal `Frozen.lean`, standard axioms only, kernel accepts), then the tests. The comparator's `sorry`
 warnings from `Frozen.lean` and its long "Exporting" lines are expected; the verdict is the last line. Never weaken the gate or `Frozen.lean` to get green; see `references/cheating.md`.
-Wire it into CI and the Stop hook (`references/setup.md`) if the user wants it to stay true.
+Wire it into CI and the Stop hook (`references/setup.md`) if the user wants it to stay true. With `TEST_CMD` set to
+the CI command, a CI job without lake skips the oracle tests: a green CI is not the gate until the lean job from
+`setup.md` runs there. Say which one the report means.
 
 ## 8. Report
 
