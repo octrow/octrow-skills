@@ -2,6 +2,7 @@
 Run: python3 -m unittest discover tests"""
 import importlib.util
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -36,6 +37,19 @@ class PreflightTest(unittest.TestCase):
         _, missing = preflight.facts(Path.cwd())
         for name in missing:
             self.assertIn(name, preflight.INSTALL)
+
+
+class LogicMapTest(unittest.TestCase):
+    """docs/logic-map.md names real skill files: a rename that forgets the map fails here."""
+
+    def test_every_module_line_points_to_an_existing_file(self):
+        for name in ("logic-map.md", "logic-map.ru.md"):
+            text = (SKILL.parent.parent / "docs" / name).read_text(encoding="utf-8")
+            lines = [line for line in text.splitlines() if line.startswith("Module:")]
+            refs = [ref for line in lines for ref in re.findall(r"`([^`]+)`", line)]
+            missing = [ref for ref in refs if not (SKILL / ref).is_dir() and not list(SKILL.glob(f"{ref}.*"))]
+            self.assertTrue(refs, name)
+            self.assertEqual(missing, [], name)
 
 
 @unittest.skipUnless(shutil.which("lake") or ELAN_LAKE.exists(), "Lean is not installed")
