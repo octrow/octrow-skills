@@ -295,4 +295,4 @@ Module: `references/cheating`
 ## Известные пробелы
 
 Подробности и правки - в `docs/logic-map-fixes.md`.
-Открытых HIGH и MEDIUM нет; открытые LOW (#3, #5, #14), вопрос про macOS (#4) и прогон CI (#6) - в плане.
+Открытых HIGH и MEDIUM нет; открытая LOW (#5), вопрос про macOS (#4) и прогон CI (#6) - в плане.

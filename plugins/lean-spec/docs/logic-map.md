@@ -294,4 +294,4 @@ Module: `references/cheating`
 ## Known gaps
 
 Details and fixes are in `docs/logic-map-fixes.md`.
-No open HIGH or MEDIUM findings; open LOW ones (#3, #5, #14), the macOS question (#4) and the CI run (#6) are in the plan.
+No open HIGH or MEDIUM findings; the open LOW one (#5), the macOS question (#4) and the CI run (#6) are in the plan.

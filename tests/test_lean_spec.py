@@ -1,12 +1,14 @@
 """lean-spec: preflight facts, and the worked example's gate when Lean is installed.
 Run: python3 -m unittest discover tests"""
 import importlib.util
+import json
 import os
 import re
 import shutil
 import subprocess
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 SKILL = Path(__file__).resolve().parent.parent / "plugins/lean-spec/skills/lean-spec"
@@ -32,6 +34,20 @@ class PreflightTest(unittest.TestCase):
             (Path(tmp) / "lean/lakefile.toml").write_text('name = "spec"\n')
             found, _ = preflight.facts(Path(tmp))
         self.assertEqual(found["lean_project"], preflight.EXISTING_LEAN)
+
+    def test_agent_tooling_read_from_claude_config_dir_and_this_project_only(self):
+        with tempfile.TemporaryDirectory() as config, tempfile.TemporaryDirectory() as repo:
+            (Path(config) / "plugins").mkdir()
+            (Path(config) / "plugins/installed_plugins.json").write_text('{"plugins": {"lean4@x": []}}')
+            other = {"projects": {"/elsewhere": {"mcpServers": {"lean-lsp": {}}}}}
+            (Path(config) / ".claude.json").write_text(json.dumps(other))
+            with unittest.mock.patch.dict(os.environ, {"CLAUDE_CONFIG_DIR": config}):
+                found = preflight.agent_facts(Path(repo))
+                self.assertEqual(found["lean4-skills"], "installed")
+                self.assertEqual(found["lean-lsp-mcp"], "missing")  # set up for another project only
+                here = {"projects": {str(Path(repo).resolve()): {"mcpServers": {"lean-lsp": {}}}}}
+                (Path(config) / ".claude.json").write_text(json.dumps(here))
+                self.assertEqual(preflight.agent_facts(Path(repo))["lean-lsp-mcp"], "configured")
 
     def test_every_missing_fact_has_an_install_command(self):
         _, missing = preflight.facts(Path.cwd())

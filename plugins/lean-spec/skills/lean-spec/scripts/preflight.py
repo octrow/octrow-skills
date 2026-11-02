@@ -5,6 +5,7 @@ Prints one `name: value` line per fact, then `install:` lines for what is missin
 Exit 1 when a hard requirement (lake, bwrap) is missing, else 0.
 """
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -47,20 +48,32 @@ def lean_version(lake: str) -> str:
     return out.split("version ")[1].split(",")[0] if "version " in out else out.strip()
 
 
-def mentions(path: Path, needle: str) -> bool:
+def config_dir() -> Path:
+    """Claude Code's config root: CLAUDE_CONFIG_DIR when set (profiles), else ~/.claude."""
+    return Path(os.environ.get("CLAUDE_CONFIG_DIR") or HOME / ".claude")
+
+
+def read_json(path: Path) -> dict:
     try:
-        return needle in path.read_text(encoding="utf-8")
-    except OSError:
-        return False
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
 
 
 def lean4_skills_installed() -> bool:
-    registry = HOME / ".claude" / "plugins" / "installed_plugins.json"
-    try:
-        data = json.loads(registry.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return False
+    data = read_json(config_dir() / "plugins" / "installed_plugins.json")
     return any(key.startswith("lean4@") for key in data.get("plugins", data))
+
+
+def lean_lsp_configured(root: Path) -> bool:
+    """Project scope (.mcp.json), then user and local scope for this repo; another project's setup does not count."""
+    if "lean-lsp" in read_json(root / ".mcp.json").get("mcpServers", {}):
+        return True
+    state_file = config_dir() / ".claude.json" if os.environ.get("CLAUDE_CONFIG_DIR") else HOME / ".claude.json"
+    state = read_json(state_file)
+    this_project = state.get("projects", {}).get(str(root.resolve()), {})
+    return any("lean-lsp" in scope.get("mcpServers", {}) for scope in (state, this_project))
 
 
 def facts(root: Path) -> tuple[dict[str, str], list[str]]:
@@ -82,9 +95,8 @@ def toolchain_facts() -> dict[str, str]:
 
 
 def agent_facts(root: Path) -> dict[str, str]:
-    mcp = mentions(root / ".mcp.json", "lean-lsp") or mentions(HOME / ".claude.json", "lean-lsp")
     return {
-        "lean-lsp-mcp": "configured" if mcp else "missing",
+        "lean-lsp-mcp": "configured" if lean_lsp_configured(root) else "missing",
         "lean4-skills": "installed" if lean4_skills_installed() else "missing (optional)",
     }
 
