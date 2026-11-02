@@ -361,5 +361,18 @@ class SecureNotAWebApp(ReportCase):
         self.assertIn("lockfile_committed", self.passed())
 
 
+
+class SecureNoDependencies(ReportCase):
+    """A stdlib-only repo has nothing to audit or lock."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        cls.report = preflight_report(Path(cls.tmp.name), "secure", {"tool.py": "print('hi')\n"})
+
+    def test_dependency_checks_pass(self):
+        for cid in ("vuln_audit_ci", "dependency_updates", "lockfile_committed"):
+            self.assertIn(cid, self.passed())
+
 if __name__ == "__main__":
     unittest.main()

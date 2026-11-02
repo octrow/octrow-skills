@@ -17,6 +17,7 @@ WEB = ("web_app",)
 CLIENT_SECRET = (r"\b(NEXT_PUBLIC|VITE|REACT_APP|EXPO_PUBLIC|NUXT_PUBLIC|GATSBY|PUBLIC)_[A-Z0-9_]*"
                  r"(SECRET|PRIVATE|PASSWORD|SERVICE_ROLE)[A-Z0-9_]*")
 PUBLIC_BY_DESIGN = re.compile(r"PUBLIC_KEY|SITE_KEY")
+MANIFESTS = {"pyproject.toml", "requirements.txt", "package.json"}
 PY_LOCKS = re.compile(r"^(uv\.lock|poetry\.lock|pdm\.lock|Pipfile\.lock|requirements[^/]*\.lock)$")
 NODE_LOCKS = re.compile(r"^(package-lock\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lockb?)$")
 UPDATE_BOTS = (".github/dependabot.yml", ".github/dependabot.yaml", "renovate.json", "renovate.json5",
@@ -81,14 +82,24 @@ def requirements_pinned() -> bool:
        why="nobody notices a vulnerable dependency unless a bot proposes the fix",
        procedure="assets/dependabot.yml")
 def dependency_updates() -> list[str]:
-    return [] if any((repo.top / f).is_file() for f in UPDATE_BOTS) else ["no Dependabot or Renovate config"]
+    nothing_to_update = not has_manifests() and not top_ci_text()  # a bot also bumps pinned actions
+    if nothing_to_update or any((repo.top / f).is_file() for f in UPDATE_BOTS):
+        return []
+    return ["no Dependabot or Renovate config"]
 
 
 @check("vuln_audit_ci", severity="warning", scenarios=SEC, kind="files",
        why="a known-vulnerable dependency should fail CI, not wait for someone to read an advisory",
        procedure="appsec.md#4-supply-chain")
 def vuln_audit_ci() -> list[str]:
-    return [] if AUDIT_TOOLS.search(ci_text() + top_ci_text()) else ["no pip-audit / npm audit / osv-scanner step in CI"]
+    if not has_manifests() or AUDIT_TOOLS.search(ci_text() + top_ci_text()):
+        return []
+    return ["no pip-audit / npm audit / osv-scanner step in CI"]
+
+
+def has_manifests() -> bool:
+    """Whether the project declares dependencies at all; a stdlib-only tool has nothing to lock or audit."""
+    return bool(MANIFESTS & set(tracked()))
 
 
 def top_ci_text() -> str:
