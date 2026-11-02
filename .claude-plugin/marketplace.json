@@ -11,7 +11,7 @@
     {
       "name": "repo-ready",
       "source": "./plugins/repo-ready",
-      "description": "Repo readiness: publish safely (security, README, EN/RU, SEO, CI, release), get deploy-ready (Docker, Compose, GHCR, Helm), and keep Python code healthy (ruff, complexity, dead code)."
+      "description": "Repo readiness: publish safely (security, README, EN/RU, SEO, CI, release), get deploy-ready (Docker, Compose, GHCR, Helm, one VPS), keep Python code healthy (ruff, complexity, dead code), and audit app security (authz, client trust, rate limits, secrets, backups)."
     },
     {
       "name": "python-logging",
@@ -37,6 +37,11 @@
       "name": "qt-app",
       "source": "./plugins/qt-app",
       "description": "PySide6 desktop GUI from scratch for a Python project: the core on an asyncio thread with Qt signals, a sidebar window and an own token theme from a runnable template, screens test-first with pytest-qt and the same texts and calls as the CLI; pairs with qt-ui for layout polish."
+    },
+    {
+      "name": "system-design",
+      "source": "./plugins/system-design",
+      "description": "System design from numbers: requirements, napkin math from a script (RPS, servers, cache, DB nodes, storage, egress), the smallest scaling rung that holds, storage and cache patterns by access pattern, failure plan and trade-offs; blank page or existing repo."
     },
     {
       "name": "repo-scout",

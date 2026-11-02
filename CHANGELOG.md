@@ -5,6 +5,21 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ## [Unreleased]
 
 ### Added
+- `repo-secure` skill and the `secure` Scenario: an application security audit in the order breaches happen.
+  A new `catalog/appsec.py` pack adds mechanical Checks (`client_bundle_secrets` for secrets in
+  `NEXT_PUBLIC_`/`VITE_`/`REACT_APP_` variables, `lockfile_committed`, `dependency_updates`, `vuln_audit_ci`) and
+  judgement Checks with evidence (`authz_per_object` lists every route that takes a record id, `authz_default_deny`,
+  `server_trusts_client`, `rate_limits`, `security_logging`, `backups_restorable`). The secret, history and
+  supply-chain Checks of `publish`/`deploy` run in `secure` too. New repo facts `web_app` and `database`; procedure
+  `procedures/appsec.md`; evals in `evals/repo-secure.json`.
+- `repo-deploy`: a "One VPS" part (`procedures/vps.md`): a hardened server, the app or Compose stack under systemd
+  on 127.0.0.1, Caddy (or nginx + certbot) for TLS, a domain, and a Done-when that reboots the box.
+- Marketplace: `system-design` plugin 0.1.0 with the `system-design` skill. It designs or reviews a backend's
+  architecture from numbers: requirements, napkin math from `scripts/napkin.py` (RPS, app servers, cache memory,
+  DB reads and writes, replicas, shards, storage, egress, and a verdict naming the scaling rung), the smallest rung
+  of a seven-step scaling ladder, storage engine and cache pattern by access pattern, failure plan and trade-offs.
+  References in `references/`, a test in `tests/test_napkin.py`, evals in `evals/system-design.json` and
+  `evals/system-design/`.
 - `qt-ui` 0.3.0: a bare run works the project's open-defects list before any new audit, with a "left on purpose"
   list beside it so known Qt limits are not reported again; reference screenshots get a name map and never show the
   user's own data. `references/qt-pitfalls.md` gains form labels pinned above their field, a capped status that

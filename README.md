@@ -6,7 +6,7 @@
 
 <p align="center"><a href="https://scorecard.dev/viewer/?uri=github.com/octrow/octrow-skills"><img src="https://api.scorecard.dev/projects/github.com/octrow/octrow-skills/badge" alt="OpenSSF Scorecard"></a></p>
 
-repo-ready is a plugin for Claude Code and Claude Tag with three skills. Each one takes a working project to the
+repo-ready is a plugin for Claude Code and Claude Tag with four skills. Each one takes a working project to the
 state a goal needs, starting with the same read-only preflight: it lists the gaps as named Checks, each with a
 severity and a pointer to its fix, and the skill then fixes only the parts you pick.
 
@@ -15,6 +15,7 @@ severity and a pointer to its fix, and the skill then fixes only the parts you p
 | `repo-publish` | a repo is about to go public | history and secrets, install, README, CI, SEO, release |
 | `repo-deploy` | a service should run as containers | Dockerfile, health endpoints, Compose, image publishing, Helm, metrics |
 | `repo-code-health` | Python code is harder to change than it should be | ruff, complexity, dead code, CI for lint, tests and types |
+| `repo-secure` | an app is live or about to be | authorization, trusted client input, rate limits, supply chain, logging, secrets, backups |
 
 repo-publish reads the repo and its history before anything goes public, does the publishing work in a safe order,
 and hands parts to other skills when they're installed. Below, its preflight on a test repo:
@@ -36,6 +37,7 @@ Other agents (Codex, Cursor, Gemini CLI and more) via [skills](https://github.co
 npx skills add octrow/octrow-skills --skill repo-publish -g
 npx skills add octrow/octrow-skills --skill repo-deploy -g
 npx skills add octrow/octrow-skills --skill repo-code-health -g
+npx skills add octrow/octrow-skills --skill repo-secure -g
 ```
 
 On Windows, run `git config --global core.symlinks true` first: each skill links in the shared `engine/` folder, and
@@ -83,15 +85,23 @@ offscreen, sharing texts and calls with the CLI, and hands screenshots of both t
 Install it with `claude plugin install qt-app@octrow-skills` or `npx skills add octrow/octrow-skills --skill qt-app -g`,
 then ask "add a desktop window to this CLI" or "add a «Журнал» screen to the app".
 
+And system-design, a skill that designs or reviews a backend's architecture from numbers: requirements first, then
+napkin math from a script (DAU to requests per second, app servers, cache memory, database reads and writes,
+replicas, shards, storage, egress), the smallest rung of the scaling ladder that carries those numbers, the
+storage engine and cache pattern that fit the access pattern, a failure plan and the trade-offs said out loud. On an
+existing repo it reads the real stack and metrics first. Install it with
+`claude plugin install system-design@octrow-skills` or `npx skills add octrow/octrow-skills --skill system-design -g`,
+then ask "will this FastAPI app hold 2M DAU on one VPS?" or "design a photo sharing backend for 20M DAU".
+
 Claude Tag: an admin registers this repository under Organization settings → Plugins & skills → Sync from GitHub,
 then adds the plugin to a bundle.
 
 Then ask in a project: "prepare this repo for publishing", "add a Russian README", "is this service ready for
-Kubernetes?", "put it in Docker", "clean up the code", "find the dead code". Requests in Russian work too.
+Kubernetes?", "put it in Docker", "clean up the code", "find the dead code", "is my app secure?". Requests in Russian work too.
 
 ## What the preflight finds
 
-Every skill starts with `preflight.py --scenario publish`, `deploy` or `code-health`. It changes nothing: it reads
+Every skill starts with `preflight.py --scenario publish`, `deploy`, `code-health` or `secure`. It changes nothing: it reads
 the repo, its history and its GitHub settings, and the code-health tools run through `uvx` without writing into the
 project. An excerpt from a publish run on a test repo:
 
@@ -155,7 +165,7 @@ them, filled in for a real Python app.
 
 ## Deploy readiness: repo-deploy
 
-`/repo-ready:repo-deploy` gets a service ready to run as containers. Its preflight (`--scenario deploy`) checks the Dockerfile (multi-stage, a numeric non-root user, base images by
+`/repo-ready:repo-deploy` gets a service ready to run as containers, or on one VPS behind Caddy or nginx with TLS. Its preflight (`--scenario deploy`) checks the Dockerfile (multi-stage, a numeric non-root user, base images by
 digest, `.dockerignore`), Compose (database and queue ports bound to 127.0.0.1), the image workflow (provenance,
 SBOM, attestation, a scan, no layer cache), and a Helm chart (Pod Security `restricted`, probes, `helm test`, a kind
 smoke test in CI). The procedures come from taking [buy-smarter](https://github.com/octrow/buy-smarter) from a CLI
@@ -171,6 +181,17 @@ and checks that CI runs the linter, the tests and a type checker. Thresholds are
 `pyproject.toml` sets its own. Fixes go in this order: format in a commit of its own, lint, dead code, then
 complex functions one per commit and only where tests cover them. It needs [uv](https://docs.astral.sh/uv/).
 
+## Application security: repo-secure
+
+`/repo-ready:repo-secure` audits a live or nearly live app for the mistakes that burn shipped, often AI-written,
+apps, in the order breaches happen: authorization (IDOR, private by default, row-level security), trusting the
+client (prices, roles, owner ids), rate limits on login, signup, email and LLM endpoints, the supply chain (a
+lockfile, Dependabot, an audit step in CI), security logging, secrets (including keys in `NEXT_PUBLIC_`/`VITE_`
+variables the bundler ships to browsers) and backups with a rehearsed restore. Its preflight (`--scenario secure`)
+proves what a file search can, and turns the rest into questions with evidence: every route that takes a record
+id, the rate limiter and backup tooling it found. Each fix comes with a test that failed before it (user A reads
+user B's record and gets 404). The rest of OWASP goes to `security-review`.
+
 ## How repo-publish differs from similar skills
 
 - [github-repo](https://github.com/jdevalk/skills) audits and writes the README, community health files,
@@ -184,7 +205,7 @@ complex functions one per commit and only where tests cover them. It needs [uv](
 
 ## Repository layout
 
-This repo is a plugin marketplace. repo-ready with its three skills, python-logging, llm-call-audit, logic-map, qt-ui and qt-app live here; repo-scout lives in its own repo, and
+This repo is a plugin marketplace. repo-ready with its four skills, python-logging, llm-call-audit, logic-map, qt-ui, qt-app and system-design live here; repo-scout lives in its own repo, and
 the marketplace entry points there.
 
 ```

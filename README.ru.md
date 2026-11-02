@@ -6,7 +6,7 @@
 
 <p align="center"><a href="https://scorecard.dev/viewer/?uri=github.com/octrow/octrow-skills"><img src="https://api.scorecard.dev/projects/github.com/octrow/octrow-skills/badge" alt="OpenSSF Scorecard"></a></p>
 
-repo-ready это плагин для Claude Code и Claude Tag с тремя скиллами. Каждый доводит рабочий проект до состояния,
+repo-ready это плагин для Claude Code и Claude Tag с четырьмя скиллами. Каждый доводит рабочий проект до состояния,
 которого требует цель, и начинает с одного и того же preflight, который ничего не меняет. Он перечисляет пробелы как
 именованные проверки, у каждой есть уровень серьёзности и ссылка на исправление, а потом скилл исправляет только
 выбранные вами части.
@@ -16,6 +16,7 @@ repo-ready это плагин для Claude Code и Claude Tag с тремя с
 | `repo-publish` | репозиторий скоро станет публичным | история и секреты, установка, README, CI, SEO, релиз |
 | `repo-deploy` | сервис должен работать в контейнерах | Dockerfile, health-эндпоинты, Compose, публикация образа, Helm, метрики |
 | `repo-code-health` | Python-код менять труднее, чем должно быть | ruff, сложность, мёртвый код, линтер, тесты и типы в CI |
+| `repo-secure` | приложение уже работает или вот-вот выйдет | авторизация, доверие к клиенту, rate limit, зависимости, логи, секреты, бэкапы |
 
 repo-publish читает репозиторий и его историю, прежде чем что-то станет публичным, выполняет работу по публикации в
 безопасном порядке и передаёт части другим скиллам, если они установлены. Ниже его preflight на тестовом репо:
@@ -37,6 +38,7 @@ claude plugin install repo-ready@octrow-skills
 npx skills add octrow/octrow-skills --skill repo-publish -g
 npx skills add octrow/octrow-skills --skill repo-deploy -g
 npx skills add octrow/octrow-skills --skill repo-code-health -g
+npx skills add octrow/octrow-skills --skill repo-secure -g
 ```
 
 На Windows сначала выполните `git config --global core.symlinks true`: каждый скилл подключает общую папку `engine/`
@@ -84,15 +86,23 @@ CLI repo-scout, поэтому сначала поставьте его (одн�
 `claude plugin install qt-app@octrow-skills` или `npx skills add octrow/octrow-skills --skill qt-app -g`.
 Потом попросите: «добавь к этому CLI десктопное окно» или «добавь в приложение экран «Журнал»».
 
+И system-design, скилл, который проектирует или проверяет архитектуру бэкенда по цифрам. Сначала требования,
+потом расчёт на салфетке скриптом: из DAU в запросы в секунду, app-серверы, память под кэш, чтения и записи в БД,
+реплики, шарды, объём хранилища, исходящий трафик. Дальше самая низкая ступень лестницы масштабирования, которая
+выдерживает эти цифры, движок хранения и паттерн кэша под характер доступа, план на случай отказов и компромиссы,
+названные вслух. Если репозиторий уже есть, скилл сначала читает реальный стек и метрики. Установка:
+`claude plugin install system-design@octrow-skills` или `npx skills add octrow/octrow-skills --skill system-design -g`.
+Потом спросите: «выдержит ли этот FastAPI 2 млн DAU на одной VPS?» или «спроектируй бэкенд фотохостинга на 20 млн DAU».
+
 Claude Tag: администратор подключает этот репозиторий в Organization settings → Plugins & skills → Sync from GitHub
 и добавляет плагин в bundle.
 
 Потом в проекте можно попросить: «подготовь репо к публикации», «добавь README на русском», «готов ли сервис к
-Kubernetes?», «заверни в Docker», «почисти код», «найди мёртвый код». Просьбы на английском тоже работают.
+Kubernetes?», «заверни в Docker», «почисти код», «найди мёртвый код», «проверь безопасность приложения». Просьбы на английском тоже работают.
 
 ## Что находит preflight
 
-Каждый скилл начинает с `preflight.py --scenario publish`, `deploy` или `code-health`. Он ничего не меняет: читает
+Каждый скилл начинает с `preflight.py --scenario publish`, `deploy`, `code-health` или `secure`. Он ничего не меняет: читает
 репозиторий, его историю и настройки на GitHub, а инструменты code-health запускает через `uvx` и ничего не пишет в
 проект. Фрагмент запуска для публикации на тестовом репо:
 
@@ -156,7 +166,7 @@ Linux/macOS/Windows, PyPI через trusted publishing, подпись сбор
 
 ## Готовность к деплою: repo-deploy
 
-`/repo-ready:repo-deploy` готовит сервис к запуску в контейнерах. Его preflight (`--scenario deploy`) проверяет Dockerfile (multi-stage, числовой пользователь не root, базовые образы
+`/repo-ready:repo-deploy` готовит сервис к запуску в контейнерах или на одной VPS за Caddy или nginx с TLS. Его preflight (`--scenario deploy`) проверяет Dockerfile (multi-stage, числовой пользователь не root, базовые образы
 по digest, `.dockerignore`), Compose (порты базы и очереди только на 127.0.0.1), workflow образа (provenance, SBOM,
 аттестация, сканирование, без кэша слоёв) и Helm-чарт (Pod Security `restricted`, пробы, `helm test`, smoke-тест в
 kind в CI). Рецепты взяты из того, как [buy-smarter](https://github.com/octrow/buy-smarter) прошёл путь от CLI до
@@ -173,6 +183,18 @@ complexipy (когнитивная сложность) и vulture (мёртвы�
 коммитом, линтер, мёртвый код, потом сложные функции, по одной на коммит и только там, где их покрывают тесты.
 Нужен [uv](https://docs.astral.sh/uv/).
 
+## Безопасность приложения: repo-secure
+
+`/repo-ready:repo-secure` проверяет работающее или почти готовое приложение на ошибки, на которых чаще всего
+горят выпущенные приложения, особенно написанные с ИИ. Порядок такой же, как у реальных утечек: авторизация (IDOR,
+закрытость по умолчанию, row-level security), доверие к клиенту (цены, роли, id владельца), rate limit на вход,
+регистрацию, письма и LLM-эндпоинты, цепочка поставок (lock-файл, Dependabot, аудит в CI), логи событий
+безопасности, секреты (включая ключи в переменных `NEXT_PUBLIC_`/`VITE_`, которые сборщик отдаёт в браузер) и
+бэкапы с отрепетированным восстановлением. Его preflight (`--scenario secure`) доказывает то, что видно по файлам,
+а остальное превращает в вопросы с уликами: каждый маршрут с id записи, найденный rate limiter, инструменты бэкапа.
+Каждое исправление идёт с тестом, который до него падал (пользователь A запрашивает запись пользователя B и
+получает 404). Остальной OWASP передаётся в `security-review`.
+
 ## Чем repo-publish отличается от похожих скиллов
 
 - [github-repo](https://github.com/jdevalk/skills) проверяет и пишет README, файлы для сообщества, шаблоны и
@@ -186,7 +208,7 @@ complexipy (когнитивная сложность) и vulture (мёртвы�
 
 ## Структура репозитория
 
-Этот репозиторий является маркетплейсом плагинов. repo-ready с тремя скиллами, python-logging, llm-call-audit, logic-map, qt-ui и qt-app лежат здесь, а repo-scout живёт в
+Этот репозиторий является маркетплейсом плагинов. repo-ready с четырьмя скиллами, python-logging, llm-call-audit, logic-map, qt-ui, qt-app и system-design лежат здесь, а repo-scout живёт в
 своём репозитории, и на него ссылается запись маркетплейса.
 
 ```

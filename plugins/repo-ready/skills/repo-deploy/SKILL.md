@@ -1,12 +1,13 @@
 ---
 name: repo-deploy
 description: >
-  Get a project ready to run as containers: a hardened multi-stage Dockerfile, a Compose stack that comes up
-  healthy, an image published to GHCR with provenance, SBOM and a scan, a Helm chart under Pod Security
-  `restricted` with a kind smoke test in CI, and metrics that won't melt the backend. Use whenever the user wants
-  to "подготовить к деплою", "контейнеризировать", "завернуть в Docker", add or review a Dockerfile, docker
-  compose, a Helm chart or Kubernetes manifests, publish an image, or asks whether a service is ready for
-  production. Runs a read-only preflight first and fixes only the parts the user picks.
+  Get a project ready to run as containers or on one VPS: a hardened multi-stage Dockerfile, a Compose stack that
+  comes up healthy, an image published to GHCR with provenance, SBOM and a scan, a Helm chart under Pod Security
+  `restricted` with a kind smoke test in CI, metrics that won't melt the backend, or one server with systemd,
+  Caddy/nginx, TLS and a domain. Use whenever the user wants to "подготовить к деплою", "контейнеризировать",
+  "завернуть в Docker", "выложить на VPS", "домен и https", add or review a Dockerfile, docker compose, a Helm chart
+  or Kubernetes manifests, publish an image, or asks whether a service is ready for production. Runs a read-only
+  preflight first and fixes only the parts the user picks.
 ---
 
 # Repo deploy
@@ -43,6 +44,9 @@ The order follows dependencies: a chart needs an image, an image needs a Dockerf
 2. **Health endpoints** (`docker.md#health-endpoints`): liveness without dependencies, readiness that checks them.
 3. **Compose** (`compose.md`): the whole stack with one `docker compose up -d --build --wait`; infrastructure ports
    on 127.0.0.1.
+   **One VPS** (`vps.md`), when it runs on a single server: a hardened box, the app or the stack under systemd on
+   127.0.0.1, Caddy (or nginx + certbot) for TLS, a domain. Containers are optional here; skip parts 4–5 if there
+   is no registry or cluster.
 4. **Image publishing** (`docker.md#publishing-the-image`): a workflow on main and tags, provenance, SBOM,
    attestation, a scan that fails on fixable CRITICAL, no layer cache.
 5. **Helm and kind** (`helm.md`): chart contents, Pod Security `restricted`, probes, a smoke test in a clean kind
