@@ -24,3 +24,18 @@ jobs:
       - run: python3 -m unittest discover tests
       - run: python3 -B test_logging.py
         working-directory: plugins/python-logging/skills/python-logging/assets
+  lean-spec-gate:
+    # The CI step from plugins/lean-spec/skills/lean-spec/references/setup.md, run on the worked example.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: sudo apt-get install -y bubblewrap
+      - run: curl -sSfL https://elan.lean-lang.org/elan-init.sh | sh -s -- -y --default-toolchain none
+      - run: echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          enable-cache: false
+      - run: plugins/lean-spec/skills/lean-spec/example/lean/gate.sh
