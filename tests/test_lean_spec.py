@@ -35,19 +35,27 @@ class PreflightTest(unittest.TestCase):
             found, _ = preflight.facts(Path(tmp))
         self.assertEqual(found["lean_project"], preflight.EXISTING_LEAN)
 
-    def test_agent_tooling_read_from_claude_config_dir_and_this_project_only(self):
-        with tempfile.TemporaryDirectory() as config, tempfile.TemporaryDirectory() as repo:
-            (Path(config) / "plugins").mkdir()
-            (Path(config) / "plugins/installed_plugins.json").write_text('{"plugins": {"lean4@x": []}}')
-            other = {"projects": {"/elsewhere": {"mcpServers": {"lean-lsp": {}}}}}
-            (Path(config) / ".claude.json").write_text(json.dumps(other))
+    def agent_facts_with(self, files: dict[str, object], repo: Path) -> dict[str, str]:
+        """preflight.agent_facts with CLAUDE_CONFIG_DIR pointing at a config holding `files` (path -> JSON)."""
+        with tempfile.TemporaryDirectory() as config:
+            for name, data in files.items():
+                (Path(config) / name).parent.mkdir(parents=True, exist_ok=True)
+                (Path(config) / name).write_text(json.dumps(data))
             with unittest.mock.patch.dict(os.environ, {"CLAUDE_CONFIG_DIR": config}):
-                found = preflight.agent_facts(Path(repo))
-                self.assertEqual(found["lean4-skills"], "installed")
-                self.assertEqual(found["lean-lsp-mcp"], "missing")  # set up for another project only
-                here = {"projects": {str(Path(repo).resolve()): {"mcpServers": {"lean-lsp": {}}}}}
-                (Path(config) / ".claude.json").write_text(json.dumps(here))
-                self.assertEqual(preflight.agent_facts(Path(repo))["lean-lsp-mcp"], "configured")
+                return preflight.agent_facts(repo)
+
+    def test_lean4_skills_read_from_claude_config_dir(self):
+        registry = {"plugins/installed_plugins.json": {"plugins": {"lean4@x": []}}}
+        self.assertEqual(self.agent_facts_with(registry, Path.cwd())["lean4-skills"], "installed")
+
+    def test_lean_lsp_counts_only_when_set_up_for_this_project(self):
+        server = {"mcpServers": {"lean-lsp": {}}}
+        with tempfile.TemporaryDirectory() as tmp:  # an empty repo: no .mcp.json of its own
+            repo = Path(tmp).resolve()
+            elsewhere = {".claude.json": {"projects": {"/elsewhere": server}}}
+            here = {".claude.json": {"projects": {str(repo): server}}}
+            self.assertEqual(self.agent_facts_with(elsewhere, repo)["lean-lsp-mcp"], "missing")
+            self.assertEqual(self.agent_facts_with(here, repo)["lean-lsp-mcp"], "configured")
 
     def test_macos_is_refused_with_a_reason(self):
         with unittest.mock.patch.object(preflight.sys, "platform", "darwin"), \
