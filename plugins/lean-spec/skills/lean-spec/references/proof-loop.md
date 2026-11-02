@@ -18,6 +18,10 @@
    - Bool comparisons: `simp [lt, before] at *; omega` closes most of them;
    - a model with `if c then … else …`: `have h : ¬ c := by omega` (or `c`), then `simp [defn, h]; omega`.
      `if_neg`/`if_pos` rewrites work but are deprecated in 4.35, and the suggested `ite_eq_right` misleads.
+   - two passes over a list equal (a fast fold with an index vs the plain fold): prove a simulation. Generalise
+     over the state: `∀ st st', R st st' → run (fold … st) = run (fold … st')`, where `R` says the index is
+     consistent with the plain state; then induction on the list. `List.find?_filter` and a small
+     `find?_congr` helper (equal `find?` when the predicates agree on members) close the step case.
 7. **Explore tactics one at a time.** `first | a | b | skip` and `all_goals sorry` hide real errors (an unknown
    constant looked like an unsolved goal in the pilot).
 8. **Stuck after ~5 attempts on one goal:** split it into a helper lemma, or recheck the definition. A goal that

@@ -19,6 +19,18 @@ This skill does A and E. The rest, for when the user asks:
   and the build fails if the emitted file differs from the committed one. Worth it only for a hot path in C or
   Rust; not in v0.1 of this skill.
 
+## E with a predicate property instead of a data invariant
+
+The fast path skips comparisons the slow path would make (buckets, an index, early exit). It is equal to the slow
+path when the comparison can only succeed inside a bucket: `same a b → shares a key a b`. The theorem is generic:
+`(hkey : ∀ a b, same a b = true → ∃ k ∈ keys a, k ∈ keys b) → fast keys same xs = spec same xs`, with the predicate
+given as data. The production predicate's key property is checked by a property test, not at runtime. Piloted on
+buy-smarter's cross-source dedupe: 2.2x at 50 items, 74x at 178, 526x at 962, same output.
+
+Here `spec` is the existing algorithm, not a requirement written elsewhere, so most of the model is
+`-- silent:` choices read from the code (first match wins, comparison against the survivor, tie rules). That is
+expected: what is claimed is equality of the two algorithms.
+
 ## Choosing the invariant (E)
 
 - Make it the weakest fact the shortcut needs. Strict or non-strict depends on the data: for records with equal

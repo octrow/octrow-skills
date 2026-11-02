@@ -97,6 +97,11 @@ Change only the parsing (`parsePosts`, or nothing for a plain list of numbers) a
 calls the frozen reference (`spec`, `canEdit`), never `fast` or a helper. It prints the whole result in the same
 shape the theorems compare (whole records, not ids).
 
+A second target shares the same oracle: start each request line with a target tag (`D ...` for dedupe) and
+dispatch on it in `answer`. When the model is generic over a predicate the production code computes (same
+product, relevance), the test computes it with the real code and sends it as data, e.g. an n×n 0/1 matrix after
+the records; memoise the pure dependencies the adapter calls n² times.
+
 ## 5. Differential tests
 
 In `tests/test_spec_oracle.py` keep the fixture and `ask`; write Hypothesis strategies for the inputs:
@@ -124,7 +129,14 @@ code; wait for the user only if they have not already said to fix it. When the c
 **Mutation check (required).** Break the production code at least three ways and confirm each fails a test, then
 restore (`cp` a backup, `cmp` after):
 - pattern A: drop one condition or branch, flip one comparison (`==` to `!=`, `<` to `<=`), reorder two checks;
-- pattern E: drop the guard, weaken the key or comparison, weaken the invariant check (`<` to `<=`).
+- pattern E: drop the guard, weaken the key or comparison, weaken the invariant check (`<` to `<=`);
+- an index or cache in the fast path: forget to update the index when the state changes (a survivor is
+  replaced), keep a stale cached value, pick the wrong one of several matches (max instead of min, last instead of
+  first).
+
+Default random inputs rarely reach index and cache bugs. Generate near-copies of a few base records (same brand,
+small title and price changes) so states change often, and pin the minimal example that kills each mutant with
+`@example`.
 
 A mutation that survives means the test compares less than the theorem; fix the test. The exception is an
 equivalent mutant: one that changes only which branch runs, not the result (`<=` to `<` in a non-strict check
@@ -136,6 +148,17 @@ mutation check after adding any known-finding mask: a mask wider than its findin
 The code mirrors the model: `is_ordered` (or the target's check) mirrors `checkInv`, the fast branch mirrors
 `fast`, the fallback calls the reference. Docstrings name the theorem each piece relies on. The check runs where
 the invariant could break (on each call, at startup plus on each write, or when another writer is detected).
+
+When the condition is a property of a predicate ("every pair the same-product test matches shares a brand or
+model key") rather than of the data, a runtime check would cost what the fast path saves. Then there is no guard:
+a property test checks the condition on real and generated inputs, and the report says the theorem's hypothesis is
+only tested. Keep the old implementation next to the new one (`_x_reference`) for the tests.
+
+**Measure before and after.** A speed-up is claimed only with numbers: median and p95 per call, warm-up, GC off,
+same inputs, at the sizes production really sees and at least one larger size. Measure the small size too:
+precomputing features or building an index can cost more than it saves on small inputs (bucketed dedupe was 2x
+slower at 50 items until the model book was compiled once). Ask where the time goes in a real request before
+choosing the target: a 500x faster step that is 0.1% of a network-bound request is a correct result, but say so.
 
 ## 7. Gate
 

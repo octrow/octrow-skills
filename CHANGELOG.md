@@ -5,6 +5,13 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ## [Unreleased]
 
 ### Added
+- `lean-spec` 0.2.0: lessons from a proved speed-up of buy-smarter's cross-source dedupe (2.2x at 50 items, 74x at
+  178, 526x at 962, `fast_eq_spec` for any same-product test whose matches share a key). Pattern E gains the case
+  where the condition is a property of a predicate: no runtime guard, a property test instead, said in the report.
+  The skill now asks for before/after timings at real and small sizes, adds index and stale-cache mutants with
+  near-copy inputs and pinned examples, lets several targets share one oracle by a tag, sends a predicate the code
+  computes to the oracle as a matrix, explains what a `Proved:` line claims for a fast path in map mode, and the
+  proof loop gains the simulation pattern for two folds.
 - Marketplace: `lean-spec` plugin 0.1.0 with the `lean-spec` skill. It checks one piece of logic against a Lean 4
   model, or proves a fast path equal to it: approved and frozen statements (`Frozen.lean`, `lake comparator`),
   proofs in Lean core without Mathlib, the model as a long-lived oracle for Hypothesis differential tests that

@@ -26,6 +26,15 @@ split by rule.
 - Things the code does and the map never mentions (one role per product, claim order, barred items excluded from
   every role) are findings too, not theorems.
 
+## Map mode with a fast path (pattern E)
+
+The step's lines are the requirement for `spec`, but a fast path's theorem is `fast = spec`, not the step's
+rules. The `Proved:` line then says what is equal to what and under which condition:
+`Proved: lean/Spec/Dedupe (2 theorems: the bucketed pass equals the plain pass for any same-product test whose
+matches share a key); tests/test_spec_dedupe.py checks the code against it and that real matches share a key.`
+Silent choices in the model are map findings only when the map should say them (an ordering users see), not for
+internals of the algorithm.
+
 ## Where results go
 
 1. **`Proved:` line** at the end of the step, in the map's style:
