@@ -1,0 +1,16 @@
+{
+  "name": "tlf",
+  "description": "Ask what the TikTok creators you follow said: full-text search over tlf transcripts, weekly digests and their action lists, and a setup check, all read-only; pipeline runs only after you confirm.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Daniil Petrov"
+  },
+  "license": "MIT",
+  "keywords": [
+    "tiktok",
+    "transcripts",
+    "search",
+    "digest",
+    "skills"
+  ]
+}
