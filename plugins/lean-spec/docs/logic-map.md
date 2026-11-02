@@ -279,7 +279,7 @@ changed production module with `_x_reference`; the report; in map mode a changed
 ### Setup for a repo that keeps the gate
 
 CLAUDE.md lines, an optional Stop hook running `lean/gate.sh` (blocks a stop once and shows the gate's tail; a
-repeated stop goes through), a CI job (bubblewrap, elan, uv, gate). Started when
+repeated stop goes through), a CI job (bubblewrap, elan, uv, the userns sysctl, gate). Started when
 the user wants the result to stay true.
 Feeds: step 13.
 Module: `references/setup`
@@ -294,4 +294,4 @@ Module: `references/cheating`
 ## Known gaps
 
 Details and fixes are in `docs/logic-map-fixes.md`.
-No open HIGH or MEDIUM findings; the open LOW one (#5), the macOS question (#4) and the CI run (#6) are in the plan.
+No open HIGH or MEDIUM findings; the open LOW one (#5) and the macOS question (#4) are in the plan.

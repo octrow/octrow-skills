@@ -79,8 +79,10 @@ a broken toolchain) can't keep Claude from stopping. In `.claude/settings.json`:
       - run: curl -sSfL https://elan.lean-lang.org/elan-init.sh | sh -s -- -y --default-toolchain none
       - run: echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
       - uses: astral-sh/setup-uv@v6
+      # Ubuntu 24.04 runners block unprivileged user namespaces: without this bwrap fails with "setting up uid map".
+      - run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
       - run: lean/gate.sh
 ```
 
-Ubuntu 24.04 runners restrict unprivileged user namespaces; if bwrap fails there, add
-`sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0` before the gate.
+Checked on GitHub's `ubuntu-latest` (2026-11-02): the worked example's gate passes in about 35 s; without the
+`sysctl` line it fails at `lake comparator`. This repo's `.github/workflows/tests.yml` runs it as `lean-spec-gate`.
