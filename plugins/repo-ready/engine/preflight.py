@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """Read-only readiness report for a project in a git repo. Changes nothing.
 
-usage: preflight.py [project-path] [--private word1,word2] [--scenario publish|deploy|code-health]
+usage: preflight.py [project-path] [--private word1,word2] [--scenario publish|deploy|code-health|secure]
 
 project-path may be the repo root or a subfolder of a monorepo (then history checks cover that folder only).
 --private: extra words that must not be published (employer, client, internal project names).
---scenario: publish, deploy or code-health, to run only that Scenario's Checks; without it every Check runs (audit mode).
+--scenario: publish, deploy, code-health or secure, to run only that Scenario's Checks; without it every Check runs (audit mode).
 Checks live in catalog/*.py, their Procedures in procedures/*.md and assets/.
 A repo excuses a Check in .repo-ready.yml (`exempt:` then `  check_id: reason`).
 Needs git; uses gitleaks (full secret scan) and `gh` (GitHub metadata) when available; asks PyPI/npm whether the
 package name is taken (network, read-only).
 """
 import importlib
+import json
 import re
 import sys
 import tomllib
@@ -23,8 +24,17 @@ from registry import (COMPOSE, DOCKERFILE, EXEMPTIONS_FILE, FACTS, Outcome, eval
                       procedure_path, read, repo, run, tracked)
 
 PACKS = ["catalog.core", "catalog.docker", "catalog.compose", "catalog.helm", "catalog.observability",
-         "catalog.python_quality"]
+         "catalog.python_quality", "catalog.appsec"]
 METRICS = re.compile(r"opentelemetry|prometheus[-_](client|fastapi)|prom-client", re.I)
+WEB_FRAMEWORKS = {"fastapi", "flask", "django", "starlette", "aiohttp", "litestar", "sanic", "quart", "tornado",
+                  "express", "fastify", "koa", "hono", "next", "nuxt", "@nestjs/core", "@sveltejs/kit",
+                  "@remix-run/node"}
+DATABASES = {"sqlalchemy", "sqlmodel", "psycopg", "psycopg-binary", "psycopg2", "psycopg2-binary", "asyncpg",
+             "aiosqlite", "pymongo", "motor", "tortoise-orm", "peewee", "django", "redis", "mysqlclient", "pymysql",
+             "aiomysql", "mysql-connector-python", "supabase", "firebase-admin", "@prisma/client", "prisma",
+             "drizzle-orm", "mongoose", "pg", "mysql2", "better-sqlite3", "sqlite3", "knex", "typeorm", "sequelize",
+             "@supabase/supabase-js"}
+REQ_NAME = re.compile(r"\s*([A-Za-z0-9@][\w.@/-]*)")
 STATES = ("fail", "broken")
 TITLES = {"error": "Error (blocks outward-facing steps)", "warning": "Warning (fix or exempt before done)",
           "info": "Info (advice)"}
@@ -40,8 +50,31 @@ def pyproject_scripts() -> bool:
     return bool(meta.get("project", {}).get("scripts"))
 
 
+def dependency_names() -> set[str]:
+    """Declared dependency names (pyproject, requirements.txt, package.json), lower-case; never free text."""
+    try:
+        meta = tomllib.loads(read("pyproject.toml"))
+    except (tomllib.TOMLDecodeError, UnicodeDecodeError):
+        meta = {}
+    project = meta.get("project", {})
+    specs = [*project.get("dependencies", []), *(d for ds in project.get("optional-dependencies", {}).values()
+                                                 for d in ds),
+             *(d for ds in meta.get("dependency-groups", {}).values() for d in ds if isinstance(d, str)),
+             *meta.get("tool", {}).get("poetry", {}).get("dependencies", {}),
+             *(ln.split("#")[0] for ln in read("requirements.txt").splitlines() if not ln.lstrip().startswith("-"))]
+    names = {m.group(1) for spec in specs if (m := REQ_NAME.match(spec))}
+    try:
+        pkg = json.loads(read("package.json") or "{}")
+    except ValueError:
+        pkg = {}
+    names |= {n for key in ("dependencies", "devDependencies") for n in pkg.get(key, {})}
+    return {n.lower().replace("_", "-") for n in names}
+
+
 def detect_facts() -> set[str]:
     names = tracked()
+    deps = dependency_names()
+    raw = read("pyproject.toml") + read("package.json") + read("requirements.txt")
     found = {
         "python": (repo.root / "pyproject.toml").exists(),
         "python_app": pyproject_scripts(),
@@ -57,7 +90,9 @@ def detect_facts() -> set[str]:
         "dockerfile": any(DOCKERFILE.search(f) for f in names),
         "compose": any(COMPOSE.search(f) for f in names),
         "helm_chart": any(f.endswith("Chart.yaml") for f in names),
-        "metrics": bool(METRICS.search(read("pyproject.toml") + read("package.json") + read("requirements.txt"))),
+        "metrics": bool(METRICS.search(raw)),
+        "web_app": bool(deps & WEB_FRAMEWORKS),
+        "database": bool(deps & DATABASES),
     }
     assert found.keys() <= FACTS.keys()
     return {f for f, ok in found.items() if ok}

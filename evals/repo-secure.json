@@ -1,0 +1,31 @@
+{
+  "skill_name": "repo-secure",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "проверь безопасность моего fastapi-приложения перед запуском, там уже есть пара реальных юзеров. только аудит, ничего не меняй",
+      "expected_output": "Runs `preflight.py --scenario secure` read-only, answers every judgement Check by id with a file:line of evidence (opening the id routes and following each query to the database call), gives a scorecard per part in the breach order, and changes no files.",
+      "files": [],
+      "assertions": [
+        "The preflight was run with `--scenario secure` before anything else",
+        "authz_per_object is answered as passed or failed with at least one concrete route and file:line, not 'looks fine'",
+        "Every judgement Check in the report (authz_per_object, authz_default_deny, server_trusts_client, rate_limits, security_logging, backups_restorable) is listed by id with passed or failed",
+        "A scorecard lists the parts in order: authorization, client trust, secrets, rate limits, supply chain, logging, backups",
+        "No file in the project was modified"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "in my orders API any logged-in user can GET /orders/{id} of someone else, I just noticed. fix it properly and the rate limiting on login too",
+      "expected_output": "Writes a failing test where user A requests user B's order, adds an owner filter in the query (404 on miss, not 403) through one shared dependency or repository method, makes the test pass; adds a per-IP and per-account limit on login returning 429 with Retry-After and a test for it; commits by part.",
+      "files": [],
+      "assertions": [
+        "A test where one user requests another user's order exists and was shown failing before the fix",
+        "The fix filters by owner in the database query and returns 404 for another user's order",
+        "The owner check lives in one shared place (a dependency or repository method), not copied into each handler",
+        "Login is rate-limited and a test or command shows a 429 after the limit",
+        "The authorization fix and the rate limit are separate commits"
+      ]
+    }
+  ]
+}

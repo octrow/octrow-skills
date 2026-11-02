@@ -92,6 +92,7 @@ def preflight_report(repo: Path, scenario: str, files: dict[str, str]) -> str:
     """Commit `files` into a fresh repo at `repo` and return the preflight report for `scenario`."""
     git(repo, "init", "-q", "-b", "main")
     for name, text in files.items():
+        (repo / name).parent.mkdir(parents=True, exist_ok=True)
         (repo / name).write_text(text)
     git(repo, "add", "-f", ".")
     git(repo, "-c", "user.email=t@example.com", "-c", "user.name=t", "commit", "-qm", "init")
@@ -295,6 +296,69 @@ class CodeHealthProjectConfig(ReportCase):
     def test_ci_wiring_passes(self):
         for cid in ("linter_in_ci", "tests_in_ci", "type_checker"):
             self.assertIn(cid, self.passed())
+
+
+class SecureRun(ReportCase):
+    """A FastAPI app with the usual vibe-coded gaps: a key in a public env var, no lockfile, no limiter."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        cls.report = preflight_report(Path(cls.tmp.name), "secure", {
+            "pyproject.toml": '[project]\nname = "shop"\ndependencies = ["fastapi", "sqlalchemy"]\n',
+            "app.py": "@app.get('/orders/{order_id}')\ndef get_order(order_id: int): ...\n"
+                      "r = requests.get('https://x.io/{order_id}')\n",
+            "web.env.example": "VITE_STRIPE_" + "SECRET_KEY=\nNEXT_PUBLIC_SUPABASE_ANON_KEY=\nVITE_TOKEN_TTL=1\n",  # split
+            "frontend/package-lock.json": "{}",  # a node lock elsewhere is not the Python lock
+        })
+
+    def test_web_and_database_facts_are_detected(self):
+        self.assertRegex(self.report, r"Facts: .*database.*web_app")
+
+    def test_secret_in_a_client_env_var_is_an_error(self):
+        errors = self.report.split("## Warning")[0]
+        self.assertIn("- client_bundle_secrets", errors)
+        self.assertIn("VITE_STRIPE_" + "SECRET_KEY", errors)
+        self.assertNotIn("SUPABASE_ANON_KEY", errors)
+        self.assertNotIn("VITE_TOKEN_TTL", errors)
+
+    def test_outbound_http_calls_are_not_id_routes(self):
+        self.assertNotIn("requests.get", self.report)
+
+    def test_missing_lockfile_and_update_bot_are_found(self):
+        for cid in ("lockfile_committed", "dependency_updates", "vuln_audit_ci"):
+            self.assertIn(f"- {cid}", self.failed())
+
+    def test_judgements_carry_evidence(self):
+        judged = self.report.split("## Judgement")[1]
+        self.assertRegex(judged, r"authz_per_object .*\n(  - .*\n)*  - app.py:1 ")
+        self.assertRegex(judged, r"rate_limits .*\n  - no rate limiter")
+        self.assertIn("backups_restorable", judged)
+
+    def test_shared_secret_checks_run_and_publish_only_ones_do_not(self):
+        self.assertIn("secret_files_tracked", self.report)
+        self.assertNotIn("readme_demo", self.report)
+
+
+class SecureNotAWebApp(ReportCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        cls.report = preflight_report(Path(cls.tmp.name), "secure", {
+            "pyproject.toml": '[project]\nname = "x"\ndescription = "a motor controller"  # no flask here\n'
+                              'dependencies = ["httpx"]\n[project.urls]\nHomepage = "https://github.com/pallets/flask"\n',
+            "uv.lock": "",
+        })
+
+    def test_words_outside_dependency_names_set_no_facts(self):
+        self.assertNotRegex(self.report, r"Facts: .*(web_app|database)")
+
+    def test_web_checks_skip_with_the_missing_fact(self):
+        self.assertRegex(self.report, r"authz_per_object: needs web_app")
+        self.assertRegex(self.report, r"backups_restorable: needs database")
+
+    def test_lockfile_passes(self):
+        self.assertIn("lockfile_committed", self.passed())
 
 
 if __name__ == "__main__":
