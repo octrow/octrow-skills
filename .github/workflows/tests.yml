@@ -1,4 +1,5 @@
-# Preflight tests and the python-logging templates. Stdlib only; the code-health tests skip without uvx.
+# Preflight tests and the python-logging templates. Stdlib only; uv is there so the code-health tests run their
+# tools (ruff, radon, complexipy, vulture) through uvx instead of skipping.
 name: tests
 on:
   push:
@@ -17,6 +18,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          enable-cache: false   # nothing to cache: no lockfile, and a shared cache is a poisoning target
       - run: python3 -m unittest discover tests
       - run: python3 -B test_logging.py
         working-directory: plugins/python-logging/skills/python-logging/assets
