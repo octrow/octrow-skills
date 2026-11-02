@@ -79,7 +79,7 @@
 
 ## Сейчас
 
-1. ✅ **Прогон качества на greenkeep** (0.4.5). Находки L1-L7 и Lean-модель - патч `docs/pilots/pilot-greenkeep.patch`, ждут переноса в greenkeep.
+1. ✅ **Прогон качества на greenkeep** (0.4.5). Lean-модель, тесты и находки L1-L7 перенесены в greenkeep (4b92a77); там же решение по L3 и L4.
 2. **jobs - вторая цель рядом с существующим `lean/`** (живая проверка ветки #7): сначала найти цель, около 10 тыс.
 
 Задачи и находки пилотов живут в планах самих репо, здесь только ссылки:
@@ -87,6 +87,7 @@
 - finance-insights: `docs/next-steps.md`, Next up 3 (перенос ускорения 615×);
 - persona-crm: `PLAN.md`, §2 и §9 (LLM-ограничитель, перенос лимитов, `face_candidate_pairs` 2×);
 - linux-coding (Mockingbird): `PLAN.md` (порог в `_similarity_bounded`);
+- greenkeep: `PLAN.md`, L1-L7 (гейт: L3 и L4 пропускают непокрытый код в автомерж);
 - патчи пилотов: `docs/pilots/` в octrow-skills (локально, в git не входят).
 
 ## Дальше
