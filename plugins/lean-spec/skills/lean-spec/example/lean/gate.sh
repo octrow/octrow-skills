@@ -11,8 +11,9 @@ if grep -rnE '\bsorry\b|native_decide|^\s*axiom\b|implemented_by|@\[extern|\buns
      --include='*.lean' --exclude=Frozen.lean --exclude-dir=.lake .; then
   echo "gate: forbidden construct" >&2; exit 1
 fi
-# The comparator checks only the theorems comparator.json names: an unlisted frozen theorem is not checked,
-# and a listed one missing from Frozen.lean is not frozen. The two lists must be equal.
+# lake comparator checks only the theorems comparator.json names: an unlisted frozen theorem is not checked,
+# and a listed one missing from Frozen.lean is not frozen.
+comparator_list_matches_frozen() {
 python3 - <<'PY'
 import json, re
 names = set(json.load(open("comparator.json"))["theorem_names"])
@@ -28,6 +29,8 @@ if frozen != names:
     raise SystemExit(f"gate: comparator.json and Frozen.lean disagree; only in Frozen: {sorted(frozen - names)}, "
                      f"only in comparator.json: {sorted(names - frozen)}")
 PY
+}
+comparator_list_matches_frozen
 lake comparator   # statements and model definitions match Frozen.lean, standard axioms, kernel accepts
 (cd .. && "${TEST_CMD[@]}")
 echo "gate: ok"
