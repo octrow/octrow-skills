@@ -54,7 +54,8 @@ the final result), and the test compares the whole trace.
 - **Fault model.** Any outcome sequence, any answer from the environment at each step (reordered, new entries,
   empty, raising), any initial state. Name what is left out (time, which target an unobservable call really hit,
   log text) in the report.
-- **False claims.** `def Claim : Prop` and `theorem claim_false : ¬ Claim` with a concrete witness. The gate
+- **False claims.** Each claim is a named `def Claim : Prop`; one found false while proving flips from
+  `theorem claim : Claim` to `theorem claim_false : ¬ Claim` with a concrete witness, in Props and Frozen together. The gate
   stays free of `sorry`, and the witness is the strict-xfail pin.
 - **Expect findings from the theorems, not the tests.** The model is the code, so the differential tests confirm
   the transcription; the bugs are where the code breaks a claim.

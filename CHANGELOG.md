@@ -5,6 +5,11 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ## [Unreleased]
 
 ### Fixed
+- `lean-spec` 0.3.3: hypothesis goes into the repo's own test dependencies whatever the tooling, so the repo's CI
+  no longer fails collecting the oracle test; the `--no-project` command is for the standalone example only
+  (finding #8). Pattern S: a claim found false while proving flips to `¬ Claim` in Props and Frozen together,
+  proved by its witness, as the one statement change a pre-approval allows; each claim is a named `def` so the flip
+  touches one line (finding #10).
 - `lean-spec` 0.3.2: the template copy now builds right away: `Spec.lean` and `Oracle.lean` drop the Feed imports,
   the oracle's `answer` is a stub until the oracle step, and `comparator.json` starts empty (finding #9). Freezing
   keeps library imports (Mathlib, Std) at the top of `Frozen.lean` instead of dropping them (finding #13).

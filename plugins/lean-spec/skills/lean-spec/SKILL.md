@@ -71,8 +71,9 @@ Write `lean/Spec/<Target>/Props.lean` with every statement and `sorry` proofs. T
 (each attempt's outcome plus what the environment answers next: the router's listing, a reply, a timeout), so
 recursion is structural and bounds are theorems, not fuel. The requirements are the safety claims (terminates
 within N attempts, never picks a target twice, records a failure exactly once) and the claims the docstrings and
-docs make. A claim that turns out false is stated as `def Claim : Prop` plus `theorem claim_false : ¬ Claim`,
-proved by a concrete witness: no `sorry`, and the witness becomes the pinned counterexample. Write the fault model
+docs make. State each one as a named `def Claim : Prop` plus `theorem claim : Claim`, so that a claim found false
+in step 3 changes only its theorem line. A false claim is `theorem claim_false : ¬ Claim`, proved by a concrete
+witness: no `sorry`, and the witness becomes the pinned counterexample. Write the fault model
 (which failures are in, which are not) into the report. Details: `references/patterns.md`.
 
 Requirements are often constraints ("budget is cheaper than best"), not the rule that picks. Then the theorems are
@@ -114,6 +115,13 @@ If a proof stalls because the statement is false (a counterexample appears), sto
 is a finding about the requirement, not a proof problem. A bug where the code disagrees with the requirement does
 not show up here: the model follows the requirement, so its proofs go through. Step 5 finds those.
 
+Pattern S is the other way round: the model is the code, so a false claim here is a bug in the code (or a wrong
+docstring), and this step is where S finds bugs. Show the counterexample, then flip that one statement from
+`theorem claim : Claim` to `theorem claim_false : ¬ Claim` in `Props.lean` and `Frozen.lean` together, and prove it
+by the witness. This is the one statement change allowed without a new approval round when the user pre-approved
+the statements; otherwise ask first. The flip can't fake a proof: `¬ Claim` needs a concrete witness the kernel
+checks, and the gate's list check still holds both files to the same names.
+
 ## 4. Oracle
 
 `lean/Oracle.lean` is a long-lived process: one request per line, whitespace-separated naturals in, the answer out.
@@ -146,10 +154,13 @@ In `tests/test_spec_oracle.py` keep the fixture and `ask`; write Hypothesis stra
   swallows it, and fake every helper that calls the environment again. `st.one_of` favours its simplest branches
   (80% of runs had one attempt): weight the branches and report the run lengths with `hypothesis.event`.
 
-Keep the adapter (model value ↔ production objects) in the test file. In a uv project (a `uv.lock` exists) add
-hypothesis as a dev dependency (`uv add --dev hypothesis`; `uv run --with` does not reach the venv's pytest);
-without a lock keep the example's `uv run --no-project --with hypothesis` and leave `pyproject.toml` alone. No `importorskip`: skip
-the oracle module only when lake is missing, and then CI needs the lean job from `references/setup.md`.
+Keep the adapter (model value ↔ production objects) in the test file. The test imports hypothesis at the top, so
+hypothesis goes wherever the repo declares its test dependencies, or the repo's own CI fails collecting the file:
+`uv add --dev hypothesis` in a uv project (`uv run --with` does not reach the venv's pytest), else the dev
+requirements file, the pyproject test extra, or the CI install step. The example's `uv run --no-project --with
+hypothesis` in `gate.sh` is for the standalone example only; set `TEST_CMD` to the repo's command. No
+`importorskip`: a missing hypothesis must fail, not skip. Skip the oracle module only when lake is missing, and
+then CI needs the lean job from `references/setup.md`.
 
 Compare whole values, exactly what the theorem compares. Run the plain tests, with no masks, before touching the
 production code or writing any known-finding mask: Hypothesis finds the disagreement, not your reading of the code. When
@@ -232,7 +243,8 @@ the same line.
   first one (§2, "If `lean/` already exists").
 - Absolute paths in every shell command and file write: the shell's working directory can reset between calls,
   and a relative path then lands in another repo.
-- Statements and `Frozen.lean` change only with the user's explicit consent, and then both together.
+- Statements and `Frozen.lean` change only with the user's explicit consent, and then both together. The one
+  exception is the pattern S flip to `¬ Claim` in step 3 under a pre-approval.
 - No `sorry`, `native_decide`, `axiom`, `implemented_by`, `@[extern]` or `unsafe` outside `Frozen.lean`.
 - Lean 4 syntax only (`fun x =>`, `by`, no `begin ... end`, no `λ x,`). APIs drift between releases: when a name
   fails, search the toolchain source (`~/.elan/toolchains/*/src/lean/Init`) rather than guessing.

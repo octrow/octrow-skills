@@ -163,7 +163,8 @@ Branches:
 - lean4-skills installed → `/lean4:prove` per `sorry`; else the proof loop (goal first, automation, search, `#check`);
 - a counterexample appears → the statement is false: stop and show it (a requirement finding);
 - stuck ~5 attempts on one goal → helper lemma or recheck the definition;
-- S: a false claim becomes `¬ Claim`, which needs the frozen statement changed (#10).
+- S: a counterexample is a code (or docstring) bug: shown, then that statement flips to `¬ Claim` in Props and
+  Frozen together, proved by the witness; pre-approved runs flip without asking, others ask first.
 Fails: in A and E code-vs-requirement bugs don't show here (the model follows the requirement), step 9 finds them;
 in S the findings come from the theorems.
 Module: `SKILL`, `references/proof-loop`
@@ -186,7 +187,8 @@ Branches:
 - E: one strategy for any input (fallback) and one for invariant inputs (fast path);
 - S: event sequences, collaborators faked inside `MonkeyPatch.context()`, `BaseException` when events run out,
   weighted branches, run lengths via `hypothesis.event`;
-- uv project → `uv add --dev hypothesis`; no lock → `uv run --no-project --with hypothesis`;
+- hypothesis goes into the repo's test dependencies (uv dev group, dev requirements, test extra or CI install);
+  the `--no-project` command is for the standalone example only; a missing hypothesis fails, never skips;
 - lake missing → the oracle module is skipped (`pytestmark`), CI needs the lean job.
 Fails: a disagreement → reported before any code change; the user decides unless they already said to fix; in
 map mode the code is not changed.
@@ -279,7 +281,5 @@ Module: `references/cheating`
 
 Details and fixes are in `docs/logic-map-fixes.md`.
 - Step 1 says "not IO, not the network" while pattern S targets retry loops and connections (#2).
-- The oracle test imports hypothesis at the top: a repo whose CI has no hypothesis fails at collection (#8).
-- Pattern S: a false claim found while proving needs a frozen statement changed, and the step says stop (#10).
 - The optional Stop hook can block stopping forever when the gate can never pass (#11).
 - Pattern E: tests and mutants of the fast path come before step 12 writes it (#12).

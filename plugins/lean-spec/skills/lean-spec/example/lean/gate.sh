@@ -2,7 +2,7 @@
 # Done means this passes. Same script locally, in the Stop hook and in CI.
 set -euo pipefail
 cd "$(dirname "$0")"
-TEST_CMD=(uv run -q --no-project --with pytest --with hypothesis pytest -q tests/test_spec_oracle.py)  # from the repo root
+TEST_CMD=(uv run -q --no-project --with pytest --with hypothesis pytest -q tests/test_spec_oracle.py)  # from the repo root; standalone example only, a repo uses its CI test command
 
 lake build
 # Cheats the kernel cannot see: compiled code that differs from the definition, skipped checks.
