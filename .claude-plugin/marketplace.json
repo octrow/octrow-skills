@@ -46,7 +46,7 @@
     {
       "name": "lean-spec",
       "source": "./plugins/lean-spec",
-      "description": "Check or speed up one piece of logic against a Lean 4 model: approved and frozen theorems, the model as an oracle for Hypothesis differential tests, a proved fast path with a runtime guard and fallback, or the rules of a logic-map step as the requirement; one gate (lake build, cheat grep, lake comparator, tests)."
+      "description": "Check or speed up one piece of logic against a Lean 4 model: approved and frozen theorems, the model as an oracle for Hypothesis differential tests, a proved fast path with a runtime guard and fallback, a retry loop or state machine proved safe under any sequence of failures, or the rules of a logic-map step as the requirement; one gate (lake build, cheat grep, lake comparator, tests)."
     },
     {
       "name": "repo-scout",

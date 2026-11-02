@@ -37,6 +37,13 @@ to be updated.
    code equals the model for that pin. When someone fixes the code, the pin passes, strict xfail turns that into a
    failure, and they remove the mask and the pin together.
 
+## A claim the code breaks (pattern S)
+
+When the model is the code and the finding is a false claim (from a docstring or the docs), the proof of
+`¬ Claim` names its witness. Pin exactly that witness with strict xfail on a test that asserts the claim on the
+real code, and keep a plain test that the code still equals the model there, so the pin fails for the right
+reason. No classifier mask is needed: the differential test agrees everywhere.
+
 ## Masks must be as narrow as the finding
 
 A mask that matches more than its finding hides mutants. In the pilot two of three surviving mutants sat inside

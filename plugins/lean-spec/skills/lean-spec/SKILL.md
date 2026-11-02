@@ -1,6 +1,6 @@
 ---
 name: lean-spec
-description: "Check or speed up one piece of logic against a Lean 4 model: write the simplest executable model of it in Lean, have the user approve the theorem statements, prove them, freeze them, then test the production code (Python first) against the model as an oracle with Hypothesis, and for a fast path prove fast = spec under an invariant that the code checks at runtime with a fallback. Done means one gate passes: lake build, a grep for cheats the kernel cannot see, lake comparator against the frozen statements, and the differential tests. Use whenever the user says «проверь через lean», «докажи на lean», «формально проверь эту функцию», «ускорь, но докажи», «докажи, что оптимизация правильная», «модель на lean», «оракул», \"verify with Lean\", \"prove this optimization\", \"Lean spec\", \"Lean model as an oracle\", \"differential test against a model\", or wants an LLM-written fast path checked against a proved reference; also «проверь шаг карты логики через lean», «докажи правила из logic-map», \"check a logic-map step with Lean\", where the rules come from docs/logic-map.md. Use it even if they name only one of these pieces. Not for pure math formalization (use lean4-skills) or for code that is mostly IO."
+description: "Check or speed up one piece of logic against a Lean 4 model: write the simplest executable model of it in Lean, have the user approve the theorem statements, prove them, freeze them, then test the production code (Python first) against the model as an oracle with Hypothesis, and for a fast path prove fast = spec under an invariant that the code checks at runtime with a fallback; for a retry loop or state machine, prove its safety claims under any sequence of failures. Done means one gate passes: lake build, a grep for cheats the kernel cannot see, lake comparator against the frozen statements, and the differential tests. Use whenever the user says «проверь через lean», «докажи на lean», «формально проверь эту функцию», «ускорь, но докажи», «докажи, что оптимизация правильная», «модель на lean», «оракул», \"verify with Lean\", \"prove this optimization\", \"Lean spec\", \"Lean model as an oracle\", \"differential test against a model\", or wants an LLM-written fast path checked against a proved reference; also «докажи цикл повторов», «проверь автомат состояний через lean», "prove the retry/fallback logic", "verify a state machine with Lean"; also «проверь шаг карты логики через lean», «докажи правила из logic-map», \"check a logic-map step with Lean\", where the rules come from docs/logic-map.md. Use it even if they name only one of these pieces. Not for pure math formalization (use lean4-skills) or for code that is mostly IO."
 ---
 
 # lean-spec
@@ -35,8 +35,9 @@ steps 2, 5, 8 and 9 below. Pick only steps that decide something purely (filters
 collection, IO or the browser.
 
 Refuse or split a target whose model would pass ~200 lines. Say which pattern applies
-(`references/patterns.md`): a model checked by differential tests (A), or a proved fast path with a runtime guard
-(E). Pick A unless there is a fast path to justify.
+(`references/patterns.md`): a model checked by differential tests (A), a proved fast path with a runtime guard
+(E), or a state machine under a fault model (S: retries, fallbacks, connections, a protocol loop). Pick A unless
+there is a fast path to justify or the logic is a loop that reacts to failures.
 
 ## 2. Model and statements (stop for approval)
 
@@ -56,6 +57,14 @@ Write `lean/Spec/<Target>/Props.lean` with every statement and `sorry` proofs. T
 - `fast_eq_spec : Inv xs → fast xs = spec xs` for a fast path; `checkInv_sound : checkInv xs = true → Inv xs` for
   its runtime check;
 - the rule's properties in words the user uses ("a non-owner never gets access to an archived doc").
+
+**Pattern S.** The model is the code's transition function, and the environment is one finite list of events
+(each attempt's outcome plus what the environment answers next: the router's listing, a reply, a timeout), so
+recursion is structural and bounds are theorems, not fuel. The requirements are the safety claims (terminates
+within N attempts, never picks a target twice, records a failure exactly once) and the claims the docstrings and
+docs make. A claim that turns out false is stated as `def Claim : Prop` plus `theorem claim_false : ¬ Claim`,
+proved by a concrete witness: no `sorry`, and the witness becomes the pinned counterexample. Write the fault model
+(which failures are in, which are not) into the report. Details: `references/patterns.md`.
 
 Requirements are often constraints ("budget is cheaper than best"), not the rule that picks. Then the theorems are
 weaker than the oracle comparison, and "proved" in the report covers only the constraints.
@@ -114,7 +123,12 @@ In `tests/test_spec_oracle.py` keep the fixture and `ask`; write Hypothesis stra
 - when the model folds several code conditions into one flag (`barred` for five reasons), the adapter draws which
   condition fired, so each code path is exercised;
 - when the code compares values looked up through a map (account → bank), generate maps where different keys share
-  a value (two banks share an account); otherwise a mutant that compares the keys instead survives.
+  a value (two banks share an account); otherwise a mutant that compares the keys instead survives;
+- pattern S: generate event sequences and drive the real loop with every collaborator monkeypatched to a scripted
+  fake that records the trace (`pytest.MonkeyPatch.context()` inside the `@given` test; a function-scoped fixture
+  trips Hypothesis's health check). Signal "events ran out" with a `BaseException` so no `except Exception`
+  swallows it, and fake every helper that calls the environment again. `st.one_of` favours its simplest branches
+  (80% of runs had one attempt): weight the branches and report the run lengths with `hypothesis.event`.
 
 Keep the adapter (model value ↔ production objects) in the test file. In a uv project (a `uv.lock` exists) add
 hypothesis as a dev dependency (`uv add --dev hypothesis`; `uv run --with` does not reach the venv's pytest);
@@ -132,6 +146,8 @@ code; wait for the user only if they have not already said to fix it. When the c
 restore (`cp` a backup, `cmp` after):
 - pattern A: drop one condition or branch, flip one comparison (`==` to `!=`, `<` to `<=`), reorder two checks;
 - pattern E: drop the guard, weaken the key or comparison, weaken the invariant check (`<` to `<=`);
+- pattern S: forget to mark a target as tried, retry on a kind that must not retry, record on an intermediate
+  attempt, pick the wrong untried target, an off-by-one in a counter, a flag that is never reset;
 - an index or cache in the fast path: forget to update the index when the state changes (a survivor is
   replaced), keep a stale cached value, pick the wrong one of several matches (max instead of min, last instead of
   first).

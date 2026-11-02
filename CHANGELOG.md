@@ -5,6 +5,13 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ## [Unreleased]
 
 ### Added
+- `lean-spec` 0.3.0: pattern S, a state machine under a fault model. The environment is one finite list of events,
+  the model is the code's transition function, and the requirements are safety claims and the promises in
+  docstrings; a false claim is `theorem claim_false : ¬ Claim` with a witness that becomes the strict-xfail pin.
+  Piloted on a draft retry loop with provider fallback: 9 theorems proved (bounded attempts, no target twice, one
+  failure record on the decisive attempt only), two docstring claims refuted, 11/11 mutants caught. The skill gains
+  S strategies and mutants for Hypothesis, the proof structure for event-list machines, and three Lean 4.35 errors
+  (a shared `match` matcher fails `lake comparator`, inaccessible names, `dropLast_cons₂`).
 - `lean-spec` 0.2.1: lessons from a proved speed-up of finance-insights' cross-bank transfer pairs (78x at 1,000
   rows, 615x at 6,200, 965x at 12,000, `fast_eq_spec` with no hypothesis, list equality with order). Pattern E
   gains the case with no hypothesis, where the bucket key is part of the match condition. The proof loop gains the

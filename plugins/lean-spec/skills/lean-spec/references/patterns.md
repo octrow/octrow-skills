@@ -5,7 +5,9 @@
 | **A** | Lean model + differential tests of the production code | A rule-heavy core (authz, pricing, parsers, state machines) whose production code stays in Python/Go/Rust | A second, small implementation and a test harness. Proofs cover the model only | AWS Cedar: Lean models ~10x smaller than the Rust; proofs found 4 bugs, differential tests 21 more (arXiv:2407.01688) |
 | **E** | Proved fast path + runtime guard + fallback | A shortcut that is right only under a data invariant (a scan instead of a sort, a cached aggregate, a skipped check) | A, plus an invariant, its checker and two theorems | lean-derive-hargup: `feedPlan_eq` under `Db.Inv`, startup check, fallback to the spec's SQL |
 
-This skill does A and E. The rest, for when the user asks:
+| **S** | Model of a state machine under a fault model + differential tests on event sequences | A loop that reacts to failures: retries, provider fallback, reconnects, a protocol or job state machine | A model of the transition function, an event encoding, scripted fakes for every collaborator | jobs' draft retry loop (below); for distributed protocols Veil (CAV 2025) |
+
+This skill does A, E and S. The rest, for when the user asks:
 
 - **B. Logic written in Lean, called through the C ABI.** Small, high-stakes pure functions. FFI is unstable
   across releases; a binary that carries the Lean runtime is tens of MB. Go: LeanPort (cgo). Python: Nerodia
@@ -38,6 +40,29 @@ another bucket, so `fast w xs = spec w xs` holds for every input. Piloted on fin
 pairs (different account, opposite sign, equal `abs(amount)`, dates within ±3 days): sort by (amount, date), scan
 forward inside the bucket while the date is in the window, then sort the pairs back into the loop's (i, j) order.
 78x at 1,000 rows, 615x at 6,200, 965x at 12,000, list equality with order. No guard and no property test.
+
+## S: state machine under a fault model
+
+Lean cannot see the network or the clock, so the environment is an input: one finite list of events, each the
+outcome of an attempt plus what the environment answers next. `run init evs : Trace` recurses on that list; the
+trace records everything observable (the target of each attempt, what was recorded or recovered, events logged,
+the final result), and the test compares the whole trace.
+
+- **What the model is.** The code's own transition function, not a requirement written elsewhere. The
+  requirements are safety claims (terminates within N steps, never repeats a target, records once, never retries a
+  non-retryable failure) and the promises in docstrings and docs.
+- **Fault model.** Any outcome sequence, any answer from the environment at each step (reordered, new entries,
+  empty, raising), any initial state. Name what is left out (time, which target an unobservable call really hit,
+  log text) in the report.
+- **False claims.** `def Claim : Prop` and `theorem claim_false : ¬ Claim` with a concrete witness. The gate
+  stays free of `sorry`, and the witness is the strict-xfail pin.
+- **Expect findings from the theorems, not the tests.** The model is the code, so the differential tests confirm
+  the transcription; the bugs are where the code breaks a claim.
+
+Piloted on jobs' `_run_single_draft` (draft retry with combo-provider fallback): 9 theorems proved (attempts ≤
+providers + 1, no provider pinned twice, one tally only on the decisive attempt, retries only on
+`usage_limit`/`timeout`), two docstring claims refuted (a call pinned to a provider skips an untried live provider
+on its first retry; intermediate attempts do recover packets), 11/11 mutants caught over 1,500 event sequences.
 
 ## Choosing the invariant (E)
 

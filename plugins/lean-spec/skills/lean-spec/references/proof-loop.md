@@ -26,6 +26,11 @@
      then sort them by (i, j). Prove the generator yields the same pairs for any order of the rows (`List.Perm`
      of the input gives a `Perm` of the output; a symmetric match makes `(i, j)` and `(j, i)` one pair, keep it
      as `(min, max)`), that the loop's output is already sorted, then `Perm.eq_of_pairwise`.
+   - a state machine over an event list (pattern S): `fun_induction step …` gives a case per branch; the decisive
+     cases close by `simp`, the retry cases go in named `case caseN … =>` blocks. Pair attempt i with event i by
+     `attempts.dropLast.zip evs` and one lemma about it, rather than indices. A bound on attempts:
+     `List.Nodup.length_le_of_subset` against `List.range u`. A false claim: `intro h`, apply `h` to the witness,
+     then `decide` or `simp at this`.
 7. **Explore tactics one at a time.** `first | a | b | skip` and `all_goals sorry` hide real errors (an unknown
    constant looked like an unsolved goal in the pilot).
 8. **Stuck after ~5 attempts on one goal:** split it into a helper lemma, or recheck the definition. A goal that
@@ -43,6 +48,9 @@
 | `unexpected token 'show'; expected identifier` | a keyword used as a name (`show`, `from`, `at`, `matches`); rename the helper |
 | `simp` leaves `if false = true then … else …` | `simp only [h, Bool.false_eq_true, ↓reduceIte]` |
 | `bne_comm a b` : function expected | its arguments are implicit; `exact bne_comm` |
+| `lake comparator`: statement do not match, though the text is the same | a helper above the theorem has a `match` of the same shape, and the theorem reuses its auxiliary matcher; state helpers without `match` |
+| `cases pin` fails on `pin✝` | an inaccessible name; `rename_i pin` or name it in the `case` pattern first |
+| `List.dropLast_cons₂` deprecated | `List.dropLast_cons_cons` |
 | `invalid field notation` on `{ c with f := … }` inside a lambda | add a type ascription `({ c with f := … } : Cand)` |
 | `decide` gets stuck on `spec` over a concrete list | `List.mergeSort` is well-founded recursion; use `simp [spec, fast, before, lt]` on the concrete input |
 | unsolved `case2` after `fun_induction` | the catch-all case: `match` the list and close the impossible branch. The hypothesis is `¬xs = a :: b :: rest` (use `absurd rfl (h a b rest)`) or `xs = a :: b :: rest → False` (use `(h a b rest rfl).elim`); print it with `trace_state` |
