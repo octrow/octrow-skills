@@ -30,6 +30,11 @@ One pure function or rule: authorization, pricing, a parser, a state machine, a 
 a slow one. Not IO itself (the network, the database driver); logic that reacts to IO (retries, fallbacks,
 reconnects) is pattern S with the IO faked. Read the code and its callers first.
 
+**Low-hanging fruit first (80/20).** When the user names an area rather than one function, list 2-4 candidates
+with value (a bug the user would feel, time saved per request, a limit that guards money or abuse) and effort (model
+size, how much IO to fake), and take the one with the most value per effort: a small model with a big payoff beats a
+big model with a nice theorem. Say the pick in one line; the rest go to the report as next targets.
+
 **Map mode.** If the repo has `docs/logic-map.md` and the user names a step (or asks to check the map), the
 requirement is that step's lines and the code is its `Module:`. Read `references/map-mode.md` now; it adds to
 steps 2, 5, 8 and 9 below. Pick only steps that decide something purely (filters, priorities, roles, dedupe), not
@@ -239,8 +244,9 @@ lean/gate.sh
 
 Edit `TEST_CMD` at its top to the test command the repo's CI runs, or the whole `tests/` directory when there is
 no CI, so the old tests stay part of "done". If something has to be left out (a GUI extra not installed), say what and why in a comment there. It runs `lake build`, a grep for what the kernel cannot see (`sorry`, `native_decide`, `axiom`,
-`implemented_by`, `@[extern`, `unsafe`, `skipKernelTC`, `debug.`), a check that `comparator.json` names exactly the
-theorems in `Frozen.lean`, `lake comparator` (statements and model
+`implemented_by`, `extern`, `unsafe`, `skipKernelTC`, `debug.`; whole words, comments too: reword a comment that trips it),
+a check that `comparator.json` names exactly the theorems in `Frozen.lean` and that every frozen definition the oracle
+calls is reached from one of them, `lake comparator` (statements and model
 definitions equal `Frozen.lean`, standard axioms only, kernel accepts), then the tests. The comparator's `sorry`
 warnings from `Frozen.lean` and its long "Exporting" lines are expected; the verdict is the last line. Never weaken the gate or `Frozen.lean` to get green; see `references/cheating.md`.
 Wire it into CI and the Stop hook (`references/setup.md`) if the user wants it to stay true.

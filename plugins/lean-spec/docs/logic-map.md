@@ -19,7 +19,7 @@ The Russian mirror is `docs/logic-map.ru.md`; this file is the source of truth.
 user request + a repo
   │
   ├─ 0  Preflight ............. are lake and bwrap here; which Lean; is lean/ already there
-  ├─ 1  Target and pattern .... which function or map step; A, E or S; map mode or not
+  ├─ 1  Target and pattern .... which function or map step; A, E, S or C; map mode or not
   ├─ 2  Template copy ......... lean/ and tests/ copied from example/, Frozen reset
   ├─ 3  Model ................. the reference in Lean (requirement, or the code's transitions for S)
   ├─ 4  Statements ............ which theorems; silent choices and false claims marked
@@ -95,6 +95,8 @@ Module: `scripts/preflight`, `SKILL`, `references/setup`
 
 Decides: one target, its pattern (A, E, S, C) and whether map mode is on.
 Branches:
+- the user names an area, not a function → 2-4 candidates by value and effort, the most value per effort first
+  (80/20), the rest named as next targets;
 - `docs/logic-map.md` exists and the user names a step → map mode; target = the step's `Module:`; only steps that
   decide from data in memory;
 - a model that would pass ~200 lines → refuse or split;
@@ -239,11 +241,12 @@ Module: `SKILL`, `references/patterns`
 ### 13. Gate (§7)
 
 Decides: done or not.
-Order: `lake build` → grep (`sorry`, `native_decide`, `axiom`, `implemented_by`, `@[extern`, `unsafe`,
-`skipKernelTC`, `debug.`; Frozen.lean and `.lake` excluded) → `comparator.json` names exactly the theorems of
-`Frozen.lean` → `lake comparator` → `TEST_CMD` from the repo root.
+Order: `lake build` → grep (`sorry`, `native_decide`, `axiom`, `implemented_by`, `extern`, `unsafe`,
+`skipKernelTC`, `debug.`; the top `Frozen.lean` and `.lake` excluded) → `comparator.json` names exactly the theorems of
+`Frozen.lean`, and every frozen definition the oracle calls is reached from them → `lake comparator` → `TEST_CMD` from the repo root.
 Branches: `TEST_CMD` = the repo's CI test command, or all of `tests/`; exclusions commented in the script.
-Grep details: `axiom` only at line start; `Frozen.lean` excluded by file name in any folder (#14).
+Grep details: whole words over raw text, so a word in a comment fails too (reword it); the theorem list reads
+attributes and modifiers (`@[simp]`, `protected`); reachability is by name, an over-approximation.
 Fails: any stage → non-zero exit, no `gate: ok`; never weaken the gate, Frozen or comparator.json to get green.
 Module: `SKILL`, `example/lean/gate`, `references/cheating`
 

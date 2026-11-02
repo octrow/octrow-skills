@@ -8,7 +8,8 @@
 | Weakened statement (extra hypothesis such as `n = 0`) | `lake comparator`: statement mismatch with `Frozen.lean` | yes |
 | Model changed to make the proof trivial (`spec := fast`) | `lake comparator`: definition differs from `Frozen.lean` | yes |
 | `@[implemented_by evil]` on `spec`: proofs hold, compiled oracle lies | **gate grep only.** The attribute is invisible to the kernel and to `lake comparator` | yes: comparator said okay, oracle returned wrong order |
-| `@[extern]`, `unsafe` code in the oracle path | gate grep | no |
+| `@[extern]`, `attribute [extern]`, `unsafe` code in the oracle path | gate grep (`extern` as a whole word anywhere) | yes, grep |
+| Oracle calls a frozen definition no listed theorem mentions, so `lake comparator` never compares it | gate: oracle names must be reached from listed statements | yes |
 | `native_decide` (adds `Lean.ofReduceBool`) | gate grep; `lake comparator` axiom list | no |
 | A new `axiom` | gate grep; `lake comparator` axiom list | no |
 | `set_option debug.skipKernelTC` | gate grep | no |
