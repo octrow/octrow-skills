@@ -31,6 +31,10 @@
      `attempts.dropLast.zip evs` and one lemma about it, rather than indices. A bound on attempts:
      `List.Nodup.length_le_of_subset` against `List.range u`. A false claim: `intro h`, apply `h` to the witness,
      then `decide` or `simp at this`.
+   - a counting bound over time (pattern C): a potential function. Define how many more events can still be
+     allowed from time τ before the interval's end b; prove one step never raises it and it never grows as τ
+     advances; bound it where counting starts. omega treats `L * cdiv x W` as an atom, so normalise both sides
+     the same way first (`Nat.sub_sub` turns `b - t - W` into `b - (t + W)`).
 7. **Explore tactics one at a time.** `first | a | b | skip` and `all_goals sorry` hide real errors (an unknown
    constant looked like an unsolved goal in the pilot).
 8. **Stuck after ~5 attempts on one goal:** split it into a helper lemma, or recheck the definition. A goal that
@@ -51,6 +55,8 @@
 | `lake comparator`: statement do not match, though the text is the same | a helper above the theorem has a `match` of the same shape, and the theorem reuses its auxiliary matcher; state helpers without `match` |
 | `cases pin` fails on `pin✝` | an inaccessible name; `rename_i pin` or name it in the `case` pattern first |
 | `List.dropLast_cons₂` deprecated | `List.dropLast_cons_cons` |
+| `decide` fails: no `Decidable` instance for your own `Sorted` | `unfold Sorted; decide` |
+| omega can't see `{count := c, ..}.count = c` | `simp only [hc, ↓reduceIte]` first |
 | `invalid field notation` on `{ c with f := … }` inside a lambda | add a type ascription `({ c with f := … } : Cand)` |
 | `decide` gets stuck on `spec` over a concrete list | `List.mergeSort` is well-founded recursion; use `simp [spec, fast, before, lt]` on the concrete input |
 | unsolved `case2` after `fun_induction` | the catch-all case: `match` the list and close the impossible branch. The hypothesis is `¬xs = a :: b :: rest` (use `absurd rfl (h a b rest)`) or `xs = a :: b :: rest → False` (use `(h a b rest rfl).elim`); print it with `trace_state` |

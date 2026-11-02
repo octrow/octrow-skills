@@ -4,10 +4,10 @@
 |---|---|---|---|---|
 | **A** | Lean model + differential tests of the production code | A rule-heavy core (authz, pricing, parsers, state machines) whose production code stays in Python/Go/Rust | A second, small implementation and a test harness. Proofs cover the model only | AWS Cedar: Lean models ~10x smaller than the Rust; proofs found 4 bugs, differential tests 21 more (arXiv:2407.01688) |
 | **E** | Proved fast path + runtime guard + fallback | A shortcut that is right only under a data invariant (a scan instead of a sort, a cached aggregate, a skipped check) | A, plus an invariant, its checker and two theorems | lean-derive-hargup: `feedPlan_eq` under `Db.Inv`, startup check, fallback to the spec's SQL |
-
 | **S** | Model of a state machine under a fault model + differential tests on event sequences | A loop that reacts to failures: retries, provider fallback, reconnects, a protocol or job state machine | A model of the transition function, an event encoding, scripted fakes for every collaborator | jobs' draft retry loop (below); for distributed protocols Veil (CAV 2025) |
+| **C** | Capacity and limits over time: counting bounds under a fault model + timeline and load tests | Rate limiters, quotas, queues, caps whose numbers matter (attempts per IP per day, calls per token) | A model of the store with time as data, a controlled clock in the tests, a capacity table | persona-crm's Redis fixed-window limiter (below) |
 
-This skill does A, E and S. The rest, for when the user asks:
+This skill does A, E, S and C. The rest, for when the user asks:
 
 - **B. Logic written in Lean, called through the C ABI.** Small, high-stakes pure functions. FFI is unstable
   across releases; a binary that carries the Lean runtime is tens of MB. Go: LeanPort (cgo). Python: Nerodia
@@ -64,6 +64,27 @@ Piloted on jobs' `_run_single_draft` (draft retry with combo-provider fallback):
 providers + 1, no provider pinned twice, one tally only on the decisive attempt, retries only on
 `usage_limit`/`timeout`), two docstring claims refuted (a call pinned to a provider skips an untried live provider
 on its first retry; intermediate attempts do recover packets), 11/11 mutants caught over 1,500 event sequences.
+
+## C: capacity and limits over time
+
+The store is a value and time is a number on each event; `step` is the code's own transition (INCR, TTL check,
+EXPIRE, allow or deny). The claims count allowed events in an interval.
+
+- **Bounds, not equalities.** At most L per window, at most N in any interval of length W, at most M per day, no
+  permanent lockout, nothing lost under load ≤ X. Each candidate first as `def Claim : Prop`: the textbook bound
+  is often wrong. Fixed window: 2L−1 in any W seconds (2L only over W+1), and L·(D/W+1) per span D is false when
+  W does not divide D (the right cap is `max(L·⌈D/W⌉, L−1 + L·⌈(D−1)/W⌉)`).
+- **Faults as a term.** "allowed ≤ bound + requests that hit an error" is stronger than "no faults → allowed ≤
+  bound" and costs nothing. Fail-open by design is a `¬ Claim` with a witness, reported as a trade-off.
+- **Interleavings.** Two replicas on one key: a separate op-level model where each Redis command is atomic. A
+  false claim there needs a legal schedule, pinned on the real code with asyncio events.
+- **Numbers.** The real config (10 per 900 s, …) plugs into the general theorem as `decide` corollaries; the
+  report's capacity table is these corollaries. `system-design`'s napkin math adds the cost side (each denied
+  request still costs the store a round-trip), not the per-subject caps.
+
+Piloted on persona-crm's Redis fixed-window limiter: 11 theorems, login ≤ 969 password guesses per IP per day,
+LLM ≤ 749 calls per stolen token per day (Redis healthy); the LLM limiter fails open, so a Redis outage removes the
+cap the docstring promises (a finding); two replicas can stretch a window by the INCR→EXPIRE delay.
 
 ## Choosing the invariant (E)
 

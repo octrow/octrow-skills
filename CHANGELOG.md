@@ -4,6 +4,15 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 
 ## [Unreleased]
 
+### Added
+- `lean-spec` 0.4.0: pattern C, capacity and limits over time. The model is the code's transitions with time as
+  data; claims are counting bounds (per window, any W seconds, per day, no lockout) written first as `def Claim`,
+  with faults as a term in the bound and replica interleavings in a separate op-level model; the real config gives
+  the report's capacity table as `decide` corollaries. Tests control the fake store's clock and add a load test of
+  a simulated day. Piloted on a Redis fixed-window limiter: 11 theorems (login ≤ 969 guesses per IP per day),
+  7/8 mutants (the survivor equivalent). The proof loop gains the potential-function pattern, setup covers tests
+  that need Postgres, and the patterns table is one table again; the example gate test skips without bwrap.
+
 ### Fixed
 - `lean-spec` 0.3.4: pattern E measures first (one real request end to end, then the target's "before" numbers)
   and writes a missing fast path before the differential tests and mutants that need it (finding #12). The target

@@ -37,6 +37,13 @@ run the gate.
 - Changing code that a `lean/Spec/*` model covers: run `lean/gate.sh` before saying done.
 ```
 
+## Tests that need a database or Redis
+
+If the repo's conftest needs Postgres for every test, start a throwaway cluster inside the working copy (trust
+auth, a free port, `-c unix_socket_directories=''` when the path is too long for a socket) and point the test URL
+at it (`TEST_DATABASE_URL`); stop it after the gate. Tests that need a real Redis stay out of `TEST_CMD` with a
+comment saying so; the spec tests use a fake with a controlled clock.
+
 ## Stop hook (optional)
 
 Blocks "done" while the gate fails, and shows the last 20 lines of its output. It runs the whole gate, tests

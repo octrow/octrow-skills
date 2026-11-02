@@ -52,7 +52,9 @@ class LogicMapTest(unittest.TestCase):
             self.assertEqual(missing, [], name)
 
 
-@unittest.skipUnless(shutil.which("lake") or ELAN_LAKE.exists(), "Lean is not installed")
+@unittest.skipUnless(
+    (shutil.which("lake") or ELAN_LAKE.exists()) and shutil.which("bwrap"), "Lean or bubblewrap is not installed"
+)
 class ExampleGateTest(unittest.TestCase):
     def test_example_gate_passes(self):
         env = {**os.environ, "PATH": f"{ELAN_LAKE.parent}:{os.environ['PATH']}"}

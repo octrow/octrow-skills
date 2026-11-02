@@ -51,11 +51,13 @@ The pattern is the agent's choice at step 1, from the user's words and the code;
 | E with a predicate property | the fast path's condition is a property of a predicate (matches share a key) | 4, 12 | hypothesis on the predicate; no runtime guard; a property test instead |
 | E with no hypothesis | the bucket key is part of the match condition | 4, 12 | `fast = spec` for all inputs; no guard, no property test |
 | S: state machine under faults | a loop that reacts to failures: retries, fallback, reconnects | 3, 4, 7, 9, 10, 11, 14 | model = the code's transition function over a finite event list; false claims as `¬ Claim`; scripted fakes; event-sequence strategies |
+| C: capacity and limits | a rate limiter, quota, queue or cap whose numbers matter | 3, 4, 9, 11, 14 | model = the code's transitions with time as data; counting bounds as `def Claim`; faults as a term in the bound; controlled clock, load test; capacity table |
 | Map mode | the repo has `docs/logic-map.md` and the user names a step or asks to check the map | 1, 3, 4, 9, 10, 14, 15 | the step's lines are the requirement; `-- map:` quotes; findings go to the map's plan; no code changes |
 
 Examples:
 - "make `normalize` faster but prove it" → E; which E depends on whether the fast path needs a data invariant.
 - "prove the retry loop never pins a provider twice" → S.
+- "how many password guesses does the login limiter let through per day" → C.
 - "check step 18 of the logic map with Lean" → map mode with A.
 
 Module: `SKILL`, `references/patterns`, `references/map-mode`
@@ -91,7 +93,7 @@ Module: `scripts/preflight`, `SKILL`, `references/setup`
 
 ### 1. Target and pattern (§1)
 
-Decides: one target, its pattern (A, E, S) and whether map mode is on.
+Decides: one target, its pattern (A, E, S, C) and whether map mode is on.
 Branches:
 - `docs/logic-map.md` exists and the user names a step → map mode; target = the step's `Module:`; only steps that
   decide from data in memory;
@@ -122,7 +124,9 @@ Branches:
 - A, E: written from the requirement (map lines, docstring, ticket), not from the code body;
 - the requirement is silent (ties, rounding, what is maximised) → the code's choice, `-- silent:`, a finding;
 - E with a predicate property: `spec` is the existing algorithm, most of the model is `-- silent:`;
-- S: the code's own transition function; the environment is one finite list of events, recursion structural.
+- S: the code's own transition function; the environment is one finite list of events, recursion structural;
+- C: the same, with time a number on each event and the store (keys, counters, a queue) a value; replica
+  interleavings in a separate op-level model.
 Module: `SKILL`, `references/patterns`
 
 ### 4. Statements (§2)
@@ -133,7 +137,9 @@ Branches:
 - E: `fast_eq_spec` (with `Inv`, a predicate hypothesis, or none) and `checkInv_sound` when there is a guard;
 - map mode: one theorem per rule line with a `-- map: "…"` quote; `Decides:` gets none;
 - S: safety claims (bounded steps, no repeat, record once) and docstring promises; a false one becomes
-  `def Claim : Prop` + `theorem claim_false : ¬ Claim` with a concrete witness.
+  `def Claim : Prop` + `theorem claim_false : ¬ Claim` with a concrete witness;
+- C: counting bounds (per window, any W seconds, per day, no lockout), each first as `def Claim`; faults as a
+  term in the bound; the real config as `decide` corollaries.
 Module: `SKILL`, `references/map-mode`, `references/patterns`
 
 ### 5. Approval (§2)
@@ -188,6 +194,8 @@ Branches:
 - E: one strategy for any input (fallback) and one for invariant inputs (fast path);
 - S: event sequences, collaborators faked inside `MonkeyPatch.context()`, `BaseException` when events run out,
   weighted branches, run lengths via `hypothesis.event`;
+- C: the fake store's clock patched (1 µs per command), timelines with bursts on window edges, and a load test of
+  a simulated day at the real config;
 - hypothesis goes into the repo's test dependencies (uv dev group, dev requirements, test extra or CI install);
   the `--no-project` command is for the standalone example only; a missing hypothesis fails, never skips;
 - lake missing → the oracle module is skipped (`pytestmark`), CI needs the lean job.
@@ -209,7 +217,8 @@ Module: `references/known-findings`, `references/patterns`
 Decides: whether the tests compare as much as the theorems.
 Branches:
 - ≥3 mutants per pattern (A: condition, comparison, order; E: guard, key, invariant check; S: tried-mark, retry
-  kind, intermediate record, wrong target, counter, flag reset; index/cache: stale state);
+  kind, intermediate record, wrong target, counter, flag reset; C: limit comparison, expiry repair, expiry reset
+  on every hit, fail closed/open, key namespace; index/cache: stale state);
 - a survivor → the test compares less than the theorem → fix the test;
 - an index or cache in the fast path → near-copy inputs and an `@example` per killed mutant;
 - an equivalent mutant (changes only the branch, not the result) → named in the report.
@@ -242,8 +251,8 @@ Module: `SKILL`, `example/lean/gate`, `references/cheating`
 
 Decides: what is claimed.
 Out: **Proved:** each theorem named in `comparator.json`, in one sentence; **Only tested:** agreement with the model (examples, mutants
-caught) and everything outside the model; the runtime check and its failure path; findings with numbers; for S the
-fault model (what is in, what is not).
+caught) and everything outside the model; the runtime check and its failure path; findings with numbers; for S and C the
+fault model (what is in, what is not); for C the capacity table at the real config.
 Fails: without the two lists the task is not done.
 Module: `SKILL`
 
@@ -282,4 +291,4 @@ Module: `references/cheating`
 ## Known gaps
 
 Details and fixes are in `docs/logic-map-fixes.md`.
-No open HIGH or MEDIUM findings; open LOW ones (#3, #5, #14, #15), the macOS question (#4) and the CI run (#6) are in the plan.
+No open HIGH or MEDIUM findings; open LOW ones (#3, #5, #14), the macOS question (#4) and the CI run (#6) are in the plan.

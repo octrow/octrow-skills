@@ -1,6 +1,6 @@
 ---
 name: lean-spec
-description: "Check or speed up one piece of logic against a Lean 4 model: write the simplest executable model of it in Lean, have the user approve the theorem statements, prove them, freeze them, then test the production code (Python first) against the model as an oracle with Hypothesis, and for a fast path prove fast = spec under an invariant that the code checks at runtime with a fallback; for a retry loop or state machine, prove its safety claims under any sequence of failures. Done means one gate passes: lake build, a grep for cheats the kernel cannot see, lake comparator against the frozen statements, and the differential tests. Use whenever the user says «проверь через lean», «докажи на lean», «формально проверь эту функцию», «ускорь, но докажи», «докажи, что оптимизация правильная», «модель на lean», «оракул», \"verify with Lean\", \"prove this optimization\", \"Lean spec\", \"Lean model as an oracle\", \"differential test against a model\", or wants an LLM-written fast path checked against a proved reference; also «докажи цикл повторов», «проверь автомат состояний через lean», "prove the retry/fallback logic", "verify a state machine with Lean"; also «проверь шаг карты логики через lean», «докажи правила из logic-map», \"check a logic-map step with Lean\", where the rules come from docs/logic-map.md. Use it even if they name only one of these pieces. Not for pure math formalization (use lean4-skills) or for IO itself; logic that reacts to IO failures is pattern S."
+description: "Check or speed up one piece of logic against a Lean 4 model: write the simplest executable model of it in Lean, have the user approve the theorem statements, prove them, freeze them, then test the production code (Python first) against the model as an oracle with Hypothesis, and for a fast path prove fast = spec under an invariant that the code checks at runtime with a fallback; for a retry loop or state machine, prove its safety claims under any sequence of failures; for a rate limiter, quota or queue, prove its capacity bounds over time. Done means one gate passes: lake build, a grep for cheats the kernel cannot see, lake comparator against the frozen statements, and the differential tests. Use whenever the user says «проверь через lean», «докажи на lean», «формально проверь эту функцию», «ускорь, но докажи», «докажи, что оптимизация правильная», «модель на lean», «оракул», \"verify with Lean\", \"prove this optimization\", \"Lean spec\", \"Lean model as an oracle\", \"differential test against a model\", or wants an LLM-written fast path checked against a proved reference; also «докажи цикл повторов», «проверь автомат состояний через lean», «докажи лимиты», «сколько пропустит rate limit», "prove the rate limiter's bounds", "prove the retry/fallback logic", "verify a state machine with Lean"; also «проверь шаг карты логики через lean», «докажи правила из logic-map», \"check a logic-map step with Lean\", where the rules come from docs/logic-map.md. Use it even if they name only one of these pieces. Not for pure math formalization (use lean4-skills) or for IO itself; logic that reacts to IO failures is pattern S."
 ---
 
 # lean-spec
@@ -37,8 +37,9 @@ collection, IO or the browser.
 
 Refuse or split a target whose model would pass ~200 lines. Say which pattern applies
 (`references/patterns.md`): a model checked by differential tests (A), a proved fast path with a runtime guard
-(E), or a state machine under a fault model (S: retries, fallbacks, connections, a protocol loop). Pick A unless
-there is a fast path to justify or the logic is a loop that reacts to failures.
+(E), a state machine under a fault model (S: retries, fallbacks, connections, a protocol loop), or capacity and
+limits over time (C: rate limiters, quotas, queues, caps). Pick A unless there is a fast path to justify, a loop
+that reacts to failures, or a limit whose numbers matter.
 
 **Pattern E: measure first.** Before choosing an E target, time one real request end to end and see where the
 time goes; a 500x faster step that is 0.1% of a network-bound request is a correct result, but say so. Then
@@ -80,6 +81,15 @@ docs make. State each one as a named `def Claim : Prop` plus `theorem claim : Cl
 in step 3 changes only its theorem line. A false claim is `theorem claim_false : ¬ Claim`, proved by a concrete
 witness: no `sorry`, and the witness becomes the pinned counterexample. Write the fault model
 (which failures are in, which are not) into the report. Details: `references/patterns.md`.
+
+**Pattern C.** As in S, the model is the code's transition function, with time a number on each event and the
+store (Redis keys, counters, a queue) a value. The claims are counting bounds over time intervals: at most L per
+window, at most N in any interval of length W, at most M per day, no permanent lockout, nothing lost under
+load ≤ X. Write every candidate bound as `def Claim : Prop` first: textbook bounds are often off by one or false
+(2L where 2L−1 holds; L·(D/W+1) when W does not divide D). Put faults into the bound as a term ("+ requests that
+hit an error") instead of a "no faults" hypothesis. Model replica interleavings as a separate small op-level
+model. The real limits from config become `decide` corollaries: the capacity table of the report. Details:
+`references/patterns.md`.
 
 Requirements are often constraints ("budget is cheaper than best"), not the rule that picks. Then the theorems are
 weaker than the oracle comparison, and "proved" in the report covers only the constraints.
@@ -160,7 +170,11 @@ In `tests/test_spec_oracle.py` keep the fixture and `ask`; write Hypothesis stra
   fake that records the trace (`pytest.MonkeyPatch.context()` inside the `@given` test; a function-scoped fixture
   trips Hypothesis's health check). Signal "events ran out" with a `BaseException` so no `except Exception`
   swallows it, and fake every helper that calls the environment again. `st.one_of` favours its simplest branches
-  (80% of runs had one attempt): weight the branches and report the run lengths with `hypothesis.event`.
+  (80% of runs had one attempt): weight the branches and report the run lengths with `hypothesis.event`;
+- pattern C: control the fake's clock (fakeredis: patch its module-level `time`, add 1 µs per command so expiry
+  at exactly c+W matches the model's [c, c+W)); generate timelines with bursts on window edges; add a load test,
+  thousands of requests over a simulated day at the real config, checking the proved caps and code == oracle.
+  Short Hypothesis timelines missed a mutant the load test caught.
 
 Keep the adapter (model value ↔ production objects) in the test file. The test imports hypothesis at the top, so
 hypothesis goes wherever the repo declares its test dependencies, or the repo's own CI fails collecting the file:
@@ -183,6 +197,8 @@ restore (`cp` a backup, `cmp` after):
 - pattern E: drop the guard, weaken the key or comparison, weaken the invariant check (`<` to `<=`);
 - pattern S: forget to mark a target as tried, retry on a kind that must not retry, record on an intermediate
   attempt, pick the wrong untried target, an off-by-one in a counter, a flag that is never reset;
+- pattern C: `>` to `>=` on the limit, drop the expiry repair, reset the expiry on every hit, fail closed instead
+  of open (or the reverse), a key without its namespace, an expiry of W+1;
 - an index or cache in the fast path: forget to update the index when the state changes (a survivor is
   replaced), keep a stale cached value, pick the wrong one of several matches (max instead of min, last instead of
   first).
@@ -237,7 +253,8 @@ End with two lists, always:
   and everything outside the model (IO, parsing, the DB, concurrency).
 
 Plus where the runtime check sits and what happens when it fails, and in map mode the findings with their
-numbers. Without this section the task is not done.
+numbers. Pattern C adds a capacity table: endpoint, L, W, proved maximum per window, per any W seconds and per
+day at the real config, with the faults that are added on top. Without this section the task is not done.
 
 ## 9. Map mode: write back to the map
 

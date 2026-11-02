@@ -97,7 +97,7 @@ And lean-spec, a skill that checks one piece of logic against a short Lean 4 mod
 proof that the result does not change. The theorem statements are approved and frozen, the proofs are checked by
 Lean's kernel, and the production code (Python first) is tested against the model as an oracle with Hypothesis. A
 fast path gets a theorem "fast = spec under an invariant", a runtime check and a fallback, as in lean-derive-hargup
-(280k users on a $12 VPS). A retry loop or state machine gets its safety claims proved under any sequence of failures. The rules can come from a step of the logic map: each theorem quotes its line, and
+(280k users on a $12 VPS). A retry loop or state machine gets its safety claims proved under any sequence of failures, and a rate limiter or quota gets its capacity proved (how many attempts per IP per day). The rules can come from a step of the logic map: each theorem quotes its line, and
 whatever the map leaves vague becomes a finding. Done means one gate: `lake build`, a grep for cheats the kernel
 cannot see, `lake comparator` against the frozen statements, and the tests. Needs Lean 4.35 (elan) and bubblewrap.
 Install it with `claude plugin install lean-spec@octrow-skills` or
