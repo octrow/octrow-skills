@@ -49,6 +49,13 @@ class PreflightTest(unittest.TestCase):
                 (Path(config) / ".claude.json").write_text(json.dumps(here))
                 self.assertEqual(preflight.agent_facts(Path(repo))["lean-lsp-mcp"], "configured")
 
+    def test_macos_is_refused_with_a_reason(self):
+        with unittest.mock.patch.object(preflight.sys, "platform", "darwin"), \
+                unittest.mock.patch.object(preflight.sys, "argv", ["preflight.py", str(Path.cwd())]), \
+                unittest.mock.patch("builtins.print") as printed:
+            self.assertEqual(preflight.main(), 1)
+        self.assertIn("macOS is not supported", " ".join(str(c.args[0]) for c in printed.call_args_list))
+
     def test_every_missing_fact_has_an_install_command(self):
         _, missing = preflight.facts(Path.cwd())
         for name in missing:

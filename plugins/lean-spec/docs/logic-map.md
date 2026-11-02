@@ -69,7 +69,7 @@ Module: `SKILL`, `references/patterns`, `references/map-mode`
 | Skill trigger (description phrases, `/lean-spec:lean-spec`) | stops for the user | the repo's CI tests | the main flow, steps 0–14 |
 | Map mode trigger («проверь шаг карты логики через lean», or asks to check the map) | stops for the user | the repo's CI tests | adds step 15; findings, not fixes |
 | Request that pre-approves ("формулировки утверждаю заранее") | **skipped**; statements listed in the report | same | freeze right after writing them; a false statement in step 7 still says "stop and show it" |
-| `scripts/preflight.py [repo]` | n/a | n/a | read-only; exit 1 only when lake or bwrap is missing |
+| `scripts/preflight.py [repo]` | n/a | n/a | read-only; exit 1 on macOS or when lake or bwrap is missing |
 | `lean/gate.sh` by hand, Stop hook or CI | n/a | `TEST_CMD` at its top | the same script in all three; Stop hook and CI snippets in `references/setup.md` |
 | `tests/test_lean_spec.py` (this repo) | n/a | example's own test | preflight facts; runs the example gate only when lake exists |
 | Evals `evals/lean-spec/*` | per prompt | per case | run by hand as a subagent on a scratch copy (plugin eval can't run Bash on the dev machine) |
@@ -83,6 +83,7 @@ Module: `SKILL`, `scripts/preflight`, `example/lean/gate`, `references/setup`
 Decides: whether the run can start and what to install.
 In: repo root. Out: `name: value` facts, `install …` lines.
 Branches:
+- macOS → exit 1 with the reason, not supported (#4);
 - lake or bwrap missing → exit 1; the skill shows install lines and stops;
 - lake only under `~/.elan/bin` → every later shell command starts with `export PATH="$HOME/.elan/bin:$PATH"`;
 - Lean version ≠ 4.35.0 → warning "API drift is likely", the run continues;
@@ -294,4 +295,4 @@ Module: `references/cheating`
 ## Known gaps
 
 Details and fixes are in `docs/logic-map-fixes.md`.
-No open HIGH or MEDIUM findings; the open LOW one (#5) and the macOS question (#4) are in the plan.
+No open HIGH or MEDIUM findings; the open LOW one (#5) is in the plan.

@@ -99,7 +99,7 @@ Lean's kernel, and the production code (Python first) is tested against the mode
 fast path gets a theorem "fast = spec under an invariant", a runtime check and a fallback, as in lean-derive-hargup
 (280k users on a $12 VPS). A retry loop or state machine gets its safety claims proved under any sequence of failures, and a rate limiter or quota gets its capacity proved (how many attempts per IP per day). The rules can come from a step of the logic map: each theorem quotes its line, and
 whatever the map leaves vague becomes a finding. Done means one gate: `lake build`, a grep for cheats the kernel
-cannot see, `lake comparator` against the frozen statements, and the tests. Needs Lean 4.35 (elan) and bubblewrap.
+cannot see, `lake comparator` against the frozen statements, and the tests. Linux only: needs Lean 4.35 (elan) and bubblewrap.
 Install it with `claude plugin install lean-spec@octrow-skills` or
 `npx skills add octrow/octrow-skills --skill lean-spec -g`, then ask "verify feed_fast with Lean" or
 "check step 18 of the logic map with Lean".

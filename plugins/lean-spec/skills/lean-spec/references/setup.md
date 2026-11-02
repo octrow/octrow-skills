@@ -10,6 +10,9 @@ sudo apt install bubblewrap              # lake comparator and lake check build 
 
 `lean/lean-toolchain` pins the version per repo; elan downloads it on first `lake build`.
 
+Linux only. macOS is not supported: `lake comparator` builds inside bubblewrap, which macOS does not have, and
+the gate is not trusted without it. Preflight says so and exits 1.
+
 ## Agent tooling
 
 ```bash

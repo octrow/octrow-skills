@@ -2,7 +2,7 @@
 """Read-only facts for lean-spec: toolchain, sandbox, agent tooling, project language.
 
 Prints one `name: value` line per fact, then `install:` lines for what is missing.
-Exit 1 when a hard requirement (lake, bwrap) is missing, else 0.
+Exit 1 on macOS (not supported) or when a hard requirement (lake, bwrap) is missing, else 0.
 """
 import json
 import os
@@ -110,6 +110,9 @@ def project_facts(root: Path) -> dict[str, str]:
 
 
 def main() -> int:
+    if sys.platform == "darwin":
+        print("platform: macOS is not supported: lake comparator builds inside bubblewrap, which is Linux only")
+        return 1
     root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.cwd()
     found, missing = facts(root)
     for name, value in found.items():
