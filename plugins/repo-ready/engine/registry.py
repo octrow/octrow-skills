@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 ENGINE_DIR = Path(__file__).resolve().parent  # each Scenario skill links it in as `engine/`
+# skills a Procedure may point to; beautify-github-readme ships in this plugin, the rest are installed separately
 EXTERNAL_SKILLS = {"github-repo", "beautify-github-readme", "humanizer", "impeccable", "security-review"}
 FACTS = {
     "python": "pyproject.toml at the project root",

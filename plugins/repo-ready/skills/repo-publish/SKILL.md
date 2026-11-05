@@ -149,17 +149,15 @@ GitHub release only, and say so in the README.
 
 1. **Structure and facts**: `github-repo` skill (audit + README recipe). Keep every fact from the old README;
    check every relative link.
-2. **Visual story**: `beautify-github-readme` skill (hero, proof image, badges). Use real output from the project
-   (a real run, real numbers) rather than invented claims. Ask the user first whether to run it on `README.md` and
-   its mirror `README.ru.md` (recommend yes for a repo going public); on a yes, run it on both so the mirror gets the
-   same hero and assets. It asks README-mode vs asset-only and pure SVG vs hybrid; pass the answers you already
-   have (whole README, pure SVG unless the user wants otherwise) so it doesn't stall.
-   Its last step offers an attribution line and a showcase PR to its author's repo: both are optional and
-   outward-facing, so they wait for the user's yes like any other post. Not installed:
-   `npx skills add oil-oil/beautify-github-readme -g` (MIT; kept as a separate skill so it stays current).
+2. **Length, wording and visuals**: `beautify-github-readme` skill (this plugin). It cuts the README to its length
+   budget, rewrites it in plain language and adds a hero and proof image from real output of the project. Ask the
+   user first whether to run it on `README.md` and its mirror `README.ru.md` (recommend yes for a repo going
+   public); on a yes, run it on both. It asks README-mode vs asset-only and pure SVG vs hybrid; pass the answers
+   you already have (whole README, pure SVG unless the user wants otherwise) so it doesn't stall. The preflight's
+   `readme_length` and `readme_plain_language` findings are its starting list.
+3. **Other prose**: `humanizer` skill on docs, CONTRIBUTING and release notes.
    Sub-skill not in the skill list? It may be installed per project (`<repo>/.agents/skills/<name>`); read its
    SKILL.md from there, or apply the reference files here, and say which you did.
-3. **Plain language**: `humanizer` skill on README and other prose. Prose should read like the author wrote it.
 4. **SEO pass on the opening**: `engine/procedures/seo.md`, "README opening" section.
 5. **Mirror**: `engine/procedures/bilingual.md`.
 

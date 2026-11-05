@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import tomllib
 
+import readme_audit
 from registry import Broken, check, http_json, judgement, read, repo, run, tracked
 
 PUB = {"publish"}
@@ -266,9 +267,23 @@ judgement("readme_claims_real", severity="warning", when=("has_readme",), scenar
                    "or release? No made-up adoption numbers or testimonials.",
           procedure="skill:github-repo")
 
-judgement("readme_plain_language", severity="info", when=("has_readme",), scenarios=PUB,
-          question="Do the README and other prose read like the author wrote it, without AI tells or sales "
-                   "language?",
+@check("readme_length", severity="warning", when=("has_readme",), scenarios=PUB, kind="files",
+       why="a long README scares a stranger off before the install command",
+       procedure="skill:beautify-github-readme")
+def readme_length() -> list[str]:
+    return capped(readme_audit.length_issues(read("README.md")))
+
+
+@check("readme_plain_language", severity="info", when=("has_readme",), scenarios=PUB, kind="files",
+       why="filler, hype words and AI tells read as a template and cost trust",
+       procedure="skill:beautify-github-readme")
+def readme_plain_language() -> list[str]:
+    return capped(readme_audit.wording_issues(read("README.md")))
+
+
+judgement("prose_plain_language", severity="info", when=("has_readme",), scenarios=PUB,
+          question="Do the docs and other prose besides the README read like the author wrote it, without AI tells "
+                   "or sales language?",
           procedure="skill:humanizer")
 
 judgement("readme_visual_story", severity="info", when=("has_readme",), scenarios=PUB,

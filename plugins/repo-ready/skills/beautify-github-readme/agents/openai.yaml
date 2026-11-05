@@ -1,0 +1,4 @@
+interface:
+  display_name: "Beautify GitHub README"
+  short_description: "Short, plain READMEs with project-native SVG visuals"
+  default_prompt: "Use $beautify-github-readme to make my README shorter and clearer, or to create visual assets; ask which scope I want first."
