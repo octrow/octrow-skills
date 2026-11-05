@@ -1,15 +1,57 @@
 <p align="center">
-  <img src=".github/readme-hero.svg" width="100%" alt="repo-publish, скилл для Claude Code: сделать репозиторий публичным, сначала проверив историю. Фазы: секреты, установка, README, CI, SEO, релиз. Рядом настоящие строки из отчёта preflight.">
+  <img src="assets/readme/hero.svg" width="100%" alt="octrow-skills: скиллы для Claude Code и Claude Tag. Рядом с названием девять плагинов маркетплейса.">
 </p>
 
 <p align="center"><a href="README.md">English</a> | <b>Русский</b></p>
 
 <p align="center"><a href="https://scorecard.dev/viewer/?uri=github.com/octrow/octrow-skills"><img src="https://api.scorecard.dev/projects/github.com/octrow/octrow-skills/badge" alt="OpenSSF Scorecard"></a></p>
 
-repo-ready это плагин для Claude Code и Claude Tag с четырьмя скиллами. Каждый доводит рабочий проект до состояния,
-которого требует цель, и начинает с одного и того же preflight, который ничего не меняет. Он перечисляет пробелы как
-именованные проверки, у каждой есть уровень серьёзности и ссылка на исправление, а потом скилл исправляет только
-выбранные вами части.
+Скиллы для Claude Code и Claude Tag в одном маркетплейсе плагинов.
+
+Добавьте маркетплейс один раз, потом ставьте нужные плагины:
+
+```bash
+claude plugin marketplace add octrow/octrow-skills
+claude plugin install repo-ready@octrow-skills
+```
+
+## Плагины
+
+| Плагин | Что делает | Установка |
+|---|---|---|
+| [repo-ready](plugins/repo-ready/README.ru.md) | четыре скилла: публикация, деплой, чистка и защита проекта | `claude plugin install repo-ready@octrow-skills` |
+| [python-logging](plugins/python-logging/README.ru.md) | настраивает и чинит логирование в Python-проекте | `claude plugin install python-logging@octrow-skills` |
+| [llm-call-audit](plugins/llm-call-audit/README.ru.md) | ищет самый дешёвый вариант для каждого вызова модели | `claude plugin install llm-call-audit@octrow-skills` |
+| [logic-map](plugins/logic-map/README.ru.md) | пишет `docs/logic-map.md`, файл, который агент читает первым | `claude plugin install logic-map@octrow-skills` |
+| [qt-ui](plugins/qt-ui/README.ru.md) | правит визуальные дефекты в приложении на PySide6 / PyQt6 | `claude plugin install qt-ui@octrow-skills` |
+| [qt-app](plugins/qt-app/README.ru.md) | строит GUI на PySide6 для Python-проекта | `claude plugin install qt-app@octrow-skills` |
+| [system-design](plugins/system-design/README.ru.md) | проектирует бэкенд по цифрам | `claude plugin install system-design@octrow-skills` |
+| [lean-spec](plugins/lean-spec/README.ru.md) | проверяет логику по модели на Lean 4 | `claude plugin install lean-spec@octrow-skills` |
+| [repo-scout](https://github.com/octrow/repo-scout) | ищет на GitHub готовые репозитории, прежде чем писать своё | `claude plugin install repo-scout@octrow-skills` |
+
+repo-scout работает через CLI repo-scout. Сначала поставьте его: одна команда, см. его README.
+
+На странице плагина: что он делает, команда `npx skills` и примеры запросов.
+
+## Другие агенты и способы установки
+
+Codex, Cursor, Gemini CLI и другие, через [skills](https://github.com/vercel-labs/skills):
+
+```bash
+npx skills add octrow/octrow-skills --skill repo-publish -g
+```
+
+Вместо `repo-publish` подставьте имя любого скилла со страниц плагинов.
+
+На Windows сначала выполните `git config --global core.symlinks true`. Каждый скилл подключает общую папку `engine/` символической ссылкой, а Git for Windows по умолчанию превращает ссылки в обычные текстовые файлы.
+
+Из локального клона: `claude plugin marketplace add ./octrow-skills`.
+
+Claude Tag: администратор подключает этот репозиторий в Organization settings → Plugins & skills → Sync from GitHub и добавляет плагин в bundle.
+
+## repo-ready
+
+В repo-ready четыре скилла: `repo-publish`, `repo-deploy`, `repo-code-health` и `repo-secure`. Они начинают с одного и того же preflight, который ничего не меняет. Он перечисляет пробелы как именованные проверки с уровнем серьёзности и ссылкой на исправление. Потом скилл исправляет только выбранные вами части.
 
 | Скилл | Когда нужен | Что смотрит |
 |---|---|---|
@@ -18,209 +60,23 @@ repo-ready это плагин для Claude Code и Claude Tag с четырь�
 | `repo-code-health` | Python-код менять труднее, чем должно быть | ruff, сложность, мёртвый код, линтер, тесты и типы в CI |
 | `repo-secure` | приложение уже работает или вот-вот выйдет | авторизация, доверие к клиенту, rate limit, зависимости, логи, секреты, бэкапы |
 
-repo-publish читает репозиторий и его историю, прежде чем что-то станет публичным, выполняет работу по публикации в
-безопасном порядке и передаёт части другим скиллам, если они установлены. Ниже его preflight на тестовом репо:
+Preflight на тестовом репо:
 
 <img src=".github/demo.gif" width="100%" alt="Прогон preflight на тестовом репо: GitHub-токен в истории, отслеживаемый .env, домашний путь и имя работодателя в коде, рабочая почта в коммитах, незакреплённые actions на Node 20, нет установщиков.">
 
-## Установка
+Потом в проекте можно попросить: «подготовь репо к публикации», «проверь безопасность приложения», «заверни в Docker». Просьбы на английском тоже работают.
 
-Claude Code:
-
-```bash
-claude plugin marketplace add octrow/octrow-skills
-claude plugin install repo-ready@octrow-skills
-```
-
-Другие агенты (Codex, Cursor, Gemini CLI и другие) через [skills](https://github.com/vercel-labs/skills):
-
-```bash
-npx skills add octrow/octrow-skills --skill repo-publish -g
-npx skills add octrow/octrow-skills --skill repo-deploy -g
-npx skills add octrow/octrow-skills --skill repo-code-health -g
-npx skills add octrow/octrow-skills --skill repo-secure -g
-```
-
-На Windows сначала выполните `git config --global core.symlinks true`: каждый скилл подключает общую папку `engine/`
-символической ссылкой, а Git for Windows по умолчанию превращает ссылки в обычные текстовые файлы.
-
-Из локального клона: `claude plugin marketplace add ./octrow-skills`.
-
-В том же маркетплейсе есть [repo-scout](https://github.com/octrow/repo-scout), скилл, который ищет на GitHub
-готовые репозитории, прежде чем писать своё: `claude plugin install repo-scout@octrow-skills`. Он работает через
-CLI repo-scout, поэтому сначала поставьте его (одна команда, см. его README).
-
-Там же есть python-logging, скилл, который настраивает, чинит или улучшает логирование в Python-проекте: общий
-бюджет на все логи с ротацией по размеру, широкие события (одна JSON-строка на запрос, сообщение или задачу),
-маскировку секретов, записи, которые остаются одной строкой в journald, и тесты, доказывающие потолок. Установка:
-`claude plugin install python-logging@octrow-skills` или `npx skills add octrow/octrow-skills --skill python-logging -g`.
-Потом попросите: «логи забили диск, ограничь их 1 ГБ» или «по логам непонятно, что случилось с задачей 42».
-
-И llm-call-audit, скилл, который проходит по всем вызовам моделей в коде и для каждого ищет самый дешёвый вариант
-без потери качества: обычный код, классификатор TypeSafe/Jev, более дешёвую или более сильную LLM, сокращённый
-промпт, исправленный маршрут в шлюзе. Цифры он берёт из логов приложения, кэша ответов LLM и логов шлюза и пишет
-отчёт, ничего не меняя. Установка: `claude plugin install llm-call-audit@octrow-skills` или
-`npx skills add octrow/octrow-skills --skill llm-call-audit -g`. Потом попросите: «проверь вызовы LLM, поиск идёт минуту».
-
-И logic-map, скилл, который пишет, обновляет и сверяет с кодом `docs/logic-map.md`: один файл, который агент читает
-первым. В нём по шагам видно, где основной поток делится, что решает каждый шаг, что меняется без LLM, сети или
-ключа, как шаг падает и какой модуль его делает. Найденные ошибки логики уходят в нумерованный план, код скилл не
-трогает; правило «карта в том же коммите» в AGENTS.md и тест на строки `Module:` не дают карте устареть. Установка:
-`claude plugin install logic-map@octrow-skills` или `npx skills add octrow/octrow-skills --skill logic-map -g`.
-Потом попросите: «сделай карту логики: где поток делится и в какие модули идёт».
-
-И qt-ui, скилл для визуальных правок в десктопном приложении на PySide6 / PyQt6. Он снимает каждый экран офскрин в
-светлой и тёмной теме, составляет список дефектов (обрезанный текст, сжатые колонки таблиц, отступы мимо сетки,
-полужирный, который не рисуется), правит их через токены темы проекта по образцу соседнего экрана, где уже сделано
-правильно, и сравнивает снимки до и после попиксельно, чтобы общая правка QSS не сломала тихо другой экран. В справочнике
-собраны особенности Qt, которые выглядят как ошибки дизайна (подписи выше полей, колонки, сжатые до букв,
-полужирный, который рисуется обычным), а запуск без задачи берёт список открытых дефектов проекта.
-Установка: `claude plugin install qt-ui@octrow-skills` или `npx skills add octrow/octrow-skills --skill qt-ui -g`.
-Потом попросите: «GUI кривой, найди, что не так на всех экранах» или «отчёт не влезает в маленькое окно».
-
-И qt-app, его пара: скилл, который с нуля делает десктопный GUI на PySide6 для Python-проекта или добавляет новый
-экран в готовое Qt-приложение. Он проверяет, можно ли звать ядро в процессе, запускает его на asyncio-цикле в
-отдельном потоке с результатами через Qt-сигналы, ставит extra `gui`, команду `<app> gui`, окно с боковым меню и
-свою светлую и тёмную тему на токенах из готового шаблона, строит экраны по одному, сначала тест pytest-qt офскрин,
-с общими с CLI текстами и вызовами, и передаёт скриншоты обеих тем в qt-ui для правки вёрстки. Установка:
-`claude plugin install qt-app@octrow-skills` или `npx skills add octrow/octrow-skills --skill qt-app -g`.
-Потом попросите: «добавь к этому CLI десктопное окно» или «добавь в приложение экран «Журнал»».
-
-И system-design, скилл, который проектирует или проверяет архитектуру бэкенда по цифрам. Сначала требования,
-потом расчёт на салфетке скриптом: из DAU в запросы в секунду, app-серверы, память под кэш, чтения и записи в БД,
-реплики, шарды, объём хранилища, исходящий трафик. Дальше самая низкая ступень лестницы масштабирования, которая
-выдерживает эти цифры, движок хранения и паттерн кэша под характер доступа, план на случай отказов и компромиссы,
-названные вслух. Если репозиторий уже есть, скилл сначала читает реальный стек и метрики. Установка:
-`claude plugin install system-design@octrow-skills` или `npx skills add octrow/octrow-skills --skill system-design -g`.
-Потом спросите: «выдержит ли этот FastAPI 2 млн DAU на одной VPS?» или «спроектируй бэкенд фотохостинга на 20 млн DAU».
-
-И lean-spec, скилл, который проверяет кусок логики по короткой модели на Lean 4 или ускоряет его с доказательством,
-что результат не меняется. Формулировки теорем утверждаются и замораживаются, доказательства проверяет ядро Lean,
-а прод-код (сначала Python) сверяется с моделью как с оракулом через Hypothesis. Быстрый путь получает теорему
-«быстро = эталон при инварианте», проверку во время работы и откат, как в lean-derive-hargup (280 тыс.
-пользователей на VPS за $12). Цикл повторов или автомат состояний получает доказанные свойства безопасности при любой последовательности сбоев, а ограничитель частоты или квота - доказанную ёмкость (сколько попыток с одного IP за сутки). Правила можно брать из шага карты логики: каждая теорема цитирует свою строку, а всё,
-что карта оставляет размытым, становится находкой. Готово, когда проходит один гейт: `lake build`, grep на обходы,
-которые ядро не видит, `lake comparator` против замороженных формулировок и тесты. Нужны Lean 4.35 (elan) и
-bubblewrap. Установка: `claude plugin install lean-spec@octrow-skills` или
-`npx skills add octrow/octrow-skills --skill lean-spec -g`. Потом спросите: «проверь через lean, что feed_fast
-правильный» или «проверь через lean шаг 18 карты логики».
-
-Claude Tag: администратор подключает этот репозиторий в Organization settings → Plugins & skills → Sync from GitHub
-и добавляет плагин в bundle.
-
-Потом в проекте можно попросить: «подготовь репо к публикации», «добавь README на русском», «готов ли сервис к
-Kubernetes?», «заверни в Docker», «почисти код», «найди мёртвый код», «проверь безопасность приложения». Просьбы на английском тоже работают.
-
-## Что находит preflight
-
-Каждый скилл начинает с `preflight.py --scenario publish`, `deploy`, `code-health` или `secure`. Он ничего не меняет: читает
-репозиторий, его историю и настройки на GitHub, а инструменты code-health запускает через `uvx` и ничего не пишет в
-проект. Фрагмент запуска для публикации на тестовом репо:
-
-```text
-## Error (blocks outward-facing steps)
-- secrets_in_history: once public, history is copied and indexed; a leaked key is only safe after rotation
-  - gitleaks: github-pat in config.ini at 94d0ab7f (rotate the key, then ask about a rewrite)
-  fix: engine/procedures/security.md#1-secrets-in-history-not-just-head
-
-## Warning (fix or exempt before done)
-- actions_node_runtime: runners force Node 20 actions onto Node 24 with a warning; bump the major
-  - actions/checkout@v4: targets node20, deprecated; bump the major
-  fix: engine/procedures/security.md#8-workflow-hardening
-- dependabot_cooldown: a release-day dependency update is how a hijacked package reaches you
-  - dependabot.yml: no `cooldown` (wait ~7 days before proposing a release)
-  fix: engine/assets/dependabot.yml
-
-## Skipped (condition not met)
-- scorecard_workflow: needs public
-```
-
-error блокирует любой внешний шаг (смену видимости, релиз, команду установки в README), пока его не исправят.
-warning нужно исправить или освободить до конца части, info это совет. Проверка, которая не подходит репо,
-пропускается с условием, которого ей не хватает (нет Helm-чарта, нет проверок Helm), или освобождается с причиной в
-`.repo-ready.yml`.
-
-Для публикации он ещё проверяет: секреты во всей истории (gitleaks), приватные пути, названия работодателей и email авторов,
-происхождение кода, свободно ли имя пакета на PyPI/npm, битые ссылки в README, frontmatter в SKILL.md, который
-агенты не смогут загрузить, PR от Dependabot с красными проверками, а также описание репозитория, topics, social
-preview, защиту ветки, secret scanning и приватные сообщения об уязвимостях.
-
-## Публикация: repo-publish
-
-После preflight и нескольких вопросов (аудитория, право на публикацию, видимость, языки) repo-publish проходит выбранные
-вами фазы в таком порядке:
-
-1. Безопасность и история: секреты из истории сначала ротируются, приватные материалы уходят через экспорт со
-   свежей историей, а репо получает проверки в pre-commit и CI, чтобы оставаться чистым.
-2. Установка: одна команда на установку и одна на запуск, установщики проверяются в CI на Linux, macOS и Windows,
-   а релизы собираются под все три (wheel и, по желанию, standalone-бинарники). Имя пакета проверяется до того, как README предложит кому-то `pipx install`.
-3. README и документация: структура через `github-repo`, визуал через `beautify-github-readme`, простой язык через
-   `humanizer`, зеркала EN/RU синхронизированы.
-4. GUI, если он есть: скриншоты до и после, затем обновлённые скриншоты в README.
-5. Файлы сообщества и CI: SECURITY, CONTRIBUTING, формы issues и шаблоны workflow из списка ниже.
-6. Находимость: описание, topics, social preview, первые 200 слов README.
-7. Релиз: версия, changelog, тег и публикация в PyPI через trusted publishing.
-8. Запуск, только по запросу: проверка готовности и черновики для каждого канала; публикуете их вы.
-
-Всё, что видят другие (push, тег, релиз, видимость, настройки GitHub, посты), ждёт вашего «да».
-
-Приватный или только локальный репозиторий проходит тот же путь: всё, что живёт в файлах, делается сразу, а
-настройки, которые работают только у публичного репо (Scorecard, social preview, приватные сообщения об уязвимостях,
-push protection), собираются в список команд `gh` на день, когда вы его откроете.
-
-Исправления лежат готовыми файлами в [`assets/`](plugins/repo-ready/engine/assets): конфиг
-pre-commit (gitleaks, zizmor, actionlint, проверка больших файлов и маркеров конфликтов), workflow безопасности (gitleaks по всей истории), OpenSSF Scorecard,
-установщики `install.sh`/`install.ps1` с проверкой в CI на трёх ОС, workflow релиза (wheel, бинарники под
-Linux/macOS/Windows, PyPI через trusted publishing, подпись сборок) и Dependabot с cooldown. Экшены закреплены по SHA коммитов,
-каждый файл проходит zizmor и actionlint. [repo-scout](https://github.com/octrow/repo-scout) использует их все,
-заполненными под настоящее Python-приложение.
-
-## Готовность к деплою: repo-deploy
-
-`/repo-ready:repo-deploy` готовит сервис к запуску в контейнерах или на одной VPS за Caddy или nginx с TLS. Его preflight (`--scenario deploy`) проверяет Dockerfile (multi-stage, числовой пользователь не root, базовые образы
-по digest, `.dockerignore`), Compose (порты базы и очереди только на 127.0.0.1), workflow образа (provenance, SBOM,
-аттестация, сканирование, без кэша слоёв) и Helm-чарт (Pod Security `restricted`, пробы, `helm test`, smoke-тест в
-kind в CI). Рецепты взяты из того, как [buy-smarter](https://github.com/octrow/buy-smarter) прошёл путь от CLI до
-чарта, и этот репо проходит все проверки. Прежде чем считать часть готовой, скилл по-настоящему собирает образ и
-поднимает стек; push образа и деплой ждут вашего «да».
-
-## Здоровье кода: repo-code-health
-
-`/repo-ready:repo-code-health` чистит Python-код и настраивает CI, чтобы он снова не зарос. Его preflight
-(`--scenario code-health`) запускает через `uvx` ruff (линтер и форматирование), radon (цикломатическая сложность),
-complexipy (когнитивная сложность) и vulture (мёртвый код). В проект он ничего не ставит и ничего в нём не пишет.
-Ещё он проверяет, что CI запускает линтер, тесты и проверку типов. Пороги берутся по умолчанию из самих
-инструментов, если в `pyproject.toml` не заданы свои. Исправления идут в таком порядке: форматирование отдельным
-коммитом, линтер, мёртвый код, потом сложные функции, по одной на коммит и только там, где их покрывают тесты.
-Нужен [uv](https://docs.astral.sh/uv/).
-
-## Безопасность приложения: repo-secure
-
-`/repo-ready:repo-secure` проверяет работающее или почти готовое приложение на ошибки, на которых чаще всего
-горят выпущенные приложения, особенно написанные с ИИ. Порядок такой же, как у реальных утечек: авторизация (IDOR,
-закрытость по умолчанию, row-level security), доверие к клиенту (цены, роли, id владельца), rate limit на вход,
-регистрацию, письма и LLM-эндпоинты, цепочка поставок (lock-файл, Dependabot, аудит в CI), логи событий
-безопасности, секреты (включая ключи в переменных `NEXT_PUBLIC_`/`VITE_`, которые сборщик отдаёт в браузер) и
-бэкапы с отрепетированным восстановлением. Его preflight (`--scenario secure`) доказывает то, что видно по файлам,
-а остальное превращает в вопросы с уликами: каждый маршрут с id записи, найденный rate limiter, инструменты бэкапа.
-Каждое исправление идёт с тестом, который до него падал (пользователь A запрашивает запись пользователя B и
-получает 404). Остальной OWASP передаётся в `security-review`.
+Фазы repo-publish, вывод preflight, готовые файлы workflow и остальные три скилла: [plugins/repo-ready/README.ru.md](plugins/repo-ready/README.ru.md).
 
 ## Чем repo-publish отличается от похожих скиллов
 
-- [github-repo](https://github.com/jdevalk/skills) проверяет и пишет README, файлы для сообщества, шаблоны и
-  метаданные. repo-publish вызывает его для этой части и добавляет то, что до и после: историю и секреты,
-  происхождение кода, установку, защиту CI, релиз и запуск.
-- [beautify-github-readme](https://github.com/oil-oil/beautify-github-readme) перерабатывает визуальную часть
-  README (hero, картинки-доказательства, SVG). repo-publish использует его на этапе README.
-- [github-morestar-skill](https://github.com/everest-an/github-morestar-skill) про рост: позиционирование и день
-  запуска сразу в нескольких каналах. repo-publish тоже планирует запуск, но только когда репо безопасно
-  публиковать и он ставится на чистой машине.
+- [github-repo](https://github.com/jdevalk/skills) проверяет и пишет README, файлы для сообщества, шаблоны и метаданные. repo-publish вызывает его для этой части и добавляет то, что до и после: историю и секреты, происхождение кода, установку, защиту CI, релиз и запуск.
+- [beautify-github-readme](https://github.com/oil-oil/beautify-github-readme) перерабатывает визуальную часть README (hero, картинки-доказательства, SVG). В repo-ready лежит его форк: он ещё сокращает README до бюджета длины и проверяет формулировки, а preflight запускает эту проверку.
+- [github-morestar-skill](https://github.com/everest-an/github-morestar-skill) про рост: позиционирование и день запуска сразу в нескольких каналах. repo-publish тоже планирует запуск, но только когда репо безопасно публиковать и он ставится на чистой машине.
 
 ## Структура репозитория
 
-Этот репозиторий является маркетплейсом плагинов. repo-ready с четырьмя скиллами, python-logging, llm-call-audit, logic-map, qt-ui, qt-app, system-design и lean-spec лежат здесь, а repo-scout живёт в
-своём репозитории, и на него ссылается запись маркетплейса.
+Этот репозиторий - маркетплейс плагинов. Здесь лежат repo-ready, python-logging, llm-call-audit, logic-map, qt-ui, qt-app, system-design и lean-spec. repo-scout живёт в своём репозитории, и на него ссылается запись маркетплейса.
 
 ```
 .claude-plugin/marketplace.json     список плагинов
@@ -231,8 +87,9 @@ tests/                              тесты preflight (stdlib unittest)
 evals/<skill>.json                  тестовые запросы и проверки, по которым настраивался скилл
 ```
 
-Проверка перед коммитом: `claude plugin validate .` и `python3 -m unittest discover tests`. Изменения по версиям: [CHANGELOG.md](CHANGELOG.md). Как помочь
-проекту: [CONTRIBUTING.ru.md](CONTRIBUTING.ru.md). Сообщения об уязвимостях: [SECURITY.ru.md](SECURITY.ru.md).
+Проверка перед коммитом: `claude plugin validate .` и `python3 -m unittest discover tests`.
+
+Изменения по версиям: [CHANGELOG.md](CHANGELOG.md). Как помочь проекту: [CONTRIBUTING.ru.md](CONTRIBUTING.ru.md). Сообщения об уязвимостях: [SECURITY.ru.md](SECURITY.ru.md).
 
 ## Лицензия
 
