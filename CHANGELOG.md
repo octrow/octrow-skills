@@ -5,13 +5,6 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ## [Unreleased]
 
 ### Added
-- 0.11.0: `beautify-github-readme` is now a repo-ready skill, forked from oil-oil/beautify-github-readme. It adds
-  plain-language rules for README text and a length budget (150 lines, 25 to the first command, 20 per section,
-  5 lines per paragraph); the upstream showcase PR offer and "README made with" badge are gone.
-  `engine/readme_audit.py` lints filler (word tiers after conorbronsdon/avoid-ai-writing: some words count only
-  in pairs), contrast framing, long dashes, emoji, caps, long sentences and nested lists. The preflight runs it as
-  `readme_length` (warning) and `readme_plain_language` (info, was a judgement); the judgement for other prose is
-  now `prose_plain_language`. repo-publish's README phase uses the fork instead of the upstream skill.
 - `lean-spec` 0.4.0: pattern C, capacity and limits over time. The model is the code's transitions with time as
   data; claims are counting bounds (per window, any W seconds, per day, no lockout) written first as `def Claim`,
   with faults as a term in the bound and replica interleavings in a separate op-level model; the real config gives
@@ -131,6 +124,16 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
   cache is now keyed by the project root.
 - `preflight.py --help` and `log_audit.py --help` print the usage instead of auditing a folder named `--help`;
   `log_audit.py` stops on a path that is not a directory instead of reporting an empty audit.
+
+## [0.11.0] - 2026-11-05
+### Added
+- `beautify-github-readme` is now a repo-ready skill, forked from oil-oil/beautify-github-readme. It adds
+  plain-language rules for README text and a length budget (150 lines, 25 to the first command, 20 per section,
+  5 lines per paragraph); the upstream showcase PR offer and "README made with" badge are gone.
+  `engine/readme_audit.py` lints filler (word tiers after conorbronsdon/avoid-ai-writing: some words count only
+  in pairs), contrast framing, long dashes, emoji, caps, long sentences and nested lists. The preflight runs it as
+  `readme_length` (warning) and `readme_plain_language` (info, was a judgement); the judgement for other prose is
+  now `prose_plain_language`. repo-publish's README phase uses the fork instead of the upstream skill.
 
 ## [0.10.1] - 2026-10-17
 
