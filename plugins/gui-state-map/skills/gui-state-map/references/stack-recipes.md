@@ -90,6 +90,8 @@ Method A runs on `QT_QPA_PLATFORM=offscreen`. If the project already has a scree
 `plugins/qt-ui/skills/qt-ui/references/screenshot-script.md`, and may not be installed next to this skill. Add
 these four pieces to it:
 
+- **The window without the whole app**: if the project has no screenshot script, look at the GUI tests. The
+  fixture that builds `MainWindow` (with a fake app, a temp DB, stubbed audio or LLM) is the start of the driver.
 - **Clicks**: `button.click()` or `QTest.mouseClick(w, Qt.LeftButton)`, then pump events (`processEvents` in a short
   loop) before the shot. Find controls by `objectName` or `findChildren(QAbstractButton)` + text.
 - **"Page text"**: walk `window.findChildren(QWidget)` and dump class, `objectName`, text/title/placeholder,
@@ -97,11 +99,17 @@ these four pieces to it:
   replaces the Playwright trace.
 - **Modal dialogs** (`QMessageBox.exec`, `QFileDialog`) block the script. Monkeypatch the static calls to return a
   chosen answer and record that they were asked, or fire `QTimer.singleShot(0, grab_active_modal_then_close)`
-  before the click.
+  before the click. Dynamic buttons (`QMessageBox.addButton("Restart", …)`) have no selector: put them in the Q/X
+  blacklist **by dialog title + button text**, checked inside the patched `exec`.
+- **Sizes**: grep `setMinimumSize` / `resize(`. If neither is set, `minimumSizeHint()` in step 1 gives the
+  minimum.
 - **Async work** (asyncio loop on a thread, `QThreadPool`): replace the slow or quota-spending call with a stub that
   emits the same signals with a fixed delay. That's the desktop F stand.
 
-Method B (live) goes through XWayland like the Fyne section: `import -window`, `xprop`, XTEST.
+Method B (live) goes through XWayland like the Fyne section: `import -window`, `xprop`, XTEST. Check in step 1
+that the click tool is actually there (python-xlib, `xdotool`). Since method A clicks inside the process, method B
+only needs what A can't reach (global hotkeys, real devices, system dialogs). Often the owner clicks those by
+hand while the session snaps.
 
 ## Desktop stands: no port, shared files
 
@@ -114,6 +122,12 @@ point `HOME` / `XDG_CONFIG_HOME` / `XDG_DATA_HOME` (or the app's own env var) at
 - **Self-update**: an app that auto-updates (git fast-forward, `uv sync`, downloads) can change **the repo itself**
   a few seconds after start. Turn it off in the stand's copy of the update config and start the driver without
   the auto-start hook. Class X.
+- **Collisions with the owner's running instance**: global hotkeys (the second instance steals them, and GNOME
+  may show a binding dialog), the GPU (a second model load can hit OOM), the microphone and camera,
+  single-instance locks and sockets. Turn hotkeys off in the stand, use CPU or stubs, or shoot B only while the
+  owner's instance is stopped.
+- **Restart buttons** (`subprocess.Popen` of itself + exit, which for an AppImage starts the *installed* build):
+  class X, and they're in the blacklist.
 - If even starting the app writes to its data (migrations, health checks, "last opened"), there is no read-only L
   stand. Shoot on S only and say so in the plan.
 

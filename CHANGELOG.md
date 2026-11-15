@@ -5,6 +5,10 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ## [Unreleased]
 
 ### Added
+- `gui-state-map` 0.2.0: desktop lessons from a trial plan on a PySide6 app: a fuller Qt control count, a P
+  class for private capture (mic, screen, camera), collisions with the owner's instance (hotkeys, GPU, locks),
+  restart buttons as X, a blacklist by dialog title + button text, `env:` rows, a plan-only mode, a disk space
+  check, and the test fixture as the start of the offscreen driver.
 - Marketplace: `gui-state-map` plugin 0.1.0 with the `gui-state-map` skill. A GUI logic map by screens × states ×
   actions: a plan with a safe stand on real data and R/W/Q/X click classes, an actions map read from the code
   (handler, writes, subprocess order, expected effect on other screens), scripted shooting with data snapshot

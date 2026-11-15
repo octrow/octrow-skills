@@ -36,7 +36,10 @@ Write the documents in the user's language.
 Read before writing: `docs/logic-map.md` (if it exists), the GUI docs, `DESIGN.md`, the glossary, the GUI module
 list. Count the clickable places with a grep for the stack's handler pattern (`on_click`, `ui.button`,
 `widget.NewButton`, `clicked.connect`, `onClick`), then count **controls on screen**: one handler often serves
-several buttons, and signals other than clicks (`currentIndexChanged`, `textChanged`) are actions too. The control
+several buttons, and signals other than clicks (`currentIndexChanged`, `textChanged`) are actions too. On Qt a
+`connect` grep can find under half: also count widget constructors (`QPushButton`, `QCheckBox`, `QComboBox`,
+`QLineEdit`, `QRadioButton`), `addButton` on message boxes, `QAction` / `QShortcut`, global hotkeys and overridden
+event handlers (`mousePressEvent`, `keyPressEvent`). Give the count with its tolerance. The control
 count sizes the batches. Split them into about three batches along the GUI's natural seams, of similar size.
 
 Use `references/plan-template.md` as the skeleton. The plan must name concretely, for this project:
@@ -54,9 +57,13 @@ Use `references/plan-template.md` as the skeleton. The plan must name concretely
    - Back up every file a click can overwrite before the first click, with `sha256sum` in `stand.md`. Use a
      **new backup name per batch**: reusing a name overwrites the earlier copy.
    - Check what **starting** the app does on its own (polls mail, migrates a store, runs health checks,
-     **auto-updates its own code**). A start can write before any click. If it always writes, drop the read-only
+     **auto-updates its own code**, downloads a model, sends a paid LLM probe). A start can write or spend before
+     any click. If it always writes, drop the read-only
      L stand and work on copies only. Secrets that live outside files (the system keyring) can't be backed up:
-     swap the backend in the stand. See "Desktop stands" in `references/stack-recipes.md`.
+     swap the backend in the stand. A second desktop instance can also **collide with the owner's** (global
+     hotkeys, the GPU, the microphone, single-instance locks). See "Desktop stands" in
+     `references/stack-recipes.md`.
+   - Check free space on the disk that will hold the report. A full matrix runs to about a thousand files.
 2. **Action classes**. The class decides how to roll a click back, not whether to click:
    - **R** read-only: click freely.
    - **W** the GUI writes (status, note, setting, file): click on the sandbox, or back up first. Undo with the
@@ -69,6 +76,8 @@ Use `references/plan-template.md` as the skeleton. The plan must name concretely
      **past real runs** (logs, run history pages). If the owner wants live Q shots, press it, shoot start and
      "running", stop within about 5 s, shoot the stop and the toast, then diff. A stop mid-step is itself a state
      worth mapping.
+   - **P** private capture (records the microphone, the screen or the camera, and maybe sends it out): like Q, only
+     with the owner present and agreeing, never on a cheap agent. Shots go only to the private report folder.
    - **X** system level (systemd, restart or shut down the server, reinstall timers, self-update of the code,
      anything outside the app's own data): a separate last batch,
      and **ask the owner first**, because it can kill their instance. Permission classifiers often block it for
@@ -77,8 +86,13 @@ Use `references/plan-template.md` as the skeleton. The plan must name concretely
    `C12a`). Add 390×844 phone width once for the main screens next to the main size (for example 1440×900). For
    desktop apps, add both themes and a window at its minimum size (or below it, if the app allows it). A
    collapsible section takes two shots (`-a` collapsed, `-b` expanded). A row can also be a **check** rather than
-   a state ("no way back from X"). Mark those rows `check`, so they aren't counted as states.
+   a state ("no way back from X"). Mark those rows `check`, so they aren't counted as states. Mark rows that exist
+   only in some environment (desktop, GPU, OS warnings) `env: <condition>`. One row is one state, even when it
+   takes 2–3 frames.
 4. **The tools** (§0a), the split between agents (§5) and the done criteria (§6), as in the template.
+
+**Plan-only requests** ("just the plan, don't run anything"): read the code and run read-only system commands
+(`ls`, `ps`, `df`, `git status`, `nvidia-smi`, `grep`). Don't start the app, its tests or anything that writes.
 
 A value the plan can't know without running anything (a path the app computes, which health checks fail on this
 machine, whether the data has an example) is written as `determine in step 1: <the read-only query or command>`,
@@ -247,7 +261,8 @@ batch first.
 | 1 stand, inventory, states; 2 shooting | cheap model (haiku), the shooting one batch at a time |
 | 1a actions map, 1c scripts, 3 batch maps | mid-tier model (sonnet), one agent per batch |
 
-If the project or the user already sets which models subagents use, follow that instead of this table.
+If the project's CLAUDE.md / AGENTS.md, the user's memory or instructions already set which models subagents use,
+follow that instead of this table.
 The shooters don't judge and the analysts don't shoot, so the cheap model never writes conclusions and the
 expensive one doesn't spend tokens on clicks. Driving a real browser through a browser extension costs over 10k
 tokens a page. Use it only when the owner wants to watch a write click happen in their own browser.
