@@ -39,6 +39,11 @@
       "description": "PySide6 desktop GUI from scratch for a Python project: the core on an asyncio thread with Qt signals, a sidebar window and an own token theme from a runnable template, screens test-first with pytest-qt and the same texts and calls as the CLI; pairs with qt-ui for layout polish."
     },
     {
+      "name": "gui-state-map",
+      "source": "./plugins/gui-state-map",
+      "description": "GUI logic map by screens × states × actions: an actions map read from the code, scripted clicks on a safe stand on real data with screenshots and data diffs, a merged map.md with mermaid graphs, findings as a by-product; web via Playwright, desktop via offscreen driver + live X11."
+    },
+    {
       "name": "system-design",
       "source": "./plugins/system-design",
       "description": "System design from numbers: requirements, napkin math from a script (RPS, servers, cache, DB nodes, storage, egress), the smallest scaling rung that holds, storage and cache patterns by access pattern, failure plan and trade-offs; blank page or existing repo."

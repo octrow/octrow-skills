@@ -1,0 +1,10 @@
+{
+  "name": "gui-state-map",
+  "description": "Map a GUI by screens × states × actions: an actions map read from the code, clicks on a safe stand on real data, screenshots, data snapshot diffs and traces, a merged map.md with mermaid graphs and findings.md as a by-product; web (Playwright) and desktop (offscreen driver + live X11).",
+  "version": "0.1.0",
+  "author": {
+    "name": "Daniil Petrov"
+  },
+  "license": "MIT",
+  "keywords": ["gui", "review", "screenshots", "playwright", "state-map", "skills"]
+}

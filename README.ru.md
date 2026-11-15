@@ -25,6 +25,7 @@ claude plugin install repo-ready@octrow-skills
 | [logic-map](plugins/logic-map/README.ru.md) | пишет `docs/logic-map.md`, файл, который агент читает первым | `claude plugin install logic-map@octrow-skills` |
 | [qt-ui](plugins/qt-ui/README.ru.md) | правит визуальные дефекты в приложении на PySide6 / PyQt6 | `claude plugin install qt-ui@octrow-skills` |
 | [qt-app](plugins/qt-app/README.ru.md) | строит GUI на PySide6 для Python-проекта | `claude plugin install qt-app@octrow-skills` |
+| [gui-state-map](plugins/gui-state-map/README.ru.md) | строит карту всех экранов, состояний и кнопок GUI со скринами и diff'ами | `claude plugin install gui-state-map@octrow-skills` |
 | [system-design](plugins/system-design/README.ru.md) | проектирует бэкенд по цифрам | `claude plugin install system-design@octrow-skills` |
 | [lean-spec](plugins/lean-spec/README.ru.md) | проверяет логику по модели на Lean 4 | `claude plugin install lean-spec@octrow-skills` |
 | [repo-scout](https://github.com/octrow/repo-scout) | ищет на GitHub готовые репозитории, прежде чем писать своё | `claude plugin install repo-scout@octrow-skills` |
@@ -76,7 +77,7 @@ Preflight на тестовом репо:
 
 ## Структура репозитория
 
-Этот репозиторий - маркетплейс плагинов. Здесь лежат repo-ready, python-logging, llm-call-audit, logic-map, qt-ui, qt-app, system-design и lean-spec. repo-scout живёт в своём репозитории, и на него ссылается запись маркетплейса.
+Этот репозиторий - маркетплейс плагинов. Здесь лежат repo-ready, python-logging, llm-call-audit, logic-map, qt-ui, qt-app, gui-state-map, system-design и lean-spec. repo-scout живёт в своём репозитории, и на него ссылается запись маркетплейса.
 
 ```
 .claude-plugin/marketplace.json     список плагинов

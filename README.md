@@ -25,6 +25,7 @@ claude plugin install repo-ready@octrow-skills
 | [logic-map](plugins/logic-map/README.md) | writes `docs/logic-map.md`, the file an agent reads first | `claude plugin install logic-map@octrow-skills` |
 | [qt-ui](plugins/qt-ui/README.md) | fixes visual defects in a PySide6 / PyQt6 app | `claude plugin install qt-ui@octrow-skills` |
 | [qt-app](plugins/qt-app/README.md) | builds a PySide6 GUI for a Python project | `claude plugin install qt-app@octrow-skills` |
+| [gui-state-map](plugins/gui-state-map/README.md) | maps every screen, state and button of a GUI, with screenshots and diffs | `claude plugin install gui-state-map@octrow-skills` |
 | [system-design](plugins/system-design/README.md) | designs a backend from numbers | `claude plugin install system-design@octrow-skills` |
 | [lean-spec](plugins/lean-spec/README.md) | checks logic against a Lean 4 model | `claude plugin install lean-spec@octrow-skills` |
 | [repo-scout](https://github.com/octrow/repo-scout) | finds GitHub repos to build on before you write your own | `claude plugin install repo-scout@octrow-skills` |
@@ -76,7 +77,7 @@ Phases of repo-publish, the preflight output, the ready-made workflow files and 
 
 ## Repository layout
 
-This repo is a plugin marketplace. repo-ready, python-logging, llm-call-audit, logic-map, qt-ui, qt-app, system-design and lean-spec live here. repo-scout lives in its own repo, and the marketplace entry points there.
+This repo is a plugin marketplace. repo-ready, python-logging, llm-call-audit, logic-map, qt-ui, qt-app, gui-state-map, system-design and lean-spec live here. repo-scout lives in its own repo, and the marketplace entry points there.
 
 ```
 .claude-plugin/marketplace.json     list of plugins

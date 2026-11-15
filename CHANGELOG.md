@@ -5,6 +5,11 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ## [Unreleased]
 
 ### Added
+- Marketplace: `gui-state-map` plugin 0.1.0 with the `gui-state-map` skill. A GUI logic map by screens × states ×
+  actions: a plan with a safe stand on real data and R/W/Q/X click classes, an actions map read from the code
+  (handler, writes, subprocess order, expected effect on other screens), scripted shooting with data snapshot
+  diffs, batch maps merged into `map.md` with mermaid graphs, findings as a by-product, and an optional
+  fresh-user pass. Distilled from three real reviews (two NiceGUI apps, one Fyne desktop app).
 - `lean-spec` 0.4.0: pattern C, capacity and limits over time. The model is the code's transitions with time as
   data; claims are counting bounds (per window, any W seconds, per day, no lockout) written first as `def Claim`,
   with faults as a term in the bound and replica interleavings in a separate op-level model; the real config gives
