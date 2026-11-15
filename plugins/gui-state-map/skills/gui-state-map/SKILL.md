@@ -35,14 +35,16 @@ Write the documents in the user's language.
 
 ## Step 0. Write plan.md first, then stop for approval
 
-Read before writing: `docs/logic-map.md` (if it exists), the GUI docs, `DESIGN.md`, the glossary, the GUI module
-list. Count the clickable places with a grep for the stack's handler pattern (`on_click`, `ui.button`,
-`widget.NewButton`, `clicked.connect`, `onClick`), then count **controls on screen**: one handler often serves
+Read before writing: `docs/logic-map.md` (if it exists), the GUI docs, `DESIGN.md` (if it's missing, the theme
+module's tokens are the reference), the glossary, the GUI module list. Count the clickable places with a grep for the stack's handler pattern (`on_click`, `ui.button`,
+`widget.NewButton`, `clicked.connect`, `onClick`) **and the project's own wrappers** (`kit.button`, `_button`:
+find them first, or the grep finds half), then count **controls on screen**: one handler often serves
 several buttons, and signals other than clicks (`currentIndexChanged`, `textChanged`) are actions too. On Qt a
 `connect` grep can find under half: also count widget constructors (`QPushButton`, `QCheckBox`, `QComboBox`,
 `QLineEdit`, `QRadioButton`), `addButton` on message boxes, `QAction` / `QShortcut`, global hotkeys and overridden
 event handlers (`mousePressEvent`, `keyPressEvent`). Give the count with its tolerance. The control
-count sizes the batches. Split them into about three batches along the GUI's natural seams, of similar size.
+count sizes the batches. Split them into about three batches along the GUI's natural seams, balanced by both
+controls and states.
 
 Use `references/plan-template.md` as the skeleton. The plan must name concretely, for this project:
 
@@ -51,7 +53,17 @@ Use `references/plan-template.md` as the skeleton. The plan must name concretely
      separate port (web) or with a separate home (desktop: `HOME`/`XDG_*` pointed at a copy). The owner's instance
      runs the code of its own start and would show already-fixed bugs.
    - Use **real data as it is today**. Find one real example per state with a read-only query. If a state has no
-     example in the data, mark it "not in data". Never fake rows without the owner's explicit decision.
+     example in the data, mark it "not in data". Never fake rows without the owner's explicit decision. If the
+     project has its own **demo mode** (synthetic data, LLM and system actions off), add it as stand **D**: it
+     covers states missing from real data and lets write clicks run safely. Every D shot is labelled demo in the map.
+   - If the app finds its data from `__file__` (no env var, no port setting), the sandbox is a **copy of the tree**:
+     code plus a consistent DB copy (`sqlite3 .backup`, not `cp` under a live WAL). **Never copy messenger session
+     files or `.env`.** A second client on the same session key can get the owner's session reset.
+   - **External commands** a button calls by name (`systemctl --user`, `journalctl`, `uv`, `docker`) act on the
+     real system even from a sandbox. Put **shims** first in the stand's `PATH` that log the call and exit, and
+     test before the first click that a shim call leaves the real state unchanged (`systemctl --user is-active`).
+   - **Port pickers** with their own logic (restart the service that holds the port, ask "restart?") can hit the
+     owner's service. Give the stand an explicit free port.
    - Where the app writes, prefer a **sandbox copy** of the data (hard links for big media, `cp -al`). Typical
      stands: **L** live (read-only clicks), **S** sandbox copy (write clicks), **F** fake "run in progress"
      (swap the run pool or submit a dummy subprocess that prints progress), **E** empty home (no config / no
@@ -72,12 +84,15 @@ Use `references/plan-template.md` as the skeleton. The plan must name concretely
      GUI's own undo button first, which gets shot as its own transition. Where there is no undo, restore row by row
      (other processes may write to the same store), and log each restore in `snaps/RESTORES.md`.
      **Hidden W**: actions that write without a "save" (a search that rebuilds an index, a page that runs checks
-     on open). The diff has to prove them.
+     on open, a page that shells out to a CLI that syncs a venv). The diff has to prove them. The app's own
+     request and debug logs count as noise in a diff. Data, config, caches and other programs' stores do not.
    - **Q** quota, network, a live account, GPU: don't press it just for a screenshot. Shoot the button, the
      confirm dialog with "Cancel", and "running" on the F stand. Take the step order from the code and from
      **past real runs** (logs, run history pages). If the owner wants live Q shots, press it, shoot start and
      "running", stop within about 5 s, shoot the stop and the toast, then diff. A stop mid-step is itself a state
-     worth mapping.
+     worth mapping. **If there is no stop** (a background call with no cancel), don't press it live at all: use the
+     F stand and past runs only, and record "no way to stop" as a finding. Messages to the owner's own chat or
+     notifications are Q too, because they can't be unsent.
    - **P** private capture (records the microphone, the screen or the camera, and maybe sends it out): like Q, only
      with the owner present and agreeing, never on a cheap agent. Shots go only to the private report folder.
    - **X** system level (systemd, restart or shut down the server, reinstall timers, self-update of the code,
@@ -90,7 +105,8 @@ Use `references/plan-template.md` as the skeleton. The plan must name concretely
    collapsible section takes two shots (`-a` collapsed, `-b` expanded). A row can also be a **check** rather than
    a state ("no way back from X"). Mark those rows `check`, so they aren't counted as states. Mark rows that exist
    only in some environment (desktop, GPU, OS warnings) `env: <condition>`. One row is one state, even when it
-   takes 2–3 frames.
+   takes 2–3 frames. `-a`/`-b` (collapsed/expanded) are two states. Theme and width variants are extra frames of
+   the same state, unless a row says the variant itself is the state.
 4. **The tools** (§0a), the split between agents (§5) and the done criteria (§6), as in the template.
 
 **Plan-only requests** ("just the plan, don't run anything"): read the code and run read-only system commands

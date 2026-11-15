@@ -15,7 +15,8 @@ scripts, and copy the relevant pitfalls into the plan's §0a.
 ## Web with Playwright
 
 Use whichever Playwright is already installed: Python in the project venv, or global Node
-(`NODE_PATH=$(npm root -g)`). Don't install the other one. Run headless chromium at a fixed viewport.
+(`NODE_PATH=$(npm root -g)`). Don't install the other one. To check: `.venv/bin/python -c "import playwright"`,
+`npm ls -g playwright`, `ls ~/.cache/ms-playwright`. Run headless chromium at a fixed viewport.
 
 | Need | Recipe |
 |---|---|
@@ -44,6 +45,12 @@ Pitfalls:
   "-u", "-c", "<print [i/60] with sleeps>"]))`, or swaps `run_pool.RUNS`. Data is untouched.
 - Starting through `gui.run(load_config())` skips what the real CLI entry does (logging, log pruning, store
   migrations, `.env`). Start through the CLI, and remember the difference when reading shots from a launcher.
+- `ui.sub_pages` (a list and its card on one screen, each with a URL): every sub-URL is its own state. Shoot by
+  going to the URL directly, and once by clicking through, since the two paths can differ.
+- `ui.echart` / `ui.plotly` draw on a canvas, so `innerText` is empty. Dump the chart's options as the "page text":
+  read them on the server side, or with `run_javascript` → `echarts.getInstanceByDom(el).getOption()`.
+- Buttons usually go through a project wrapper (`kit.button`, `_button`). Grep the wrapper name to count controls
+  and to find handlers.
 - Toasts followed by a page reload disappear in milliseconds. That's a finding, and it's why a screenshot right
   after the click matters.
 
