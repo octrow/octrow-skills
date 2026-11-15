@@ -5,6 +5,10 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ## [Unreleased]
 
 ### Added
+- `gui-state-map` 0.3.0: web lessons from a trial plan on a NiceGUI app: project button wrappers in the count,
+  a demo-mode stand D, a tree copy when paths come from `__file__` (never copy messenger sessions or `.env`), PATH
+  shims for external commands like `systemctl` with a pass-through test, explicit stand ports, Q with no stop is
+  never pressed live, what counts as noise in a hidden-write diff, recipes for `ui.sub_pages` and canvas charts.
 - `gui-state-map` 0.2.1: the report folder is always in the project, `docs/archive/<date>-gui-review/`, git-ignored;
   never /tmp, the scratchpad or a folder outside the project.
 - `gui-state-map` 0.2.0: desktop lessons from a trial plan on a PySide6 app: a fuller Qt control count, a P
