@@ -5,6 +5,8 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ## [Unreleased]
 
 ### Added
+- `gui-state-map` 0.2.1: the report folder is always in the project, `docs/archive/<date>-gui-review/`, git-ignored;
+  never /tmp, the scratchpad or a folder outside the project.
 - `gui-state-map` 0.2.0: desktop lessons from a trial plan on a PySide6 app: a fuller Qt control count, a P
   class for private capture (mic, screen, camera), collisions with the owner's instance (hotkeys, GPU, locks),
   restart buttons as X, a blacklist by dialog title + button text, `env:` rows, a plan-only mode, a disk space

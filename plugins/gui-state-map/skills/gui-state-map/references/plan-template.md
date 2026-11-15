@@ -13,7 +13,7 @@ Each state is backed by a screenshot, each transition by a diff/trace/log, or ma
 
 **Nothing gets fixed during the pass.** Findings: one row in `findings.md`, then move on.
 
-<If screenshots show personal data: the folder is git-ignored, and why.>
+Report folder: `docs/archive/<date>-gui-review/` (git-ignored: screenshots carry personal data).
 
 ## Status on <date>
 

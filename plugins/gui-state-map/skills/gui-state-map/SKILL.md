@@ -22,10 +22,12 @@ refreshed, an undo that lost data, "applied now" that wasn't. Most were visible 
 
 ## Where things go
 
-Make a report folder: `docs/reports/<YYYY-MM-DD>-gui-review/`. If screenshots will show personal data (real
-handles, emails, account names, private photos), use a **git-ignored** folder instead (for example `docs/archive/…`),
-or a folder outside the repo (`~/.local/share/<app>-gui-review/<date>/`) when the repo must stay untouched or the
-user keeps personal files out of repos. Say which one in the plan. Personal data does not go into git.
+The report folder lives **inside the project**: `docs/archive/<YYYY-MM-DD>-gui-review/`, git-ignored (add
+`docs/archive/` to `.gitignore` if it isn't there yet, and check it with `git check-ignore`). Screenshots of real
+data carry personal data (handles, emails, accounts, photos), so it never goes into git, but it stays next to the
+code for the fix sessions that follow. Don't put the report in `/tmp`, the session scratchpad or a folder outside
+the project: they get wiped or lost. Only heavy stand copies (sandbox data, model files) may go elsewhere when
+the disk is tight, and the plan says where.
 
 Files: `plan.md`, `stand.md` (or `states.md`), `inventory.md`, `actions[-a|-b|-c].md`, `map[-a|-b|-c].md`,
 `map.md`, `findings.md`, `scripts/`, `shots/`, `snaps/`, plus `traces/`, `ws/`, `logs/` as the stack needs.
