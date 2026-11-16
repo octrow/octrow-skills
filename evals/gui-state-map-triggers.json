@@ -1,0 +1,22 @@
+[
+  {"query": "хочу обзор GUI в ~/dev/chat-watch по экранам и состояниям: какие есть страницы, что делает каждая кнопка, куда ведёт, со скринами. план сначала, ничего пока не чини", "should_trigger": true},
+  {"query": "пройди весь интерфейс jobhunt (nicegui на 8090) и составь карту: экран -> кнопка -> что пишет в базу и что меняется на других страницах. нашёл несостыковку - запиши, не правь", "should_trigger": true},
+  {"query": "собери скриншоты всех состояний моего десктоп-приложения на fyne (ai-copilot) — главное окно, оверлей, трей, диалоги — и проведи ревью логики, как мы делали 15 ноября", "should_trigger": true},
+  {"query": "I need a full walkthrough of the buy-smarter PySide6 app: every screen, every state it can be in, every button and what it actually does to the data. Screenshots plus before/after diffs please", "should_trigger": true},
+  {"query": "в tlf gui кнопки иногда делают не то что написано. давай системно: прочитай из кода все обработчики, потом прокликай на копии данных и сравни ожидаемое с фактическим", "should_trigger": true},
+  {"query": "сделай ревью GUI linux-coding глазами нового пользователя и заодно карту состояний — что где показывается, где тупики, где одно и то же число в двух местах разное", "should_trigger": true},
+  {"query": "нужно понять, соответствует ли дашборд документации docs/gui.md: все ли команды CLI есть в GUI, не врут ли тосты, обновляется ли шапка после запуска. по всем экранам", "should_trigger": true},
+  {"query": "напиши план GUI-ревью для greenkeep по образцу tiktok-lazy-follower/docs/archive/2026-11-15-gui-review — стенд, матрица, кто снимает, кто разбирает", "should_trigger": true},
+  {"query": "map every state of our admin web app's order page with playwright: draft, paid, shipped, refunded, plus what each button writes to postgres. it's a review, not a fix", "should_trigger": true},
+  {"query": "прокликай все кнопки на /settings и /service в chat-watch на песочнице и сними что меняется, только аккуратно с systemctl", "should_trigger": true},
+  {"query": "в buy-smarter на экране отчёта текст обрезается справа и колонки таблицы сжаты до букв, поправь вёрстку", "should_trigger": false},
+  {"query": "сделай карту логики пайплайна jobs: где поток делится, что решает каждый шаг, какие модули — docs/logic-map.md", "should_trigger": false},
+  {"query": "наш лендинг выглядит как шаблон от ИИ, сделай критику дизайна и предложи как сделать премиальнее", "should_trigger": false},
+  {"query": "напиши e2e тест на playwright, который логинится и проверяет, что на /dashboard появляется таблица заказов", "should_trigger": false},
+  {"query": "сними один скриншот главной страницы tlf для README, светлая тема 1440 ширина", "should_trigger": false},
+  {"query": "добавь в chat-watch новую страницу 'Статистика' на nicegui-kit с графиком сообщений по дням", "should_trigger": false},
+  {"query": "запусти ai-copilot и покажи, что после моего фикса оверлей больше не пропадает", "should_trigger": false},
+  {"query": "кнопка 'Загрузить файл' на /authors не работает, вот трейс: AttributeError 'UploadEventArguments' object has no attribute 'content'. почини", "should_trigger": false},
+  {"query": "review this PR diff for the settings dialog in our Qt app: any bugs in the save handler?", "should_trigger": false},
+  {"query": "спроектируй экраны для нового приложения учёта привычек: какие экраны нужны, какие состояния у каждого, wireframe", "should_trigger": false}
+]
