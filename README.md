@@ -28,6 +28,7 @@ claude plugin install repo-ready@octrow-skills
 | [gui-state-map](plugins/gui-state-map/README.md) | maps every screen, state and button of a GUI, with screenshots and diffs | `claude plugin install gui-state-map@octrow-skills` |
 | [system-design](plugins/system-design/README.md) | designs a backend from numbers | `claude plugin install system-design@octrow-skills` |
 | [lean-spec](plugins/lean-spec/README.md) | checks logic against a Lean 4 model | `claude plugin install lean-spec@octrow-skills` |
+| [lean-session](plugins/lean-session/README.md) | hands a chat over to a new one through a file, so chats stay small | `claude plugin install lean-session@octrow-skills` |
 | [repo-scout](https://github.com/octrow/repo-scout) | finds GitHub repos to build on before you write your own | `claude plugin install repo-scout@octrow-skills` |
 
 repo-scout drives the repo-scout CLI. Install that first: one command, see its README.
@@ -77,7 +78,7 @@ Phases of repo-publish, the preflight output, the ready-made workflow files and 
 
 ## Repository layout
 
-This repo is a plugin marketplace. repo-ready, python-logging, llm-call-audit, logic-map, qt-ui, qt-app, gui-state-map, system-design and lean-spec live here. repo-scout lives in its own repo, and the marketplace entry points there.
+This repo is a plugin marketplace. repo-ready, python-logging, llm-call-audit, logic-map, qt-ui, qt-app, gui-state-map, system-design, lean-spec and lean-session live here. repo-scout lives in its own repo, and the marketplace entry points there.
 
 ```
 .claude-plugin/marketplace.json     list of plugins

@@ -1,0 +1,16 @@
+{
+  "name": "lean-session",
+  "description": "Keep Claude Code chats small: a handoff skill that moves state to .notes/handoff.md before /clear, a facts script for the start of a chat, and one blocking wait for a GitHub Actions run.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Daniil Petrov"
+  },
+  "license": "MIT",
+  "keywords": [
+    "context",
+    "handoff",
+    "cost",
+    "ci",
+    "skills"
+  ]
+}

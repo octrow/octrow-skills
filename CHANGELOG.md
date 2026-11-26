@@ -5,6 +5,11 @@ Versions of the repo-ready plugin (named repo-publish up to 0.4.0). Format: [Kee
 ## [Unreleased]
 
 ### Added
+- Marketplace: `lean-session` plugin 0.1.0 with the `handoff` skill. At a step boundary it writes
+  `.notes/handoff.md` (next step, state, decisions by pointer, open items, rules) and prints one line to paste
+  after `/clear`, so the next chat starts small. `handoff.sh` gathers the facts (branch, commits, uncommitted
+  files) and in `facts` mode prints the last "Next step"; `.notes/` stays out of git through `.git/info/exclude`.
+  `scripts/ci-wait.sh` is one blocking wait for a GitHub Actions run instead of polling it from the chat.
 - `gui-state-map` 0.3.0: web lessons from a trial plan on a NiceGUI app: project button wrappers in the count,
   a demo-mode stand D, a tree copy when paths come from `__file__` (never copy messenger sessions or `.env`), PATH
   shims for external commands like `systemctl` with a pass-through test, explicit stand ports, Q with no stop is

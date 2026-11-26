@@ -1,0 +1,19 @@
+{
+  "skill_name": "handoff",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/handoff Context of this chat: we were looking at the failed CI job `check` on main. We decided to reproduce it locally first with the command from .github/workflows/ci.yml; this decision is not written in any file. The local run has not been started yet. The user said: do not push without a command.",
+      "expected_output": ".notes/handoff.md is written with the five English headings in order, the State block comes from handoff.sh, the chat-only decision is first saved to a file under .notes/ and then pointed to, the unfinished local run is under Open, the no-push rule is under Rules, and the reply is the single line to paste after /clear. The next step itself is not started.",
+      "assertions": [
+        "The run calls scripts/handoff.sh instead of running git log, git status or git branch by hand",
+        ".notes/handoff.md exists, is at most 40 lines and has the headings Next step, State, Decisions, Open, Rules in this order",
+        "The Decisions section points to a file under .notes/ that holds the 'reproduce locally first' decision, and that file exists",
+        "The Rules section keeps the rule not to push without a command",
+        "`handoff.sh facts` run afterwards prints a non-empty Next step taken from the file",
+        "The final reply is one line telling the user to continue from .notes/handoff.md, and the CI reproduction is not started in the same run",
+        "`.notes/` is listed in .git/info/exclude and does not show in git status"
+      ]
+    }
+  ]
+}
